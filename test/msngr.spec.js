@@ -1,0 +1,30 @@
+(function () {
+	var assert = require("assert");
+	var msngr = require("../msngr.js");
+
+	describe("msngr.js", function () {
+		it("msngr", function () {
+			// Ensure msngr exists in the first place
+			assert.notEqual(msngr, undefined);
+		});
+
+		it("msngr.extend()", function () {
+			// Check that extend exists
+			assert.notEqual(msngr.extend, undefined);
+			// Ensure that the method we're adding doesn't exist
+			assert.equal(msngr.test_extend, undefined);
+			// Extend msngr with new method
+			msngr.extend({
+				test_extend: function () {
+					console.log("test");
+				}
+			});
+			// Ensure new method now exists
+			assert.notEqual(msngr.test_extend, undefined);
+			// Drop new method
+			delete msngr.test_extend;
+			// Ensure new method is gone again
+			assert.equal(msngr.test_extend, undefined);
+		});
+	});
+}());
