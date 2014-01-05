@@ -7,6 +7,12 @@ msngr.extend((function () {
 			isString: function (str) {
 	            return (Object.prototype.toString.call(str) === "[object String]");
 	        },
+	        isDate: function (obj) {
+	            return (Object.prototype.toString.call(obj) === "[object Date]");
+	        },
+	        isNumber: function (obj) {
+	            return (Object.prototype.toString.call(obj) === "[object Number]");
+	        },
 	        isObject: function (obj) {
 	            return (Object.prototype.toString.call(obj) === "[object Object]");
 	        },

@@ -53,8 +53,8 @@ msngr.extend((function () {
 			ThrowNotImplementedException: function () {
 				throw "Method is not implemented";
 			},
-			ThrowRequiredParameterMissing: function (parameter) {
-				throw parameter + " is a required parameter";
+			ThrowRequiredParameterMissingOrUndefined: function (parameter) {
+				throw parameter + " is a required parameter and must not be missing or undefined";
 			}
 		}
 	};
@@ -67,6 +67,12 @@ msngr.extend((function () {
 			},
 			isString: function (str) {
 	            return (Object.prototype.toString.call(str) === "[object String]");
+	        },
+	        isDate: function (obj) {
+	            return (Object.prototype.toString.call(obj) === "[object Date]");
+	        },
+	        isNumber: function (obj) {
+	            return (Object.prototype.toString.call(obj) === "[object Number]");
 	        },
 	        isObject: function (obj) {
 	            return (Object.prototype.toString.call(obj) === "[object Object]");

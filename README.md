@@ -6,9 +6,18 @@ A natural way to write decoupled JavaScript code using messages rather than dire
 For compilation:
 - node.js 0.10.x
 - grunt 0.4.x
+- mocha 1.16.x
 
 For usage:
 - N/A
+
+###Building
+Run the following commands to get up to speed (assuming node, npm, grunt and mocha are all installed globally)
+
+```
+npm install
+grunt build
+```
 
 ###Design
 msngr.js is meant to be a dynamic, generic and specific messaging system that works on the client or server-side in JavaScript. Essentially the double speak means that anything sent via msngr.js has several parameters that are all optional allowing broadcast level or specific targetting of messages while allowing custom routes to be integrated for alternative message delivery and acceptance. For example someone may want to write a thrift router allowing thrift calls to be both sent and received directly through msngr.js.

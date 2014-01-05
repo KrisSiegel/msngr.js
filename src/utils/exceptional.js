@@ -4,8 +4,8 @@ msngr.extend((function () {
 			ThrowNotImplementedException: function () {
 				throw "Method is not implemented";
 			},
-			ThrowRequiredParameterMissing: function (parameter) {
-				throw parameter + " is a required parameter";
+			ThrowRequiredParameterMissingOrUndefined: function (parameter) {
+				throw parameter + " is a required parameter and must not be missing or undefined";
 			}
 		}
 	};

@@ -51,6 +51,28 @@
 			assert.equal(msngr.utils.isString(function () {}), false);
 		});
 
+		it("msngr.utils.isNumber()", function () {
+			assert.equal(msngr.utils.isNumber("test"), false);
+			assert.equal(msngr.utils.isNumber(""), false);
+			assert.equal(msngr.utils.isNumber(undefined), false);
+			assert.equal(msngr.utils.isNumber(null), false);
+			assert.equal(msngr.utils.isNumber({}), false);
+			assert.equal(msngr.utils.isNumber(7), true);
+			assert.equal(msngr.utils.isNumber(new Date()), false);
+			assert.equal(msngr.utils.isNumber(function () {}), false);
+		});
+
+		it("msngr.utils.isDate()", function () {
+			assert.equal(msngr.utils.isDate("test"), false);
+			assert.equal(msngr.utils.isDate(""), false);
+			assert.equal(msngr.utils.isDate(undefined), false);
+			assert.equal(msngr.utils.isDate(null), false);
+			assert.equal(msngr.utils.isDate({}), false);
+			assert.equal(msngr.utils.isDate(7), false);
+			assert.equal(msngr.utils.isDate(new Date()), true);
+			assert.equal(msngr.utils.isDate(function () {}), false);
+		});
+
 		it("msngr.utils.isFunction()", function () {
 			assert.equal(msngr.utils.isFunction(function () {}), true);
 			assert.equal(msngr.utils.isFunction("test"), false);
