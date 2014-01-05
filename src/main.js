@@ -6,7 +6,7 @@ var msngr = msngr || (function () {
 				for (var key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (Object.prototype.toString.call(obj[key]) === "[object Object]") {
-							target[key] = msngr.extend(obj[key], { });
+							target[key] = msngr.extend(obj[key], target[key]);
 						} else {
 							target[key] = obj[key];
 						}
