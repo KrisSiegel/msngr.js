@@ -7,9 +7,9 @@ module.exports = (function (grunt) {
 		"src/main.js",
 		"src/utils/*.js",
 		"src/registry.js",
+		"src/routers/*.js",
 		"src/emitters/*.js",
 		"src/receivers/*.js",
-		"src/routers/*.js",
 		"src/module.exports.js"
 	];
 	grunt.initConfig({

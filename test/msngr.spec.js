@@ -1,7 +1,7 @@
 (function () {
 	var assert = require("assert");
 	var msngr = require("../msngr.js");
-
+	
 	describe("msngr.js", function () {
 		it("msngr", function () {
 			// Ensure msngr exists in the first place
@@ -38,6 +38,7 @@
 				}
 			});
 			assert.equal(msngr.test_extend.test, msngr.test_extend.another);
+			assert.notEqual(msngr.test_extend.test, msngr.test);
 		});
 
 		it("msngr.utils.isString()", function () {
@@ -105,7 +106,4 @@
 			assert.equal(msngr.utils.ensureInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1), true);
 		});	
 	});
-
-	
-
 }());

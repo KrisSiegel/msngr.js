@@ -6,6 +6,9 @@ var msngr = msngr || (function () {
 				for (var key in obj) {
 					if (obj.hasOwnProperty(key)) {
 						if (Object.prototype.toString.call(obj[key]) === "[object Object]") {
+							if (target[key] === undefined) {
+								target[key] = { };
+							}
 							target[key] = msngr.extend(obj[key], target[key]);
 						} else {
 							target[key] = obj[key];
@@ -61,7 +64,7 @@ msngr.extend((function () {
 				}
 			},
 			ThrowMismatchedInterfaceException: function (interface) {
-				throw "The implementation does not match the " + interface + " interface";
+				throw "The implementation does not match the " + (interface || "unknown") + " interface";
 			}
 		}
 	};
@@ -108,14 +111,6 @@ msngr.extend((function () {
 	var routers = [];
 	return {
 		registry: {
-			route: function (message, callback) {
-				if (message === undefined) {
-					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
-				}
-				for (var i = 0; i < routers.length; ++i) {
-					routers[i].route(message, callback);
-				}
-			},
 			add: function (router) {
 				if (router === undefined) {
 					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("router");
@@ -154,28 +149,10 @@ msngr.extend((function () {
 }()));
 
 msngr.extend((function () {
-
-	return {
-		send: function (message, callback) {
-			
-		}
-	};
-}()));
-
-msngr.extend((function () {
-
-	return {
-		receive: function (message, callback) {
-			
-		}
-	};
-}()));
-
-msngr.extend((function () {
 	return {
 		interfaces: {
 			router: {
-				route: function (message, callback) {
+				route: function (message, callback, context) {
 					msngr.utils.ThrowNotImplementedException();
 				},
 				pause: function () {
@@ -183,11 +160,61 @@ msngr.extend((function () {
 				},
 				start: function () {
 					msngr.utils.ThrowNotImplementedException();
+				},
+				stop: function () {
+					msngr.utils.ThrowNotImplementedException();
 				}
 			}
 		}
 	};
 }()));
+msngr.registry.add((function () {
+	var queue = [];
+
+	var processQueue = function () {
+		while (queue.length > 0) {
+			var message = queue.shift();
+		}
+	};
+	return {
+		route: function (message, callback, context) {
+			console.log("Standard router received: " + message);
+		},
+		start: function () {
+
+		},
+		pause: function () {
+
+		},
+		stop: function () {
+			
+		}
+	};
+}()));
+
+msngr.extend((function () {
+
+	return {
+		send: function (message, callback, context) {
+			if (message === undefined) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+			for (var i = 0; i < msngr.registry.count(); ++i) {
+				msngr.registry.get(i).route(message, callback, context);
+			}
+		}
+	};
+}()));
+
+msngr.extend((function () {
+
+	return {
+		receive: function (message, callback, context) {
+			
+		}
+	};
+}()));
+
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 	module.exports = msngr;
 }

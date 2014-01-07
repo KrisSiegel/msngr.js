@@ -12,7 +12,7 @@ For usage:
 - N/A
 
 ###Building
-Run the following commands to get up to speed (assuming node, npm, grunt and mocha are all installed globally)
+Run the following commands to get up to speed (assuming node, npm, grunt-cli and mocha are all installed globally)
 
 ```
 npm install
@@ -74,7 +74,7 @@ msngr.send("Play");
 ```
 This will be received by recipients with the topic of "Play".
 
-Wilcards can also be used to allow broader matching and work on topic, category and dataType fields.
+Wildcards can also be used to allow broader matching and work on topic, category and dataType fields.
 
 Example:
 ```

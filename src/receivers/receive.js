@@ -1,7 +1,7 @@
 msngr.extend((function () {
 
 	return {
-		receive: function (message, callback) {
+		receive: function (message, callback, context) {
 			
 		}
 	};

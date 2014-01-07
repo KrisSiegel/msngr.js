@@ -12,7 +12,7 @@ msngr.extend((function () {
 				}
 			},
 			ThrowMismatchedInterfaceException: function (interface) {
-				throw "The implementation does not match the " + interface + " interface";
+				throw "The implementation does not match the " + (interface || "unknown") + " interface";
 			}
 		}
 	};

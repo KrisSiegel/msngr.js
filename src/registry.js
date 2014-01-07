@@ -2,14 +2,6 @@ msngr.extend((function () {
 	var routers = [];
 	return {
 		registry: {
-			route: function (message, callback) {
-				if (message === undefined) {
-					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
-				}
-				for (var i = 0; i < routers.length; ++i) {
-					routers[i].route(message, callback);
-				}
-			},
 			add: function (router) {
 				if (router === undefined) {
 					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("router");
