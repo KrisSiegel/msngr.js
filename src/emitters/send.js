@@ -2,7 +2,7 @@ msngr.extend((function () {
 
 	return {
 		send: function (message, callback, context) {
-			if (message === undefined) {
+			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 			for (var i = 0; i < msngr.registry.count(); ++i) {

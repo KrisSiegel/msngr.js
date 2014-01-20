@@ -1,5 +1,4 @@
 msngr.extend((function () {
-
 	return {
 		utils: {
 			ensureInterface: function (object, interface) {

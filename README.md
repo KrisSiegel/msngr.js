@@ -2,6 +2,24 @@
 
 A natural way to write decoupled JavaScript code using messages rather than direct eventing which lends well to developing intercommunication between web components.
 
+###Quick Start
+Looking for a TL;DR? This should get you going quickly.
+
+####1. Include msngr.js
+```
+<script type="text/javascript" src="msngr.js"></script>
+```
+####2. Register your first receiving method.
+```
+msngr.receive({ topic: "Alert" }, function () {
+	alert("Received!");
+});
+```
+####3. Send your first message!
+```
+msngr.send("Alert");
+```
+
 ###Dependencies
 For compilation:
 - node.js 0.10.x
