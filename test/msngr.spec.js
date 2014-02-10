@@ -1,4 +1,4 @@
-var tests = (function (description, msngr) {
+var tests = (function (description, msngr, uniqueKey) {
 	var assert = require("assert");
 	
 	describe(description, function () {
@@ -42,14 +42,18 @@ var tests = (function (description, msngr) {
 			delete msngr.test_extend;
 		});
 
-		it("msngr.send()", function () {
+		it("msngr.send()", function (done) {
 			assert.throws(msngr.send);
+			msngr.receive("test_" + uniqueKey, function () { 
+				done();
+			}, this );
+			msngr.send("test_" + uniqueKey);
 		});
 
 		it("msngr.receive()", function () {
-			//assert.throws(msngr.receive);
+			assert.throws(msngr.receive);
 		});
 	});
 });
-tests("[Concatenated] msngr", require("../msngr.js"));
-tests("[Minified] msngr", require("../msngr.js"));
+tests("[Concatenated] msngr", require("../msngr.js"), Math.floor(Math.random() * 1000));
+tests("[Minified] msngr", require("../msngr.js"), Math.floor(Math.random() * 1000))	;

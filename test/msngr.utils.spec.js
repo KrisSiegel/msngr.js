@@ -1,4 +1,4 @@
-var tests = (function (description, msngr) {
+var tests = (function (description, msngr, uniqueKey) {
 	var assert = require("assert");
 	
 	describe(description, function () {
@@ -105,7 +105,26 @@ var tests = (function (description, msngr) {
 			assert.equal(msngr.utils.isEmptyString(new Date()), false);
 		});
 
-		it("msngr.utils.ensureInterface(obj, interface)", function () {
+		it("msngr.utils.ThrowNotImplementedException()", function () {
+			assert.throws(msngr.utils.ThrowNotImplementedException);
+		});
+
+		it("msngr.utils.ThrowRequiredParameterMissingOrUndefinedException()", function () {
+			assert.throws(msngr.utils.ThrowRequiredParameterMissingOrUndefinedException);
+		});
+
+		it("msngr.utils.ThrowMismatchedInterfaceException()", function () {
+			assert.throws(msngr.utils.ThrowMismatchedInterfaceException);
+		});
+
+		it("msngr.utils.arrayContains()", function () {
+			assert.equal(msngr.utils.arrayContains([1,2,3], 2), true);
+			assert.equal(msngr.utils.arrayContains([1,2,3], 0), false);
+			assert.equal(msngr.utils.arrayContains([1,2,3], [1,2]), true);
+			assert.equal(msngr.utils.arrayContains([1,2,3], [0,1]), false);
+		});
+
+		it("msngr.utils.verifyInterface(obj, interface)", function () {
 			var interface1 = {
 				tester: function () {},
 				myName: "testing",
@@ -114,11 +133,39 @@ var tests = (function (description, msngr) {
 				}
 			};
 
-			assert.equal(msngr.utils.ensureInterface({}, interface1), false);
-			assert.equal(msngr.utils.ensureInterface({ tester: "test", myName: "testing", myObj: {} }, interface1), false);
-			assert.equal(msngr.utils.ensureInterface({ tester: function () {}, myName: {}, myObj: {} }, interface1), false);
-			assert.equal(msngr.utils.ensureInterface({ tester: function () {}, myName: "testing", myObj: "again" }, interface1), false);
-			assert.equal(msngr.utils.ensureInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1), true);
+			assert.equal(msngr.utils.verifyInterface({}, interface1), false);
+			assert.equal(msngr.utils.verifyInterface({ tester: "test", myName: "testing", myObj: {} }, interface1), false);
+			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: {}, myObj: {} }, interface1), false);
+			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: "again" }, interface1), false);
+			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1), true);
+		});
+
+		it("msngr.utils.ensureMessage(message)", function () {
+			assert.equal(msngr.utils.ensureMessage("MyTopic").topic, "MyTopic");
+			assert.equal(msngr.utils.ensureMessage({ topic: "MyTopic" }).topic, "MyTopic");
+		});
+
+		it("msngr.utils.doesMessageContainWildcard()", function () {
+			assert.equal(msngr.utils.doesMessageContainWildcard("Topic"), false);
+			assert.equal(msngr.utils.doesMessageContainWildcard("Topic*"), true);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "Test",
+				category: "Test*"
+			}), true);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "Test",
+				category: "Test"
+			}), false);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "Test",
+				category: "Test",
+				dataType: "Test*"
+			}), true);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "Test",
+				category: "Test",
+				dataType: "Test"
+			}), false);
 		});
 
 		it("msngr.utils.isWildCardStringMatch", function () {
@@ -149,142 +196,116 @@ var tests = (function (description, msngr) {
 		});
 
 		it("msngr.utils.isValidMessage(message)", function () {
-			var test = function (array, expected) {
-				for (var i = 0; i < array.length; ++i) {
-					assert.equal(msngr.utils.isValidMessage(array[i]), expected);
-				}
-			};
-
-			var validMessages = [];
-			validMessages.push({
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "Test"
-			});
-			validMessages.push({
+			}), true);
+			
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				category: "MyCategory"
-			});
-			validMessages.push({
+			}), true);
+			
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				category: "MyCategory",
 				dataType: "application/json"
-			});
-			validMessages.push({
+			}), true);
+			
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				dataType: "application/json"
-			});
-			validMessages.push({
+			}), true);
+			
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "*"
-			});
-			validMessages.push({
+			}), true);
+			
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "Save",
 				category: "Category*",
 				dataType: "application/*"
-			});
-			validMessages.push({
+			}), true);
+			
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				target: "550e8400-e29b-41d4-a716-446655440000"
-			});
-			validMessages.push("MyTopic");
+			}), true);
 
-			test(validMessages, true);
+			assert.equal(msngr.utils.isValidMessage("MyTopic"), true);
 
-			var invalidMessages = [];
-			invalidMessages.push(undefined);
-			invalidMessages.push(null);
-			invalidMessages.push("");
-			invalidMessages.push({
+			assert.equal(msngr.utils.isValidMessage(undefined), false);
+
+			assert.equal(msngr.utils.isValidMessage(null), false);
+
+			assert.equal(msngr.utils.isValidMessage(""), false);
+
+			assert.equal(msngr.utils.isValidMessage({
 				category: "MyCat"
-			});
-			invalidMessages.push({
+			}), false);
+
+			assert.equal(msngr.utils.isValidMessage({
 				topic: function () { }
-			});
-			invalidMessages.push({
+			}), false);
+
+			assert.equal(msngr.utils.isValidMessage({
 				topic: "test",
 				category: function () { }
-			});
-
-			test(invalidMessages, false);
+			}), false);
 		});
 
 		it("msngr.utils.isMessageMatch(sent, target)", function () {
-			var shouldMatch = [];
-			var shouldNotMatch = [];
-			var test = function (array, expected) {
-				for (var i = 0; i < array.length; ++i) {
-					assert.equal(msngr.utils.isMessageMatch(array[i].sent, array[i].target), expected);
-				}
-			};
+			assert.equal(msngr.utils.isMessageMatch({
+					topic: "test"
+				}, {
+					topic: "test"
+				}), true);
 
-			shouldMatch.push({
-				sent: {
+			assert.equal(msngr.utils.isMessageMatch({
 					topic: "test"
-				}, target: {
-					topic: "test"
-				}
-			});
-
-			shouldMatch.push({
-				sent: {
-					topic: "test"
-				}, target: {
+				}, {
 					topic: "*"
-				}
-			});
+				}), true);
 
-			shouldMatch.push({
-				sent: {
+			assert.equal(msngr.utils.isMessageMatch({
 					topic: "test",
 					category: "Yup"
-				}, target: {
+				}, {
 					topic: "test",
 					category: "yup"
-				}
-			});
+				}), true);
 
-			shouldMatch.push({
-				sent: {
+			assert.equal(msngr.utils.isMessageMatch({
 					topic: "test",
 					dataType: "application/json"
-				}, target: {
+				}, {
 					topic: "test",
 					dataType: "application/*"
-				}
-			});
+				}), true);
 
-			test(shouldMatch, true);
-
-			shouldNotMatch.push({
-				sent: {
+			assert.equal(msngr.utils.isMessageMatch({
 					topic: "test"
-				}, target: {
+				}, {
 					topic: "no"
-				}
-			});
+				}), false);
 
-			shouldNotMatch.push({
-				sent: {
+			assert.equal(msngr.utils.isMessageMatch({
 					topic: "test",
 					dataType: "application/json"
-				}, target: {
+				}, {
 					topic: "test",
 					dataType: "document"
-				}
-			});
+				}), false);
 
-			shouldNotMatch.push({
-				sent: {
+			assert.equal(msngr.utils.isMessageMatch({
 					topic: "test",
 					category: "document"
-				}, target: {
+				}, {
 					topic: "no",
 					category: "a*"
-				}
-			});
-
-			test(shouldNotMatch, false);
+				}), false);
 		});
 	});
 });
-tests("[Concatenated] msngr.utils", require("../msngr.js"));
-tests("[Minified] msngr.utils", require("../msngr.js"));
+tests("[Concatenated] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
+tests("[Minified] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
 

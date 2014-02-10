@@ -102,6 +102,15 @@ msngr.extend((function () {
 	        		}
 	        	}
 	        	return false;
+	        },
+	        doesMessageContainWildcard: function (message) {
+	        	message = this.ensureMessage(message);
+	        	if (this.isValidMessage(message)) {
+	        		if ((message.topic || "").indexOf("*") !== -1 || (message.category || "").indexOf("*") !== -1 || (message.dataType || ""	).indexOf("*") !== -1) {
+	        			return true;
+	        		}
+	        	}
+	        	return false;
 	        }
 	    }
 	};

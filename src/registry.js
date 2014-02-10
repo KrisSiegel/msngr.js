@@ -6,7 +6,7 @@ msngr.extend((function () {
 				if (router === undefined) {
 					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("router");
 				}
-				if (msngr.utils.ensureInterface(router, msngr.interfaces.router)) {
+				if (msngr.utils.verifyInterface(router, msngr.interfaces.router)) {
 					routers.push(router);
 					return this;
 				} else {
@@ -34,6 +34,7 @@ msngr.extend((function () {
 	                routers[index] = temp;
 	            }
 	            routers.pop();
+	            return this;
 			}
 		}
 	};

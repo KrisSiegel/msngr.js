@@ -34,27 +34,16 @@ msngr.extend((function () {
 msngr.extend((function () {
 	return {
 		utils: {
-			ensureInterface: function (object, interface) {
-				if (object === undefined && interface === undefined) {
-					return true;
-				}
-				for (var key in interface) {
-					if (interface.hasOwnProperty(key)) {
-						if (object === undefined) {
-							return false;
-						}
-						if (object[key] === undefined || (msngr.utils.getType(interface[key]) !== msngr.utils.getType(object[key]))) {
-							return false;
-						}
-						if (msngr.utils.isObject(interface[key])) {
-							var result = this.ensureInterface(object[key], interface[key]);
-							if (!result) {
-								return result;
-							}
-						}
+			ensureMessage: function (message) {
+				if (!msngr.utils.isNullOrUndefined(message)) {
+					if (msngr.utils.isString(message) && !msngr.utils.isEmptyString(message)) {
+						return {
+							topic: message
+						};
 					}
+					return message;
 				}
-				return true;
+				return undefined;
 			}
 		}
 	}
@@ -77,6 +66,28 @@ msngr.extend((function () {
 			}
 		}
 	};
+}()));
+msngr.extend((function () {
+	return {
+		utils: {
+			arrayContains: function (arr, values) {
+				if (msngr.utils.isNullOrUndefined(arr)) {
+					return false;
+				}
+
+				if (!msngr.utils.isArray(values)) {
+					values = [values];
+				}
+
+				for (var i = 0; i < values.length; ++i) {
+					if (arr.indexOf(values[i]) === -1) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+	}
 }()));
 msngr.extend((function () {
 	return {
@@ -182,11 +193,48 @@ msngr.extend((function () {
 	        		}
 	        	}
 	        	return false;
+	        },
+	        doesMessageContainWildcard: function (message) {
+	        	message = this.ensureMessage(message);
+	        	if (this.isValidMessage(message)) {
+	        		if ((message.topic || "").indexOf("*") !== -1 || (message.category || "").indexOf("*") !== -1 || (message.dataType || ""	).indexOf("*") !== -1) {
+	        			return true;
+	        		}
+	        	}
+	        	return false;
 	        }
 	    }
 	};
 }()));
 
+msngr.extend((function () {
+	return {
+		utils: {
+			verifyInterface: function (object, interface) {
+				if (object === undefined && interface === undefined) {
+					return true;
+				}
+				for (var key in interface) {
+					if (interface.hasOwnProperty(key)) {
+						if (object === undefined) {
+							return false;
+						}
+						if (object[key] === undefined || (msngr.utils.getType(interface[key]) !== msngr.utils.getType(object[key]))) {
+							return false;
+						}
+						if (msngr.utils.isObject(interface[key])) {
+							var result = this.verifyInterface(object[key], interface[key]);
+							if (!result) {
+								return result;
+							}
+						}
+					}
+				}
+				return true;
+			}
+		}
+	}
+}()));
 msngr.extend((function () {
 	var routers = [];
 	return {
@@ -195,7 +243,7 @@ msngr.extend((function () {
 				if (router === undefined) {
 					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("router");
 				}
-				if (msngr.utils.ensureInterface(router, msngr.interfaces.router)) {
+				if (msngr.utils.verifyInterface(router, msngr.interfaces.router)) {
 					routers.push(router);
 					return this;
 				} else {
@@ -223,6 +271,7 @@ msngr.extend((function () {
 	                routers[index] = temp;
 	            }
 	            routers.pop();
+	            return this;
 			}
 		}
 	};
@@ -232,7 +281,10 @@ msngr.extend((function () {
 	return {
 		interfaces: {
 			router: {
-				route: function (message, callback, context) {
+				send: function (message, callback, context) {
+					msngr.utils.ThrowNotImplementedException();
+				},
+				receive: function (message, callback, context) {
 					msngr.utils.ThrowNotImplementedException();
 				},
 				pause: function () {
@@ -249,25 +301,136 @@ msngr.extend((function () {
 	};
 }()));
 msngr.registry.add((function () {
+	var receivers = [];
+	var receiversInverseIndex = {
+		topic: { },
+		category: { },
+		dataType: { },
+		target: { }
+	};
+	var receiversPartialMatchesIndex = [];
+
+	var states = {
+		running: "RUNNING",
+		paused: "PAUSED",
+		stopped: "STOPPED"
+	};
+	var state = states.running;
+
 	var queue = [];
 
-	var processQueue = function () {
-		while (queue.length > 0) {
-			var message = queue.shift();
+	var handleStateChange = function () {
+		
+	};
+
+	var executeReceivers = function(indexes, payload) {
+		for (var i = 0; i < indexes.length; ++i) {
+			receivers[indexes[i]].callback.apply(receivers[indexes[i]].context, [payload]);
 		}
 	};
+
+	var executeReceiversAsync = function (indexes, payload) {
+		(function (i, p) {
+			setTimeout(function () {
+				executeReceivers(i, p);
+			}, 0);
+		}(indexes, payload));
+	};
+
+	var handleSend = function (message, callback, context) {
+		var indexesToExecute = [];
+		if (msngr.utils.doesMessageContainWildcard(message)) {
+			for (var i = 0; i < receiversPartialMatchesIndex.length; ++i) {
+				var msg = receivers[receiversPartialMatchesIndex[i]];
+				if (msngr.utils.isMessageMatch(message, msg)) {
+					indexesToExecute.push(receiversPartialMatchesIndex[i]);
+				}
+			}
+		} else {
+			// We have indexes but this is stupid;
+			// TODO: Properly use the indexes. Dummy.
+			var matches = queryIndex(message, "topic") || [];
+			matches = matches.concat(queryIndex(message, "category") || []);
+			matches = matches.concat(queryIndex(message, "dataType") || []);
+			matches = matches.concat(queryIndex(message, "target") || []);
+			matches = matches.filter(function (v, i, a) { return a.indexOf (v) == i });
+
+			for (var i = 0; i < matches.length; ++i) {
+				var msg = receivers[matches[i]];
+				if (msngr.utils.isMessageMatch(message, msg)) {
+					indexesToExecute.push(matches[i]);
+				}
+			}
+		}
+
+		if (indexesToExecute.length > 0) {
+			executeReceiversAsync(indexesToExecute);
+		}
+	};
+
+	var indexMessage = function (message, field, index) {
+		if (!msngr.utils.isNullOrUndefined(message[field])) {
+			if (receiversInverseIndex[field][message[field]] === undefined) {
+				receiversInverseIndex[field][message[field]] = [];
+			}
+			receiversInverseIndex[field][message[field]].push(index);
+		}
+	};
+
+	var queryIndex = function (message, field) {
+		if (!msngr.utils.isNullOrUndefined(receiversInverseIndex[field]) && !msngr.utils.isNullOrUndefined(receiversInverseIndex[field][message[field]])) {
+			return receiversInverseIndex[field][message[field]];
+		}
+	};
+
+	var handleReceiverRegistration = function (message, callback, context) {
+		var index = receivers.push({
+			message: message,
+			callback: callback,
+			context: context
+		});
+
+		index -= 1;
+
+		if (msngr.utils.doesMessageContainWildcard(message)) {
+			receiversPartialMatchesIndex.push(index);
+		} else {
+			indexMessage(message, "topic", index);
+			indexMessage(message, "dataType", index);
+			indexMessage(message, "category", index);
+			indexMessage(message, "target", index);
+		}
+	};
+
 	return {
-		route: function (message, callback, context) {
-			console.log("Standard router received: " + message);
+		send: function (message, callback, context) {
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+			handleSend(message, callback, (context || this));
+			return this;
+		},
+		receive: function (message, callback, context) {
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+			handleReceiverRegistration(message, callback, (context || this));
+			return this;
 		},
 		start: function () {
-
+			state = states.running;
+			handleStateChange();
+			return this;
 		},
 		pause: function () {
-
+			state = states.paused;
+			handleStateChange();
+			return this;
 		},
 		stop: function () {
-			
+			state = states.stopped();
+			handleStateChange();
+			return this;
 		}
 	};
 }()));
@@ -279,8 +442,9 @@ msngr.extend((function () {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
+			
 			for (var i = 0; i < msngr.registry.count(); ++i) {
-				msngr.registry.get(i).route(message, callback, context);
+				msngr.registry.get(i).send(msngr.utils.ensureMessage(message), callback, context);
 			}
 		}
 	};
@@ -290,7 +454,13 @@ msngr.extend((function () {
 
 	return {
 		receive: function (message, callback, context) {
-			
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+
+			for (var i = 0; i < msngr.registry.count(); ++i) {
+				msngr.registry.get(i).receive(msngr.utils.ensureMessage(message), callback, context);
+			}
 		}
 	};
 }()));
