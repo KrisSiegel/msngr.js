@@ -40,6 +40,22 @@ var tests = (function (description, msngr, uniqueKey) {
 			assert.notEqual(msngr.test_extend.test, msngr.test);
 			// Drop new methods again
 			delete msngr.test_extend;
+
+			// Check mixin support with arrays; no modifying of base msngr object.
+			var obj = msngr.extend({
+				testing: {
+					tests: ["test", "again"]
+				},
+				another: ["yup", "yip", "yop"]
+			}, {
+				testing: {
+					test: "yes"
+				}
+			});
+			assert.equal(obj.testing.tests.length > 0, true);
+			assert.equal(obj.another.length > 0, true);
+			assert.equal(msngr.utils.getType(obj.testing.tests), "[object Array]");
+			assert.equal(msngr.utils.getType(obj.another), "[object Array]");
 		});
 
 		it("msngr.send()", function (done) {
