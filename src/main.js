@@ -10,6 +10,8 @@ var msngr = msngr || (function () {
 								target[key] = { };
 							}
 							target[key] = msngr.extend(obj[key], target[key]);
+						} else if (Object.prototype.toString.call(obj[key]) === "[object Array]") {
+							target[key] = (target[key] || []).concat(obj[key]);
 						} else {
 							target[key] = obj[key];
 						}

@@ -49,10 +49,12 @@ var tests = (function (description, msngr, uniqueKey) {
 				another: ["yup", "yip", "yop"]
 			}, {
 				testing: {
-					test: "yes"
+					test: "yes",
+					tests: ["another", "weee"]
 				}
 			});
 			assert.equal(obj.testing.tests.length > 0, true);
+			assert.equal(obj.testing.tests.length === 4, true);
 			assert.equal(obj.another.length > 0, true);
 			assert.equal(msngr.utils.getType(obj.testing.tests), "[object Array]");
 			assert.equal(msngr.utils.getType(obj.another), "[object Array]");

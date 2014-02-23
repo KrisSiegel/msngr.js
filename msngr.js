@@ -10,6 +10,8 @@ var msngr = msngr || (function () {
 								target[key] = { };
 							}
 							target[key] = msngr.extend(obj[key], target[key]);
+						} else if (Object.prototype.toString.call(obj[key]) === "[object Array]") {
+							target[key] = (target[key] || []).concat(obj[key]);
 						} else {
 							target[key] = obj[key];
 						}
@@ -286,15 +288,6 @@ msngr.extend((function () {
 				},
 				receive: function (message, callback, context) {
 					msngr.utils.ThrowNotImplementedException();
-				},
-				pause: function () {
-					msngr.utils.ThrowNotImplementedException();
-				},
-				start: function () {
-					msngr.utils.ThrowNotImplementedException();
-				},
-				stop: function () {
-					msngr.utils.ThrowNotImplementedException();
 				}
 			}
 		}
@@ -318,10 +311,6 @@ msngr.registry.add((function () {
 	var state = states.running;
 
 	var queue = [];
-
-	var handleStateChange = function () {
-		
-	};
 
 	var executeReceivers = function(indexes, payload) {
 		for (var i = 0; i < indexes.length; ++i) {
@@ -415,21 +404,6 @@ msngr.registry.add((function () {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 			handleReceiverRegistration(message, callback, (context || this));
-			return this;
-		},
-		start: function () {
-			state = states.running;
-			handleStateChange();
-			return this;
-		},
-		pause: function () {
-			state = states.paused;
-			handleStateChange();
-			return this;
-		},
-		stop: function () {
-			state = states.stopped();
-			handleStateChange();
 			return this;
 		}
 	};
