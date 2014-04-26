@@ -15,7 +15,7 @@ var tests = (function (description, msngr, uniqueKey) {
 			// Extend msngr with new method
 			msngr.extend({
 				test_extend: function () {
-					
+
 				}
 			});
 			// Ensure new method now exists
@@ -84,10 +84,23 @@ var tests = (function (description, msngr, uniqueKey) {
 			msngr.send(msg);
 		});
 
-		it("msngr.send() with topic and partial, matching category", function (done) {
+		it("msngr.send() with topic, category and dataType", function (done) {
 			var msg = {
 				topic: "test3_" + uniqueKey,
-				category: "test3Cat_" + uniqueKey + "*"
+				category: "test3Cat_" + uniqueKey,
+				dataType: "test3Type_" + uniqueKey
+			};
+			msngr.receive(msg, function () {
+				done();
+			}, this);
+
+			msngr.send(msg);
+		});
+
+		it("msngr.send() with topic and partial, matching category", function (done) {
+			var msg = {
+				topic: "test4_" + uniqueKey,
+				category: "test4Cat_" + uniqueKey + "*"
 			};
 			msngr.receive(msg, function () {
 				done();
@@ -95,7 +108,24 @@ var tests = (function (description, msngr, uniqueKey) {
 
 			msngr.send({
 				topic: msg.topic,
-				category: "test3Cat_" + uniqueKey + "test"
+				category: "test4Cat_" + uniqueKey + "test"
+			});
+		});
+
+		it("msngr.send() with topic, category and partial, matching dataType", function (done) {
+			var msg = {
+				topic: "test5_" + uniqueKey,
+				category: "test5Cat_" + uniqueKey,
+				dataType: "test5Type_" + uniqueKey + "*"
+			};
+			msngr.receive(msg, function () {
+				done();
+			}, this);
+
+			msngr.send({
+				topic: msg.topic,
+				category: "test5Cat_" + uniqueKey,
+				dataType: "test5Type_" + uniqueKey + "test"
 			});
 		});
 

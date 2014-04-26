@@ -8,14 +8,39 @@
 		<link href="common.css" rel="stylesheet" type="text/css">
 
 		<script type="text/javascript" src="../msngr.min.js"></script>
-		<script type="text/javascript">
-
-		</script>
 	</head>
 	<body>
 		<div class="title_bar">
 			<h1>msngr.js examples - basic eventing</h1>
 			<p>This basic eventing example simple shows a few different ways in which messages can be listened for and acted upon.</p>
 		</div>
+		<div id="entry">
+			<textarea id="textbox" style="width: 300px; height: 150px;"></textarea>
+		</div>
+		<div id="save">
+			<h3>Periodic Saved Content:</h3>
+			<div id="saveData"></div>
+		</div>
 	</body>
+	<script type="text/javascript">
+
+		msngr.receive({
+			topic: "Save",
+			dataType: "text/plain"
+		}, function (payload) {
+			document.getElementById("saveData").innerHTML = payload;
+		});
+
+		var saveTimeout;
+		document.getElementById("textbox").addEventListener("keyup", function (event) {
+			clearTimeout(saveTimeout);
+			saveTimeout = setTimeout(function () {
+				msngr.send({
+					topic: "Save",
+					dataType: "text/plain",
+					payload: document.getElementById("textbox").value
+				})
+			}, 500);
+		});
+	</script>
 </html>

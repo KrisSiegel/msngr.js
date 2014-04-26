@@ -319,6 +319,13 @@ var tests = (function (description, msngr, uniqueKey) {
 					category: "a*"
 				}), false);
 		});
+
+		it("msngr.utils.getPropertiesWithWildcards", function () {
+			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*" }).length, 1);
+			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*" }).length, 2);
+			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*", dataType: "type" }).length, 1);
+			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*", dataType: "type*" }).length, 3);
+		});
 	});
 });
 tests("[Concatenated] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
