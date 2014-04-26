@@ -1,6 +1,6 @@
 var tests = (function (description, msngr, uniqueKey) {
 	var assert = require("assert");
-	
+
 	describe(description, function () {
 		it("msngr", function () {
 			// Ensure msngr exists in the first place
@@ -15,7 +15,7 @@ var tests = (function (description, msngr, uniqueKey) {
 			// Extend msngr with new method
 			msngr.extend({
 				test_extend: function () {
-					console.log("test");
+					
 				}
 			});
 			// Ensure new method now exists
@@ -60,15 +60,46 @@ var tests = (function (description, msngr, uniqueKey) {
 			assert.equal(msngr.utils.getType(obj.another), "[object Array]");
 		});
 
-		it("msngr.send()", function (done) {
+		it("msngr.send() throws", function (done) {
 			assert.throws(msngr.send);
-			msngr.receive("test_" + uniqueKey, function () { 
+			done();
+		});
+
+		it("msngr.send() with topic", function (done) {
+			msngr.receive("test_" + uniqueKey, function () {
 				done();
-			}, this );
+			}, this);
 			msngr.send("test_" + uniqueKey);
 		});
 
-		it("msngr.receive()", function () {
+		it("msngr.send() with topic and category", function (done) {
+			var msg = {
+				topic: "test2_" + uniqueKey,
+				category: "test2Cat_" + uniqueKey
+			};
+			msngr.receive(msg, function () {
+				done();
+			}, this);
+
+			msngr.send(msg);
+		});
+
+		it("msngr.send() with topic and partial, matching category", function (done) {
+			var msg = {
+				topic: "test3_" + uniqueKey,
+				category: "test3Cat_" + uniqueKey + "*"
+			};
+			msngr.receive(msg, function () {
+				done();
+			}, this);
+
+			msngr.send({
+				topic: msg.topic,
+				category: "test3Cat_" + uniqueKey + "test"
+			});
+		});
+
+		it("msngr.receive() throws", function () {
 			assert.throws(msngr.receive);
 		});
 	});

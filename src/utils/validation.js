@@ -68,7 +68,7 @@ msngr.extend((function () {
 	        	if (this.isNullOrUndefined(message)) {
 	        		return false;
 	        	}
-	        	
+
 	        	// Short circuit if topic shortcut is used
 	        	if (this.isString(message) && !this.isEmptyString(message)) {
 	        		return true;
@@ -111,7 +111,24 @@ msngr.extend((function () {
 	        		}
 	        	}
 	        	return false;
-	        }
+	        },
+			getPropertiesWithWildcards: function (message) {
+				var results = [];
+
+				if ((message.topic || "").indexOf("*") !== -1) {
+					results.push("topic");
+				}
+
+				if ((message.category || "").indexOf("*") !== -1) {
+					results.push("category");
+				}
+
+				if ((message.dataType || "").indexOf("*") !== -1) {
+					results.push("dataType");
+				}
+
+				return results;
+			}
 	    }
 	};
 }()));

@@ -1,6 +1,6 @@
 var tests = (function (description, msngr, uniqueKey) {
 	var assert = require("assert");
-	
+
 	describe(description, function () {
 		it("msngr.utils.isNullOrUndefined(obj)", function () {
 			assert.equal(msngr.utils.isNullOrUndefined("test"), false);
@@ -162,6 +162,21 @@ var tests = (function (description, msngr, uniqueKey) {
 				dataType: "Test*"
 			}), true);
 			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "*",
+				category: "Test",
+				dataType: "Test"
+			}), true);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "Test",
+				category: "*",
+				dataType: "Test"
+			}), true);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
+				topic: "Test",
+				category: "Test",
+				dataType: "*"
+			}), true);
+			assert.equal(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "Test",
 				dataType: "Test"
@@ -199,33 +214,33 @@ var tests = (function (description, msngr, uniqueKey) {
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "Test"
 			}), true);
-			
+
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				category: "MyCategory"
 			}), true);
-			
+
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				category: "MyCategory",
 				dataType: "application/json"
 			}), true);
-			
+
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				dataType: "application/json"
 			}), true);
-			
+
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "*"
 			}), true);
-			
+
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "Save",
 				category: "Category*",
 				dataType: "application/*"
 			}), true);
-			
+
 			assert.equal(msngr.utils.isValidMessage({
 				topic: "Testing",
 				target: "550e8400-e29b-41d4-a716-446655440000"
@@ -308,4 +323,3 @@ var tests = (function (description, msngr, uniqueKey) {
 });
 tests("[Concatenated] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
 tests("[Minified] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
-
