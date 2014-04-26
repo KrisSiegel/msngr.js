@@ -7,7 +7,7 @@ Looking for a TL;DR? This should get you going quickly.
 
 ####1. Include msngr.js
 ```
-<script type="text/javascript" src="msngr.js"></script>
+<script type="text/javascript" src="msngr.min.js"></script>
 ```
 ####2. Register your first receiving method.
 ```
@@ -27,7 +27,7 @@ For compilation:
 - mocha 1.16.x
 
 For usage:
-- N/A
+- None
 
 ###Building
 Run the following commands to get up to speed (assuming node, npm, grunt-cli and mocha are all installed globally)
@@ -48,7 +48,6 @@ var message = {
 	topic: "Save",
 	category: "User",
 	dataType: "application/json",
-	target: "550e8400-e29b-41d4-a716-446655440000",
 	payload: {
 		"Username": "Tester",
 		"Realname": "Luke Wilson"
@@ -57,24 +56,14 @@ var message = {
 ```
 - **topic** is a specific topic or action to broadcast about. For instance you might use "Save", "Click", "Open", etc here.
 - **category** is an additional filter to categorize a specific action or topic. In this example it is showing a user wants to save.
-- **dataType** should correspond (but doesn't have to) to a mimetype to allow further filtering. Should you have handlers to save or open json one way, xml another this is a great way to differentiate. 
-- **target** is a very specific id used when registering a message receiver and allows direct targetting to said receiver rather than letter multiple receive a message. This would typically not be used but allows specific targetting when necessary.
+- **dataType** should correspond (but doesn't have to) to a mimetype to allow further filtering. Should you have handlers to save or open json one way, xml another this is a great way to differentiate.
 - **payload** is the data to send with the message; in this example it is the json the user wanted to save.
 
-A message result object looks like this:
-
-```
-var result = {
-	message: message,
-	results: []
-};
-```
-- **message** the original message object (for large payloads this can be pruned when registering receivers; callbacks are automatically pruned)
-- **results** an array of results which can vary based upon the response of the receiving handlers
+A result is simply the supplied payload.
 
 ###Message broadcasting and receiving
-####msngr.send(messageObject, callback);
-Sends off a message to be routed to all registered receivers using the message format from above. The callback parameter is optional and is used to deliver message result objects from all receivers.
+####msngr.send(message, callback);
+Sends off a message to be routed to all registered receivers using the message format from above. The callback parameter is optional and is used to deliver payloads.
 
 Example:
 ```
@@ -103,24 +92,13 @@ msngr.send({
 });
 ```
 
-Finally an example using the callback:
-```
-msngr.send({
-	topic: "Open",
-	dataType: "application/rss+xml",
-	payload: myRssString
-}, function (result) {
-	console.log(result.message);
-});
-```
-
-####msngr.receive(messageObject, callback);
-The same message format is also used for receiving messages with the only difference is that an option of ```trimPayload``` works here to ensure that payloads are stripped when received to cut down on data being passed around.
+####msngr.receive(message, callback);
+The same message format is also used for receiving messages with the only difference is the missing payload as those are handled in the supplied callback
 
 ###Message routers
 All messages are processed inside of objects known as routers. Routers allow specialized processing of messages depending on the use case along with resolution for processing result messages.
 
-
+***Documentation regarding creating a router will be forthcoming.***
 
 ###msngr.extend(Object, target)
 A routine that will extend an object with a new object. The target parameter is optional and when omitted will default to the msngr object.

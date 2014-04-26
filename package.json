@@ -1,6 +1,7 @@
 {
 "name": "msngr.js",
     "main": "msngr",
+    "description": "A simple messaging capability for JavaScript development.",
     "version": "0.0.1",
     "devDependencies": {
         "grunt": "~0.4.2",
