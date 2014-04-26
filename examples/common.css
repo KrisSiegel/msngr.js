@@ -1,0 +1,36 @@
+html body {
+	padding: 0;
+	margin: 0;
+	font-family: arial, sans-serif;
+	color: #000000;
+}
+html body div.title_bar {
+	width: 100%;
+	height: auto;
+	margin: 0;
+	border-bottom: 1px solid #333333;
+	background-image: -webkit-gradient(
+		linear,
+		right top,
+		left top,
+		color-stop(0, #BFBDBF),
+		color-stop(1, #3D3C3D)
+	);
+	background-image: -o-linear-gradient(left, #BFBDBF 0%, #3D3C3D 100%);
+	background-image: -moz-linear-gradient(left, #BFBDBF 0%, #3D3C3D 100%);
+	background-image: -webkit-linear-gradient(left, #BFBDBF 0%, #3D3C3D 100%);
+	background-image: -ms-linear-gradient(left, #BFBDBF 0%, #3D3C3D 100%);
+	background-image: linear-gradient(to left, #BFBDBF 0%, #3D3C3D 100%);
+}
+
+html body div.title_bar h1 {
+	color: #FFFFFF;
+	font-weight: 100;
+	margin: 0;
+}
+
+html body div.title_bar p {
+	color: #FFFFFF;
+	padding: .5em 1em;
+	margin: 0;
+}
