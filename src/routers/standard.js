@@ -1,4 +1,4 @@
-msngr.registry.add((function () {
+msngr.registry.routers.add((function () {
 	var receivers = [];
 
 	var states = {
@@ -15,9 +15,11 @@ msngr.registry.add((function () {
 	};
 
 	var executeReceiver = function (method, context, params) {
-		setTimeout(function () {
-			executeReceiverSync(method, context, params);
-		}, 0);
+		(function (m, c, p) {
+			setTimeout(function () {
+				executeReceiverSync(m, c, p);
+			}, 0);
+		}(method, context, params));
 	};
 
 	var handleSend = function (message, callback, context) {
@@ -25,16 +27,10 @@ msngr.registry.add((function () {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
 
-		var indexesToExecute = [];
 		for (var i = 0; i < receivers.length; ++i) {
 			if (msngr.utils.isMessageMatch(message, receivers[i].message)) {
 				executeReceiver(receivers[i].callback, receivers[i].context, [message.payload]);
 			}
-		}
-
-
-		if (indexesToExecute.length > 0) {
-			executeReceivers(indexesToExecute);
 		}
 	};
 

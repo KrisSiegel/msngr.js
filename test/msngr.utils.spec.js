@@ -329,4 +329,4 @@ var tests = (function (description, msngr, uniqueKey) {
 	});
 });
 tests("[Concatenated] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
-tests("[Minified] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
+tests("[Minified] msngr.utils", require("../msngr.min.js"), Math.floor(Math.random() * 1000));
