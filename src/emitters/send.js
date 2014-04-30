@@ -5,9 +5,9 @@ msngr.extend((function () {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			
-			for (var i = 0; i < msngr.registry.count(); ++i) {
-				msngr.registry.get(i).send(msngr.utils.ensureMessage(message), callback, context);
+
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), callback, context);
 			}
 		}
 	};

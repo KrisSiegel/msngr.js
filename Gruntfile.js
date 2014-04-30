@@ -8,6 +8,7 @@ module.exports = (function (grunt) {
 		"src/utils/*.js",
 		"src/registry.js",
 		"src/routers/*.js",
+		"src/binders/*.js",
 		"src/emitters/*.js",
 		"src/receivers/*.js",
 		"src/module.exports.js"
@@ -42,6 +43,20 @@ module.exports = (function (grunt) {
 			}
 		}
 	});
-	grunt.registerTask("build", ["clean", "concat", "uglify:minify", "mochaTest"]);
-	grunt.registerTask("test", ["mochaTest"]);
+	grunt.registerTask("stress", "Stress test", function () {
+		var fs = require("fs");
+		var path = require("path");
+		var items = fs.readdirSync("./stress");
+		while (items.length > 0) {
+			var file = items.shift();
+			if (file.indexOf(".js") !== undefined) {
+				//delete require.cache[path.resolve(__dirname, "msngr.js")];
+				//delete require.cache[path.resolve(__dirname, "msngr.min.js")];
+				require("./stress/" + file);
+				console.log("");
+			}
+		}
+	});
+	grunt.registerTask("build", ["clean", "concat", "uglify:minify", "mochaTest", "stress"]);
+	grunt.registerTask("test", ["mochaTest", "stress"]);
 });

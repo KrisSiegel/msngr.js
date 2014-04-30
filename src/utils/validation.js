@@ -7,6 +7,9 @@ msngr.extend((function () {
 			isNullOrUndefined: function (obj) {
 				return (obj === undefined || obj === null);
 			},
+			isHtmlElement: function (obj) {
+				return (obj instanceof Node);
+			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");
 	        },

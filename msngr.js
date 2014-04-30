@@ -100,6 +100,9 @@ msngr.extend((function () {
 			isNullOrUndefined: function (obj) {
 				return (obj === undefined || obj === null);
 			},
+			isHtmlElement: function (obj) {
+				return (obj instanceof Node);
+			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");
 	        },
@@ -255,42 +258,79 @@ msngr.extend((function () {
 	}
 }()));
 msngr.extend((function () {
-	var routers = [];
+	var registered = {
+		routers: [],
+		binders: []
+	};
+
+	var add = function (item, type) {
+		if (item === undefined) {
+			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException(type);
+		}
+
+		if (msngr.utils.verifyInterface(item, msngr.interfaces[type])) {
+			registered[type].push(item);
+		} else {
+			msngr.utils.ThrowMismatchedInterfaceException(type);
+		}
+	};
+
+	var get = function (index, type) {
+		if (index === undefined) {
+			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("index");
+		}
+		return registered[type][index];
+	};
+
+	var count = function (type) {
+		return registered[type].length;
+	};
+
+	var remove = function (index, type) {
+		if (index === undefined) {
+			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("index");
+		}
+
+		// This is faster than splice if we have a lot of items and we're not at the end
+		var endIndex = registered[type].length -1;
+		if (index !== endIndex) {
+			var temp = registered[type][endIndex];
+			registered[type][endIndex] = registered[type][index];
+			registered[type][index] = temp;
+		}
+		registered[type].pop();
+		return this;
+	}
+
 	return {
 		registry: {
-			add: function (router) {
-				if (router === undefined) {
-					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("router");
-				}
-				if (msngr.utils.verifyInterface(router, msngr.interfaces.router)) {
-					routers.push(router);
-					return this;
-				} else {
-					msngr.utils.ThrowMismatchedInterfaceException("router");
+			routers: {
+				add: function (router) {
+					return add(router, "routers");
+				},
+				get: function (index) {
+					return get(index, "routers");
+				},
+				count: function () {
+					return count("routers");
+				},
+				remove: function (index) {
+					return remove(index, "routers");
 				}
 			},
-			get: function (index) {
-				if (index === undefined) {
-					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("index");
+			binders: {
+				add: function (binder) {
+					return add(binder, "binders");
+				},
+				get: function (index) {
+					return get(index, "binders");
+				},
+				count: function () {
+					return count("binders");
+				},
+				remove: function (index) {
+					return remove(index, "binders");
 				}
-				return routers[index];
-			},
-			count: function () {
-				return routers.length;
-			},
-			remove: function (index) {
-				if (index === undefined) {
-					msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("index");
-				}
-				// This is faster than splice if we have a lot of items and we're not at the end
-				var endIndex = routers.length -1;
-	            if (index !== endIndex) {
-	                var temp = routers[endIndex];
-	                routers[endIndex] = routers[index];
-	                routers[index] = temp;
-	            }
-	            routers.pop();
-	            return this;
 			}
 		}
 	};
@@ -311,7 +351,7 @@ msngr.extend((function () {
 	};
 }()));
 
-msngr.registry.add((function () {
+msngr.registry.routers.add((function () {
 	var receivers = [];
 
 	var states = {
@@ -328,9 +368,11 @@ msngr.registry.add((function () {
 	};
 
 	var executeReceiver = function (method, context, params) {
-		setTimeout(function () {
-			executeReceiverSync(method, context, params);
-		}, 0);
+		(function (m, c, p) {
+			setTimeout(function () {
+				executeReceiverSync(m, c, p);
+			}, 0);
+		}(method, context, params));
 	};
 
 	var handleSend = function (message, callback, context) {
@@ -338,16 +380,10 @@ msngr.registry.add((function () {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
 
-		var indexesToExecute = [];
 		for (var i = 0; i < receivers.length; ++i) {
 			if (msngr.utils.isMessageMatch(message, receivers[i].message)) {
 				executeReceiver(receivers[i].callback, receivers[i].context, [message.payload]);
 			}
-		}
-
-
-		if (indexesToExecute.length > 0) {
-			executeReceivers(indexesToExecute);
 		}
 	};
 
@@ -377,6 +413,28 @@ msngr.registry.add((function () {
 	};
 }()));
 
+msngr.registry.binders.add((function () {
+
+    return {
+        bind: function (element, event, message) {
+            
+            return this;
+        }
+    };
+}()));
+
+msngr.extend((function () {
+    return {
+        interfaces: {
+            binder: {
+                bind: function (element, event, message) {
+                    msngr.utils.ThrowNotImplementedException();
+                }
+            }
+        }
+    };
+}()));
+
 msngr.extend((function () {
 
 	return {
@@ -384,9 +442,9 @@ msngr.extend((function () {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			
-			for (var i = 0; i < msngr.registry.count(); ++i) {
-				msngr.registry.get(i).send(msngr.utils.ensureMessage(message), callback, context);
+
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), callback, context);
 			}
 		}
 	};
@@ -400,8 +458,8 @@ msngr.extend((function () {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 
-			for (var i = 0; i < msngr.registry.count(); ++i) {
-				msngr.registry.get(i).receive(msngr.utils.ensureMessage(message), callback, context);
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				msngr.registry.routers.get(i).receive(msngr.utils.ensureMessage(message), callback, context);
 			}
 		}
 	};
