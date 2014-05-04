@@ -404,7 +404,7 @@ msngr.registry.routers.add((function () {
 		}(method, context, params));
 	};
 
-	var handleSend = function (message, callback, context) {
+	var handleSend = function (message, callback, context, sync) {
 		if (!msngr.utils.isValidMessage(message)) {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
@@ -412,7 +412,11 @@ msngr.registry.routers.add((function () {
 		for (var key in receivers) {
 			if (receivers.hasOwnProperty(key)) {
 				if (msngr.utils.isMessageMatch(message, receivers[key].message)) {
-					executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
+					if (sync === true) {
+						executeReceiverSync(receivers[key].callback, receivers[key].context, [message.payload]);
+					} else {
+						executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
+					}
 				}
 			}
 		}
@@ -428,11 +432,11 @@ msngr.registry.routers.add((function () {
 	};
 
 	return {
-		send: function (message, callback, context) {
+		send: function (message, callback, context, sync) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			handleSend(message, callback, (context || this));
+			handleSend(message, callback, (context || this), sync);
 			return this;
 		},
 		receive: function (message, callback, context) {
@@ -519,14 +523,19 @@ msngr.extend((function () {
 msngr.extend((function () {
 
 	return {
-		send: function (message, callback, context) {
+		send: function (message, callback, context, sync) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 
 			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), callback, context);
+				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), callback, context, sync);
 			}
+		},
+		sendSync: function (message, context) {
+			this.send(message, function (result) {
+				return result;
+			}, context, true);
 		}
 	};
 }()));
