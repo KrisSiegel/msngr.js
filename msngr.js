@@ -65,10 +65,14 @@ msngr.extend((function () {
 			},
 			ThrowMismatchedInterfaceException: function (interface) {
 				throw "The implementation does not match the " + (interface || "unknown") + " interface";
+			},
+			ThrowInvalidMessage: function () {
+				throw "The message is not valid";
 			}
 		}
 	};
 }()));
+
 msngr.extend((function () {
 	return {
 		utils: {
@@ -102,6 +106,9 @@ msngr.extend((function () {
 			},
 			isHtmlElement: function (obj) {
 				return (obj instanceof Node);
+			},
+			isNodeList: function (obj) {
+				return (this.getType(obj) === "[object NodeList]");
 			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");
@@ -352,7 +359,16 @@ msngr.extend((function () {
 }()));
 
 msngr.registry.routers.add((function () {
-	var receivers = [];
+
+	var consts = {
+		POSSIBLE_ID_CHARACTERS: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_",
+		ID_LENGTH: 10
+	};
+
+	// receivers should be an object versus array for better efficiencies
+	// when deleting items.
+	var receivers = { };
+	var receiverCount = 0;
 
 	var states = {
 		running: "RUNNING",
@@ -361,7 +377,20 @@ msngr.registry.routers.add((function () {
 	};
 	var state = states.running;
 
-	var queue = [];
+	var id = function () {
+		var result = [];
+		for (var i = 0; i < consts.ID_LENGTH; ++i) {
+			result.push(consts.POSSIBLE_ID_CHARACTERS[Math.floor(Math.random() * consts.POSSIBLE_ID_CHARACTERS.length)]);
+		}
+
+		// TODO: This is a crude way to ensure unique IDs; this should be revisited.
+		var verify = result.join();
+		if (receivers[verify] !== undefined) {
+			return id();
+		} else {
+			return verify;
+		}
+	};
 
 	var executeReceiverSync = function (method, context, params) {
 		method.apply(context, params);
@@ -380,19 +409,22 @@ msngr.registry.routers.add((function () {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
 
-		for (var i = 0; i < receivers.length; ++i) {
-			if (msngr.utils.isMessageMatch(message, receivers[i].message)) {
-				executeReceiver(receivers[i].callback, receivers[i].context, [message.payload]);
+		for (var key in receivers) {
+			if (receivers.hasOwnProperty(key)) {
+				if (msngr.utils.isMessageMatch(message, receivers[key].message)) {
+					executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
+				}
 			}
 		}
 	};
 
 	var handleReceiverRegistration = function (message, callback, context) {
-		receivers.push({
+		receivers[id()] = {
 			message: message,
 			callback: callback,
 			context: context
-		});
+		};
+		receiverCount++;
 	};
 
 	return {
@@ -415,9 +447,43 @@ msngr.registry.routers.add((function () {
 
 msngr.registry.binders.add((function () {
 
+    var eventListeners = {
+        passThrough: function (e, message) {
+            msngr.send({
+                topic: message.topic,
+                category: message.category,
+                dataType: message.dataType,
+                payload: e
+            });
+        }
+    };
+
     return {
         bind: function (element, event, message) {
-            
+            if (msngr.utils.isNullOrUndefined(element)) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
+            }
+
+            if (msngr.utils.isNullOrUndefined(event)) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("event");
+            }
+
+            if (msngr.utils.isNullOrUndefined(message)) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+            }
+
+            if (!msngr.utils.isValidMessage(message)) {
+                msngr.utils.ThrowInvalidMessage();
+            }
+
+            // Assume element is a valid HTMLElement.
+            // TODO: Expand scope to support element being: a selector, an array of selectors,
+            // an array of HTMLElement, a NodeList of HTMLElements
+
+            element.addEventListener(event, function (e) {
+                eventListeners.passThrough.apply(this, [e, message]);
+            }, false);
+
             return this;
         }
     };
@@ -430,6 +496,21 @@ msngr.extend((function () {
                 bind: function (element, event, message) {
                     msngr.utils.ThrowNotImplementedException();
                 }
+            }
+        }
+    };
+}()));
+
+msngr.extend((function () {
+
+    return {
+        bind: function (element, event, message) {
+            if (!msngr.utils.isValidMessage(message)) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+            }
+
+            for (var i = 0; i < msngr.registry.binders.count(); ++i) {
+                msngr.registry.binders.get(i).bind(element, event, msngr.utils.ensureMessage(message));
             }
         }
     };

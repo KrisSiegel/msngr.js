@@ -10,6 +10,7 @@ var tests = (function (description, msngrPath, uniqueKey) {
         done: function (errors, window) {
             var msngr = window.msngr;
             var document = window.document;
+
             describe(description, function () {
                 it("Client-side msngr initialized successfully in browser environment", function () {
                     assert.equal((msngr !== undefined), true);
