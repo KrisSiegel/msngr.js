@@ -13,6 +13,9 @@ msngr.extend((function () {
 			},
 			ThrowMismatchedInterfaceException: function (interface) {
 				throw "The implementation does not match the " + (interface || "unknown") + " interface";
+			},
+			ThrowInvalidMessage: function () {
+				throw "The message is not valid";
 			}
 		}
 	};
