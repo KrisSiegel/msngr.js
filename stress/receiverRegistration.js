@@ -3,7 +3,7 @@ var stress = (function (description, msngr, uniqueKey) {
     console.time(description);
 
     var i = 0;
-    while (i < 10000) {
+    while (i < 100000) {
         msngr.receive({
             topic: "test_" + uniqueKey + "_" + i
         }, function () { });
@@ -13,5 +13,5 @@ var stress = (function (description, msngr, uniqueKey) {
     console.timeEnd(description);
 });
 
-stress("[Concatenated] msngr - 10,000 receiver registrations", require("../msngr.js"), Math.floor(Math.random() * 1000));
-stress("[Minified] msngr - 10,000 receiver registrations", require("../msngr.min.js"), Math.floor(Math.random() * 1000));
+stress("[Concatenated] msngr - 100,000 receiver registrations", require("../msngr.js"), Math.floor(Math.random() * 1000));
+stress("[Minified] msngr - 100,000 receiver registrations", require("../msngr.min.js"), Math.floor(Math.random() * 1000));
