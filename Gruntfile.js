@@ -47,15 +47,20 @@ module.exports = (function (grunt) {
 		var fs = require("fs");
 		var path = require("path");
 		var items = fs.readdirSync("./stress");
-		while (items.length > 0) {
-			var file = items.shift();
-			if (file.indexOf(".js") !== undefined) {
-				//delete require.cache[path.resolve(__dirname, "msngr.js")];
-				//delete require.cache[path.resolve(__dirname, "msngr.min.js")];
-				require("./stress/" + file);
-				console.log("");
+
+		var done = function () {
+			if (items.length > 0) {
+				var file = items.shift();
+				if (file.indexOf(".js") !== undefined) {
+					delete require.cache[path.resolve(__dirname, "msngr.js")];
+					delete require.cache[path.resolve(__dirname, "msngr.min.js")];
+					require("./stress/" + file)(done);
+					console.log("");
+				}
 			}
-		}
+		};
+
+		done();
 	});
 	grunt.registerTask("build", ["clean", "concat", "uglify:minify", "mochaTest", "stress"]);
 	grunt.registerTask("test", ["mochaTest", "stress"]);
