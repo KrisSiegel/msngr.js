@@ -10,6 +10,9 @@ msngr.extend((function () {
 			isHtmlElement: function (obj) {
 				return (obj instanceof Node);
 			},
+			isNodeList: function (obj) {
+				return (this.getType(obj) === "[object NodeList]");
+			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");
 	        },
