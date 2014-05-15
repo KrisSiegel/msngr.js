@@ -1,21 +1,25 @@
 
 module.exports = (function (done) {
     var stress = (function (description, msngr, uniqueKey, end) {
-        console.time(description);
+        var k = 0;
+        while (k < 10) {
+            console.time(description);
 
-        var i = 0;
-        while (i < 1000) {
-            msngr.receive({
-                topic: "test" + uniqueKey + i
-            }, function () {
+            var i = 0;
+            while (i < 1000) {
+                msngr.receive({
+                    topic: "test" + uniqueKey + i
+                }, function () {
 
-            }, this);
+                }, this);
 
-            msngr.sendSync("test" + uniqueKey + i);
-            i++;
+                msngr.sendSync("test" + uniqueKey + i);
+                i++;
+            }
+
+            console.timeEnd(description);
+            ++k;
         }
-
-        console.timeEnd(description);
         end();
     });
 

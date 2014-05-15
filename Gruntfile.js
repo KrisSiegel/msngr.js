@@ -62,6 +62,6 @@ module.exports = (function (grunt) {
 
 		done();
 	});
-	grunt.registerTask("build", ["clean", "concat", "uglify:minify", "mochaTest", "stress"]);
-	grunt.registerTask("test", ["mochaTest", "stress"]);
+	grunt.registerTask("build", ["clean", "concat", "uglify:minify", "mochaTest"]);
+	grunt.registerTask("test", ["mochaTest"]);
 });

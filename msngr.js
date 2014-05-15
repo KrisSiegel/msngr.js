@@ -74,6 +74,31 @@ msngr.extend((function () {
 }()));
 
 msngr.extend((function () {
+    var messages = [];
+    return {
+        utils: {
+            indexer: {
+                index: function (message, receiverId) {
+                    messages.push({
+                        message: message,
+                        receiverId: receiverId
+                    });
+                },
+                query: function (message) {
+                    var result = [];
+                    for (var i = 0; i < messages.length; ++i) {
+                        if (msngr.utils.isMessageMatch(message, messages[i].message)) {
+                            result.push(messages[i].receiverId);
+                        }
+                    }
+                    return result;
+                }
+            }
+        }
+    }
+}()));
+
+msngr.extend((function () {
 	return {
 		utils: {
 			arrayContains: function (arr, values) {
@@ -409,34 +434,40 @@ msngr.registry.routers.add((function () {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
 
-		for (var key in receivers) {
-			if (receivers.hasOwnProperty(key)) {
-				if (msngr.utils.isMessageMatch(message, receivers[key].message)) {
-					if (sync === true) {
-						executeReceiverSync(receivers[key].callback, receivers[key].context, [message.payload]);
-					} else {
-						executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
-					}
-				}
+		var keys = msngr.utils.indexer.query(message);
+		for (var i = 0; i < keys.length; ++i) {
+			if (sync === true) {
+				executeReceiverSync(receivers[keys[i]].callback, receivers[keys[i]].context, [message.payload]);
+			} else {
+				executeReceiver(receivers[keys[i]].callback, receivers[keys[i]].context, [message.payload]);
 			}
 		}
 	};
 
 	var handleReceiverRegistration = function (message, callback, context) {
-		receivers[id()] = {
+		var mid = id();
+		receivers[mid] = {
 			message: message,
 			callback: callback,
 			context: context
 		};
+		msngr.utils.indexer.index(message, mid);
 		receiverCount++;
 	};
 
 	return {
-		send: function (message, callback, context, sync) {
+		send: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			handleSend(message, callback, (context || this), sync);
+			handleSend(message, callback, (context || this), false);
+			return this;
+		},
+		sendSync: function (message, callback, context) {
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+			handleSend(message, callback, (context || this), true);
 			return this;
 		},
 		receive: function (message, callback, context) {
@@ -523,19 +554,23 @@ msngr.extend((function () {
 msngr.extend((function () {
 
 	return {
-		send: function (message, callback, context, sync) {
+		send: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 
 			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), callback, context, sync);
+				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), callback, context);
 			}
 		},
-		sendSync: function (message, context) {
-			this.send(message, function (result) {
-				return result;
-			}, context, true);
+		sendSync: function (message, callback, context) {
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				msngr.registry.routers.get(i).sendSync(msngr.utils.ensureMessage(message), callback, context);
+			}
 		}
 	};
 }()));
