@@ -326,6 +326,21 @@ var tests = (function (description, msngr, uniqueKey) {
 			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*", dataType: "type" }).length, 1);
 			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*", dataType: "type*" }).length, 3);
 		});
+
+		it("msngr.utils.indexer.index", function () {
+			msngr.utils.indexer.index({
+				topic: "test1555_" + uniqueKey
+			}, "skjdsd" + uniqueKey);
+			msngr.utils.indexer.index({
+				topic: "test2555_" + uniqueKey,
+				category: "sdfsdg"
+			}, "skjdsdfd" + uniqueKey);
+			msngr.utils.indexer.index({
+				topic: "test4555_" + uniqueKey,
+				category: "ncvx",
+				dataType: "sdlajdasd"
+			}, "skjfhfhdsd" + uniqueKey);
+		});
 	});
 });
 tests("[Concatenated] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
