@@ -149,6 +149,14 @@ var tests = (function (description, msngr, uniqueKey) {
 		it("msngr.receive() throws", function () {
 			expect(msngr.receive).throws();
 		});
+
+		it("msngr.remove() removes", function () {
+			var id = msngr.receive("test100_" + uniqueKey, function () {
+
+			}, this);
+			expect(id).to.not.equal(undefined);
+			msngr.remove(id);
+		});
 	});
 });
 tests("msngr", (typeof window !== "undefined") ? msngr : require("../msngr.js"), Math.floor(Math.random() * 1000));

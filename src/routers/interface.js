@@ -11,7 +11,7 @@ msngr.extend((function () {
 				receive: function (message, callback, context) {
 					msngr.utils.ThrowNotImplementedException();
 				},
-				remove: function (idOrMessage, registeredCallback) {
+				remove: function (id) {
 					msngr.utils.ThrowNotImplementedException();
 				}
 			}
