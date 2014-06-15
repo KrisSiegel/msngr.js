@@ -17,6 +17,17 @@ msngr.extend((function () {
                         }
                     }
                     return result;
+                },
+                remove: function (receiverId) {
+                    for (var i = 0; i < messages.length; ++i) {
+                        if (messages[i].receiverId === receiverId) {
+                            // Swapping values is faster than splice in most cases and makes removal easier.
+                            var last = messages[messages.length - 1];
+                            messages[messages.length - 1] = messages[i];
+                            messages[i] = last;
+                            messages.pop();
+                        }
+                    }
                 }
             }
         }

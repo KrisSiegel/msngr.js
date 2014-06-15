@@ -92,6 +92,17 @@ msngr.extend((function () {
                         }
                     }
                     return result;
+                },
+                remove: function (receiverId) {
+                    for (var i = 0; i < messages.length; ++i) {
+                        if (messages[i].receiverId === receiverId) {
+                            // Swapping values is faster than splice in most cases and makes removal easier.
+                            var last = messages[messages.length - 1];
+                            messages[messages.length - 1] = messages[i];
+                            messages[i] = last;
+                            messages.pop();
+                        }
+                    }
                 }
             }
         }
@@ -382,7 +393,7 @@ msngr.extend((function () {
 				receive: function (message, callback, context) {
 					msngr.utils.ThrowNotImplementedException();
 				},
-				remove: function (idOrMessage, registeredCallback) {
+				remove: function (id) {
 					msngr.utils.ThrowNotImplementedException();
 				}
 			}
@@ -463,6 +474,11 @@ msngr.registry.routers.add((function () {
 		return mid;
 	};
 
+	var handleReceiverRemoval = function (receiver) {
+		msngr.utils.indexer.remove(receiver);
+		delete receivers[receiver];
+	};
+
 	return {
 		send: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
@@ -481,6 +497,12 @@ msngr.registry.routers.add((function () {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 			return handleReceiverRegistration(message, callback, (context || this));
+		},
+		remove: function (receiver) {
+			if (msngr.utils.isNullOrUndefined(receiver)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("receiver");
+			}
+			return handleReceiverRemoval(receiver);
 		}
 	};
 }()));
@@ -587,9 +609,30 @@ msngr.extend((function () {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 
+			var result = [];
 			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				msngr.registry.routers.get(i).receive(msngr.utils.ensureMessage(message), callback, context);
+				result.push(msngr.registry.routers.get(i).receive(msngr.utils.ensureMessage(message), callback, context));
 			}
+
+			if (result.length === 1) {
+				return result[0];
+			}
+			return result;
+		},
+		remove: function (id) {
+			if (msngr.utils.isNullOrUndefined(id)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("id");
+			}
+
+			var result = [];
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				result.push(msngr.registry.routers.get(i).remove(id));
+			}
+
+			if (result.length === 1) {
+				return result[0];
+			}
+			return result;
 		}
 	};
 }()));

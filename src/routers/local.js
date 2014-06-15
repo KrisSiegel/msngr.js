@@ -71,6 +71,11 @@ msngr.registry.routers.add((function () {
 		return mid;
 	};
 
+	var handleReceiverRemoval = function (receiver) {
+		msngr.utils.indexer.remove(receiver);
+		delete receivers[receiver];
+	};
+
 	return {
 		send: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
@@ -89,6 +94,12 @@ msngr.registry.routers.add((function () {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 			return handleReceiverRegistration(message, callback, (context || this));
+		},
+		remove: function (receiver) {
+			if (msngr.utils.isNullOrUndefined(receiver)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("receiver");
+			}
+			return handleReceiverRemoval(receiver);
 		}
 	};
 }()));
