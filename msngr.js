@@ -1,5 +1,6 @@
 var msngr = msngr || (function () {
 	return {
+		version: "0.1.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -22,7 +23,6 @@ var msngr = msngr || (function () {
 		}
 	};
 }());
-
 msngr.extend((function () {
 	return {
 		utils: {
