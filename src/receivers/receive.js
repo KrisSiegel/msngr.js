@@ -1,5 +1,4 @@
 msngr.extend((function () {
-
 	return {
 		receive: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {

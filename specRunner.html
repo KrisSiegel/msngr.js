@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="node_modules/mocha/mocha.css" />
+    <script src="node_modules/chai/chai.js"></script>
+    <script src="node_modules/mocha/mocha.js"></script>
+
+    <script>
+        mocha.setup('bdd')
+    </script>
+
+    <script src="msngr.js"></script>
+    <script src="test/msngr.utils.client.spec.js"></script>
+    <script src="test/msngr.binders.client.spec.js"></script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script>
+        var runner = mocha.run();
+    </script>
+  </body>
+</html>
