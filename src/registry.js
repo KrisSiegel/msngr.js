@@ -6,9 +6,9 @@ msngr.extend((function () {
 
 	var add = function (item, type) {
 		if (item === undefined) {
-			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException(type);
+			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("item");
 		}
-
+		
 		if (msngr.utils.verifyInterface(item, msngr.interfaces[type])) {
 			registered[type].push(item);
 		} else {

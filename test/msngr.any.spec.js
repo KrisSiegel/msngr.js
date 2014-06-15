@@ -1,6 +1,13 @@
-var tests = (function (description, msngr, uniqueKey) {
+if (typeof assert === "undefined" && typeof window === "undefined") {
 	var assert = require("assert");
+}
+if (typeof chai === "undefined" && typeof window === "undefined") {
+	var chai = require("chai");
+}
 
+var expect = chai.expect;
+
+var tests = (function (description, msngr, uniqueKey) {
 	describe(description, function () {
 		it("msngr", function () {
 			// Ensure msngr exists in the first place
@@ -144,5 +151,4 @@ var tests = (function (description, msngr, uniqueKey) {
 		});
 	});
 });
-tests("[Concatenated] msngr", require("../msngr.js"), Math.floor(Math.random() * 1000));
-tests("[Minified] msngr", require("../msngr.min.js"), Math.floor(Math.random() * 1000));
+tests("msngr", (typeof window !== "undefined") ? msngr : require("../msngr.js"), Math.floor(Math.random() * 1000));

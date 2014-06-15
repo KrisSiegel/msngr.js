@@ -8,7 +8,8 @@ msngr.extend((function () {
 				return (obj === undefined || obj === null);
 			},
 			isHtmlElement: function (obj) {
-				return (obj instanceof Node);
+				var t = this.getType(obj);
+				return (t.indexOf("[object HTML") === 0);
 			},
 			isNodeList: function (obj) {
 				return (this.getType(obj) === "[object NodeList]");

@@ -130,7 +130,8 @@ msngr.extend((function () {
 				return (obj === undefined || obj === null);
 			},
 			isHtmlElement: function (obj) {
-				return (obj instanceof Node);
+				var t = this.getType(obj);
+				return (t.indexOf("[object HTML") === 0);
 			},
 			isNodeList: function (obj) {
 				return (this.getType(obj) === "[object NodeList]");
@@ -297,9 +298,9 @@ msngr.extend((function () {
 
 	var add = function (item, type) {
 		if (item === undefined) {
-			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException(type);
+			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("item");
 		}
-
+		
 		if (msngr.utils.verifyInterface(item, msngr.interfaces[type])) {
 			registered[type].push(item);
 		} else {
@@ -375,7 +376,13 @@ msngr.extend((function () {
 				send: function (message, callback, context) {
 					msngr.utils.ThrowNotImplementedException();
 				},
+				sendSync: function (message, callback, context) {
+					msngr.utils.ThrowNotImplementedException();
+				},
 				receive: function (message, callback, context) {
+					msngr.utils.ThrowNotImplementedException();
+				},
+				remove: function (idOrMessage, registeredCallback) {
 					msngr.utils.ThrowNotImplementedException();
 				}
 			}
@@ -453,6 +460,7 @@ msngr.registry.routers.add((function () {
 		};
 		msngr.utils.indexer.index(message, mid);
 		receiverCount++;
+		return mid;
 	};
 
 	return {
@@ -460,22 +468,19 @@ msngr.registry.routers.add((function () {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			handleSend(message, callback, (context || this), false);
-			return this;
+			return handleSend(message, callback, (context || this), false);
 		},
 		sendSync: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			handleSend(message, callback, (context || this), true);
-			return this;
+			return handleSend(message, callback, (context || this), true);
 		},
 		receive: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			handleReceiverRegistration(message, callback, (context || this));
-			return this;
+			return handleReceiverRegistration(message, callback, (context || this));
 		}
 	};
 }()));
@@ -576,7 +581,6 @@ msngr.extend((function () {
 }()));
 
 msngr.extend((function () {
-
 	return {
 		receive: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {

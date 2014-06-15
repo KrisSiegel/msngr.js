@@ -1,9 +1,16 @@
-var tests = (function (description, msngr, uniqueKey) {
+if (typeof assert === "undefined" && typeof window === "undefined") {
 	var assert = require("assert");
+}
+if (typeof chai === "undefined" && typeof window === "undefined") {
+	var chai = require("chai");
+}
 
+var expect = chai.expect;
+
+var tests = (function (description, msngr, uniqueKey) {
 	describe(description, function () {
 		it("msngr.utils.isNullOrUndefined(obj)", function () {
-			assert.equal(msngr.utils.isNullOrUndefined("test"), false);
+			expect(msngr.utils.isNullOrUndefined("test")).to.equal(false);
 			assert.equal(msngr.utils.isNullOrUndefined(""), false);
 			assert.equal(msngr.utils.isNullOrUndefined(undefined), true);
 			assert.equal(msngr.utils.isNullOrUndefined(null), true);
@@ -138,6 +145,14 @@ var tests = (function (description, msngr, uniqueKey) {
 			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: {}, myObj: {} }, interface1), false);
 			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: "again" }, interface1), false);
 			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1), true);
+
+			var interface2 = {
+				test: function () {},
+				testing: function () {},
+				prop: "prop"
+			};
+
+			assert.equal(msngr.utils.verifyInterface({ test: function () {}, prop: "prop" }, interface2), false);
 		});
 
 		it("msngr.utils.ensureMessage(message)", function () {
@@ -343,5 +358,4 @@ var tests = (function (description, msngr, uniqueKey) {
 		});
 	});
 });
-tests("[Concatenated] msngr.utils", require("../msngr.js"), Math.floor(Math.random() * 1000));
-tests("[Minified] msngr.utils", require("../msngr.min.js"), Math.floor(Math.random() * 1000));
+tests("msngr.utils", (typeof window !== "undefined") ? msngr : require("../msngr.js"), Math.floor(Math.random() * 1000));
