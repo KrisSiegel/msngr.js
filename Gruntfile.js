@@ -46,6 +46,21 @@ module.exports = (function (grunt) {
 			}
 		}
 	});
+
+	grunt.registerTask("verisionify", "Verisionifying msngr.js", function () {
+		var fs = require("fs");
+		var pkg = grunt.file.readJSON('package.json');
+
+		var main = fs.readFileSync("src/main.js", { encoding: "utf8" });
+		var indexOfVersion = main.indexOf("version: ");
+		var indexOfNextComma = main.indexOf(",", indexOfVersion);
+		var ified = main.substring(0, indexOfVersion);
+		ified = ified + "version: \"" + pkg.version + "\"";
+		ified = ified + main.substring(indexOfNextComma, main.length - 1);
+
+		fs.writeFileSync("src/main.js", ified, { encoding: "utf8" });
+	});
+
 	grunt.registerTask("stress", "Stress test", function () {
 		var fs = require("fs");
 		var path = require("path");
@@ -65,6 +80,6 @@ module.exports = (function (grunt) {
 
 		done();
 	});
-	grunt.registerTask("build", ["clean", "concat", "uglify:minify", "mochaTest"]);
+	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "mochaTest"]);
 	grunt.registerTask("test", ["mochaTest"]);
 });
