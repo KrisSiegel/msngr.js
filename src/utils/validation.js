@@ -9,7 +9,7 @@ msngr.extend((function () {
 			},
 			isHtmlElement: function (obj) {
 				var t = this.getType(obj);
-				return (t.indexOf("[object HTML") === 0);
+				return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
 			},
 			isNodeList: function (obj) {
 				return (this.getType(obj) === "[object NodeList]");
