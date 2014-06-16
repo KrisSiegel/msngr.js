@@ -23,6 +23,7 @@ var msngr = msngr || (function () {
 		}
 	};
 }());
+
 msngr.extend((function () {
 	return {
 		utils: {
@@ -78,24 +79,24 @@ msngr.extend((function () {
     return {
         utils: {
             indexer: {
-                index: function (message, receiverId) {
+                index: function (message, callback) {
                     messages.push({
                         message: message,
-                        receiverId: receiverId
+                        callback: callback
                     });
                 },
                 query: function (message) {
                     var result = [];
                     for (var i = 0; i < messages.length; ++i) {
                         if (msngr.utils.isMessageMatch(message, messages[i].message)) {
-                            result.push(messages[i].receiverId);
+                            result.push(messages[i].callback);
                         }
                     }
                     return result;
                 },
-                remove: function (receiverId) {
+                remove: function (receiver) {
                     for (var i = 0; i < messages.length; ++i) {
-                        if (messages[i].receiverId === receiverId) {
+                        if (messages[i].callback === receiver) {
                             // Swapping values is faster than splice in most cases and makes removal easier.
                             var last = messages[messages.length - 1];
                             messages[messages.length - 1] = messages[i];
@@ -142,7 +143,7 @@ msngr.extend((function () {
 			},
 			isHtmlElement: function (obj) {
 				var t = this.getType(obj);
-				return (t.indexOf("[object HTML") === 0);
+				return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
 			},
 			isNodeList: function (obj) {
 				return (this.getType(obj) === "[object NodeList]");
@@ -402,38 +403,10 @@ msngr.extend((function () {
 }()));
 
 msngr.registry.routers.add((function () {
-
-	var consts = {
-		POSSIBLE_ID_CHARACTERS: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_",
-		ID_LENGTH: 10
-	};
-
 	// receivers should be an object versus array for better efficiencies
 	// when deleting items.
 	var receivers = { };
 	var receiverCount = 0;
-
-	var states = {
-		running: "RUNNING",
-		paused: "PAUSED",
-		stopped: "STOPPED"
-	};
-	var state = states.running;
-
-	var id = function () {
-		var result = [];
-		for (var i = 0; i < consts.ID_LENGTH; ++i) {
-			result.push(consts.POSSIBLE_ID_CHARACTERS[Math.floor(Math.random() * consts.POSSIBLE_ID_CHARACTERS.length)]);
-		}
-
-		// TODO: This is a crude way to ensure unique IDs; this should be revisited.
-		var verify = result.join();
-		if (receivers[verify] !== undefined) {
-			return id();
-		} else {
-			return verify;
-		}
-	};
 
 	var executeReceiverSync = function (method, context, params) {
 		method.apply(context, params);
@@ -463,15 +436,14 @@ msngr.registry.routers.add((function () {
 	};
 
 	var handleReceiverRegistration = function (message, callback, context) {
-		var mid = id();
-		receivers[mid] = {
+		receivers[callback] = {
 			message: message,
 			callback: callback,
 			context: context
 		};
-		msngr.utils.indexer.index(message, mid);
+		msngr.utils.indexer.index(message, callback);
 		receiverCount++;
-		return mid;
+		return callback;
 	};
 
 	var handleReceiverRemoval = function (receiver) {
@@ -538,11 +510,24 @@ msngr.registry.binders.add((function () {
                 msngr.utils.ThrowInvalidMessage();
             }
 
-            // Assume element is a valid HTMLElement.
-            // TODO: Expand scope to support element being: a selector, an array of selectors,
-            // an array of HTMLElement, a NodeList of HTMLElements
+            var elm;
+            if (elm === undefined && msngr.utils.isHtmlElement(element)) {
+                elm = element;
+            }
 
-            element.addEventListener(event, function (e) {
+            if (elm === undefined && msngr.utils.isString(element)) {
+                var result = document.getElementById(element);
+                result = (result !== null) ? result : document.querySelector(element);
+                if (result !== null) {
+                    elm = result;
+                }
+            }
+
+            if (elm === undefined) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
+            }
+
+            elm.addEventListener(event, function (e) {
                 eventListeners.passThrough.apply(this, [e, message]);
             }, false);
 

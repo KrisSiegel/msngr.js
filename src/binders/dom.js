@@ -29,11 +29,24 @@ msngr.registry.binders.add((function () {
                 msngr.utils.ThrowInvalidMessage();
             }
 
-            // Assume element is a valid HTMLElement.
-            // TODO: Expand scope to support element being: a selector, an array of selectors,
-            // an array of HTMLElement, a NodeList of HTMLElements
+            var elm;
+            if (elm === undefined && msngr.utils.isHtmlElement(element)) {
+                elm = element;
+            }
 
-            element.addEventListener(event, function (e) {
+            if (elm === undefined && msngr.utils.isString(element)) {
+                var result = document.getElementById(element);
+                result = (result !== null) ? result : document.querySelector(element);
+                if (result !== null) {
+                    elm = result;
+                }
+            }
+
+            if (elm === undefined) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
+            }
+
+            elm.addEventListener(event, function (e) {
                 eventListeners.passThrough.apply(this, [e, message]);
             }, false);
 

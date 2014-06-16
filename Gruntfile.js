@@ -56,7 +56,7 @@ module.exports = (function (grunt) {
 		var indexOfNextComma = main.indexOf(",", indexOfVersion);
 		var ified = main.substring(0, indexOfVersion);
 		ified = ified + "version: \"" + pkg.version + "\"";
-		ified = ified + main.substring(indexOfNextComma, main.length - 1);
+		ified = ified + main.substring(indexOfNextComma, main.length);
 
 		fs.writeFileSync("src/main.js", ified, { encoding: "utf8" });
 	});
