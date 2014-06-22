@@ -11,124 +11,124 @@ var tests = (function (description, msngr, uniqueKey) {
 	describe(description, function () {
 		it("msngr.utils.isNullOrUndefined(obj)", function () {
 			expect(msngr.utils.isNullOrUndefined("test")).to.equal(false);
-			assert.equal(msngr.utils.isNullOrUndefined(""), false);
-			assert.equal(msngr.utils.isNullOrUndefined(undefined), true);
-			assert.equal(msngr.utils.isNullOrUndefined(null), true);
-			assert.equal(msngr.utils.isNullOrUndefined({}), false);
-			assert.equal(msngr.utils.isNullOrUndefined(7), false);
-			assert.equal(msngr.utils.isNullOrUndefined([]), false);
-			assert.equal(msngr.utils.isNullOrUndefined(new Date()), false);
-			assert.equal(msngr.utils.isNullOrUndefined(function () {}), false);
+			expect(msngr.utils.isNullOrUndefined("")).to.equal(false);
+			expect(msngr.utils.isNullOrUndefined(undefined)).to.equal(true);
+			expect(msngr.utils.isNullOrUndefined(null)).to.equal(true);
+			expect(msngr.utils.isNullOrUndefined({})).to.equal(false);
+			expect(msngr.utils.isNullOrUndefined(7)).to.equal(false);
+			expect(msngr.utils.isNullOrUndefined([])).to.equal(false);
+			expect(msngr.utils.isNullOrUndefined(new Date())).to.equal(false);
+			expect(msngr.utils.isNullOrUndefined(function () {})).to.equal(false);
 		});
 
 		it("msngr.utils.isString(obj)", function () {
-			assert.equal(msngr.utils.isString("test"), true);
-			assert.equal(msngr.utils.isString(""), true);
-			assert.equal(msngr.utils.isString(undefined), false);
-			assert.equal(msngr.utils.isString(null), false);
-			assert.equal(msngr.utils.isString({}), false);
-			assert.equal(msngr.utils.isString(7), false);
-			assert.equal(msngr.utils.isString([]), false);
-			assert.equal(msngr.utils.isString(new Date()), false);
-			assert.equal(msngr.utils.isString(function () {}), false);
+			expect(msngr.utils.isString("test")).to.equal(true);
+			expect(msngr.utils.isString("")).to.equal(true);
+			expect(msngr.utils.isString(undefined)).to.equal(false);
+			expect(msngr.utils.isString(null)).to.equal(false);
+			expect(msngr.utils.isString({})).to.equal(false);
+			expect(msngr.utils.isString(7)).to.equal(false);
+			expect(msngr.utils.isString([])).to.equal(false);
+			expect(msngr.utils.isString(new Date())).to.equal(false);
+			expect(msngr.utils.isString(function () {})).to.equal(false);
 		});
 
 		it("msngr.utils.isObject(obj)", function () {
-			assert.equal(msngr.utils.isObject("test"), false);
-			assert.equal(msngr.utils.isObject(""), false);
-			assert.equal(msngr.utils.isObject(undefined), false);
-			assert.equal(msngr.utils.isObject(null), false);
-			assert.equal(msngr.utils.isObject({}), true);
-			assert.equal(msngr.utils.isObject(7), false);
-			assert.equal(msngr.utils.isObject([]), false);
-			assert.equal(msngr.utils.isObject(new Date()), false);
-			assert.equal(msngr.utils.isObject(function () {}), false);
+			expect(msngr.utils.isObject("test")).to.equal(false);
+			expect(msngr.utils.isObject("")).to.equal(false);
+			expect(msngr.utils.isObject(undefined)).to.equal(false);
+			expect(msngr.utils.isObject(null)).to.equal(false);
+			expect(msngr.utils.isObject({})).to.equal(true);
+			expect(msngr.utils.isObject(7)).to.equal(false);
+			expect(msngr.utils.isObject([])).to.equal(false);
+			expect(msngr.utils.isObject(new Date())).to.equal(false);
+			expect(msngr.utils.isObject(function () {})).to.equal(false);
 		});
 
 		it("msngr.utils.isNumber(obj)", function () {
-			assert.equal(msngr.utils.isNumber("test"), false);
-			assert.equal(msngr.utils.isNumber(""), false);
-			assert.equal(msngr.utils.isNumber(undefined), false);
-			assert.equal(msngr.utils.isNumber(null), false);
-			assert.equal(msngr.utils.isNumber({}), false);
-			assert.equal(msngr.utils.isNumber(7), true);
-			assert.equal(msngr.utils.isNumber([]), false);
-			assert.equal(msngr.utils.isNumber(new Date()), false);
-			assert.equal(msngr.utils.isNumber(function () {}), false);
+			expect(msngr.utils.isNumber("test")).to.equal(false);
+			expect(msngr.utils.isNumber("")).to.equal(false);
+			expect(msngr.utils.isNumber(undefined)).to.equal(false);
+			expect(msngr.utils.isNumber(null)).to.equal(false);
+			expect(msngr.utils.isNumber({})).to.equal(false);
+			expect(msngr.utils.isNumber(7)).to.equal(true);
+			expect(msngr.utils.isNumber([])).to.equal(false);
+			expect(msngr.utils.isNumber(new Date())).to.equal(false);
+			expect(msngr.utils.isNumber(function () {})).to.equal(false);
 		});
 
 		it("msngr.utils.isDate(obj)", function () {
-			assert.equal(msngr.utils.isDate("test"), false);
-			assert.equal(msngr.utils.isDate(""), false);
-			assert.equal(msngr.utils.isDate(undefined), false);
-			assert.equal(msngr.utils.isDate(null), false);
-			assert.equal(msngr.utils.isDate({}), false);
-			assert.equal(msngr.utils.isDate(7), false);
-			assert.equal(msngr.utils.isDate([]), false);
-			assert.equal(msngr.utils.isDate(new Date()), true);
-			assert.equal(msngr.utils.isDate(function () {}), false);
+			expect(msngr.utils.isDate("test")).to.equal(false);
+			expect(msngr.utils.isDate("")).to.equal(false);
+			expect(msngr.utils.isDate(undefined)).to.equal(false);
+			expect(msngr.utils.isDate(null)).to.equal(false);
+			expect(msngr.utils.isDate({})).to.equal(false);
+			expect(msngr.utils.isDate(7)).to.equal(false);
+			expect(msngr.utils.isDate([])).to.equal(false);
+			expect(msngr.utils.isDate(new Date())).to.equal(true);
+			expect(msngr.utils.isDate(function () {})).to.equal(false);
 		});
 
 		it("msngr.utils.isFunction(obj)", function () {
-			assert.equal(msngr.utils.isFunction(function () {}), true);
-			assert.equal(msngr.utils.isFunction("test"), false);
-			assert.equal(msngr.utils.isFunction(""), false);
-			assert.equal(msngr.utils.isFunction(undefined), false);
-			assert.equal(msngr.utils.isFunction(null), false);
-			assert.equal(msngr.utils.isFunction({}), false);
-			assert.equal(msngr.utils.isFunction(7), false);
-			assert.equal(msngr.utils.isFunction([]), false);
-			assert.equal(msngr.utils.isFunction(new Date()), false);
+			expect(msngr.utils.isFunction(function () {})).to.equal(true);
+			expect(msngr.utils.isFunction("test")).to.equal(false);
+			expect(msngr.utils.isFunction("")).to.equal(false);
+			expect(msngr.utils.isFunction(undefined)).to.equal(false);
+			expect(msngr.utils.isFunction(null)).to.equal(false);
+			expect(msngr.utils.isFunction({})).to.equal(false);
+			expect(msngr.utils.isFunction(7)).to.equal(false);
+			expect(msngr.utils.isFunction([])).to.equal(false);
+			expect(msngr.utils.isFunction(new Date())).to.equal(false);
 		});
 
 		it("msngr.utils.isArray(obj)", function () {
-			assert.equal(msngr.utils.isArray(function () {}), false);
-			assert.equal(msngr.utils.isArray("test"), false);
-			assert.equal(msngr.utils.isArray(""), false);
-			assert.equal(msngr.utils.isArray(undefined), false);
-			assert.equal(msngr.utils.isArray(null), false);
-			assert.equal(msngr.utils.isArray({}), false);
-			assert.equal(msngr.utils.isArray(7), false);
-			assert.equal(msngr.utils.isArray(new Date()), false);
-			assert.equal(msngr.utils.isArray(new Array), true);
-			assert.equal(msngr.utils.isArray([]), true);
-			assert.equal(msngr.utils.isArray([1,2,3,4,5]), true);
+			expect(msngr.utils.isArray(function () {})).to.equal(false);
+			expect(msngr.utils.isArray("test")).to.equal(false);
+			expect(msngr.utils.isArray("")).to.equal(false);
+			expect(msngr.utils.isArray(undefined)).to.equal(false);
+			expect(msngr.utils.isArray(null)).to.equal(false);
+			expect(msngr.utils.isArray({})).to.equal(false);
+			expect(msngr.utils.isArray(7)).to.equal(false);
+			expect(msngr.utils.isArray(new Date())).to.equal(false);
+			expect(msngr.utils.isArray(new Array)).to.equal(true);
+			expect(msngr.utils.isArray([])).to.equal(true);
+			expect(msngr.utils.isArray([1,2,3,4,5])).to.equal(true);
 		});
 
 		it("msngr.utils.getType(obj)", function () {
-			assert.equal(msngr.utils.getType(function () {}), "[object Function]");
-			assert.equal(msngr.utils.getType("test"), "[object String]");
+			expect(msngr.utils.getType(function () {})).to.equal("[object Function]");
+			expect(msngr.utils.getType("test")).to.equal("[object String]");
 		});
 
 		it("msngr.utils.isEmptyString(str)", function () {
-			assert.equal(msngr.utils.isEmptyString(function () {}), false);
-			assert.equal(msngr.utils.isEmptyString("test"), false);
-			assert.equal(msngr.utils.isEmptyString(""), true);
-			assert.equal(msngr.utils.isEmptyString(undefined), true);
-			assert.equal(msngr.utils.isEmptyString(null), true);
-			assert.equal(msngr.utils.isEmptyString({}), false);
-			assert.equal(msngr.utils.isEmptyString(7), false);
-			assert.equal(msngr.utils.isEmptyString([]), false);
-			assert.equal(msngr.utils.isEmptyString(new Date()), false);
+			expect(msngr.utils.isEmptyString(function () {})).to.equal(false);
+			expect(msngr.utils.isEmptyString("test")).to.equal(false);
+			expect(msngr.utils.isEmptyString("")).to.equal(true);
+			expect(msngr.utils.isEmptyString(undefined)).to.equal(true);
+			expect(msngr.utils.isEmptyString(null)).to.equal(true);
+			expect(msngr.utils.isEmptyString({})).to.equal(false);
+			expect(msngr.utils.isEmptyString(7)).to.equal(false);
+			expect(msngr.utils.isEmptyString([])).to.equal(false);
+			expect(msngr.utils.isEmptyString(new Date())).to.equal(false);
 		});
 
 		it("msngr.utils.ThrowNotImplementedException()", function () {
-			assert.throws(msngr.utils.ThrowNotImplementedException);
+			expect(msngr.utils.ThrowNotImplementedException).to.throw();
 		});
 
 		it("msngr.utils.ThrowRequiredParameterMissingOrUndefinedException()", function () {
-			assert.throws(msngr.utils.ThrowRequiredParameterMissingOrUndefinedException);
+			expect(msngr.utils.ThrowRequiredParameterMissingOrUndefinedException).to.throw();
 		});
 
 		it("msngr.utils.ThrowMismatchedInterfaceException()", function () {
-			assert.throws(msngr.utils.ThrowMismatchedInterfaceException);
+			expect(msngr.utils.ThrowMismatchedInterfaceException).to.throw();
 		});
 
 		it("msngr.utils.arrayContains()", function () {
-			assert.equal(msngr.utils.arrayContains([1,2,3], 2), true);
-			assert.equal(msngr.utils.arrayContains([1,2,3], 0), false);
-			assert.equal(msngr.utils.arrayContains([1,2,3], [1,2]), true);
-			assert.equal(msngr.utils.arrayContains([1,2,3], [0,1]), false);
+			expect(msngr.utils.arrayContains([1,2,3], 2)).to.equal(true);
+			expect(msngr.utils.arrayContains([1,2,3], 0)).to.equal(false);
+			expect(msngr.utils.arrayContains([1,2,3], [1,2])).to.equal(true);
+			expect(msngr.utils.arrayContains([1,2,3], [0,1])).to.equal(false);
 		});
 
 		it("msngr.utils.verifyInterface(obj, interface)", function () {
@@ -140,11 +140,11 @@ var tests = (function (description, msngr, uniqueKey) {
 				}
 			};
 
-			assert.equal(msngr.utils.verifyInterface({}, interface1), false);
-			assert.equal(msngr.utils.verifyInterface({ tester: "test", myName: "testing", myObj: {} }, interface1), false);
-			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: {}, myObj: {} }, interface1), false);
-			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: "again" }, interface1), false);
-			assert.equal(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1), true);
+			expect(msngr.utils.verifyInterface({}, interface1)).to.equal(false);
+			expect(msngr.utils.verifyInterface({ tester: "test", myName: "testing", myObj: {} }, interface1)).to.equal(false);
+			expect(msngr.utils.verifyInterface({ tester: function () {}, myName: {}, myObj: {} }, interface1)).to.equal(false);
+			expect(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: "again" }, interface1)).to.equal(false);
+			expect(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1)).to.equal(true);
 
 			var interface2 = {
 				test: function () {},
@@ -152,194 +152,194 @@ var tests = (function (description, msngr, uniqueKey) {
 				prop: "prop"
 			};
 
-			assert.equal(msngr.utils.verifyInterface({ test: function () {}, prop: "prop" }, interface2), false);
+			expect(msngr.utils.verifyInterface({ test: function () {}, prop: "prop" }, interface2)).to.equal(false);
 		});
 
 		it("msngr.utils.ensureMessage(message)", function () {
-			assert.equal(msngr.utils.ensureMessage("MyTopic").topic, "MyTopic");
-			assert.equal(msngr.utils.ensureMessage({ topic: "MyTopic" }).topic, "MyTopic");
+			expect(msngr.utils.ensureMessage("MyTopic").topic, "MyTopic");
+			expect(msngr.utils.ensureMessage({ topic: "MyTopic" }).topic, "MyTopic");
 		});
 
 		it("msngr.utils.doesMessageContainWildcard()", function () {
-			assert.equal(msngr.utils.doesMessageContainWildcard("Topic"), false);
-			assert.equal(msngr.utils.doesMessageContainWildcard("Topic*"), true);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			expect(msngr.utils.doesMessageContainWildcard("Topic")).to.equal(false);
+			expect(msngr.utils.doesMessageContainWildcard("Topic*")).to.equal(true);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "Test*"
-			}), true);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			})).to.equal(true);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "Test"
-			}), false);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			})).to.equal(false);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "Test",
 				dataType: "Test*"
-			}), true);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			})).to.equal(true);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "*",
 				category: "Test",
 				dataType: "Test"
-			}), true);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			})).to.equal(true);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "*",
 				dataType: "Test"
-			}), true);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			})).to.equal(true);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "Test",
 				dataType: "*"
-			}), true);
-			assert.equal(msngr.utils.doesMessageContainWildcard({
+			})).to.equal(true);
+			expect(msngr.utils.doesMessageContainWildcard({
 				topic: "Test",
 				category: "Test",
 				dataType: "Test"
-			}), false);
+			})).to.equal(false);
 		});
 
 		it("msngr.utils.isWildCardStringMatch", function () {
-			assert.equal(msngr.utils.isWildCardStringMatch("test", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("*", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", "*"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch(undefined, "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", undefined), true);
-			assert.equal(msngr.utils.isWildCardStringMatch(null, "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", null), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("te*t", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", "te*t"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("te*", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", "te*"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", ""), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("*", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", "*"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("TEST", "test"), true);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", "TEST"), true);
+			expect(msngr.utils.isWildCardStringMatch("test", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("*", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", "*")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch(undefined, "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", undefined)).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch(null, "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", null)).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("te*t", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", "te*t")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("te*", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", "te*")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", "")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("*", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", "*")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("TEST", "test")).to.equal(true);
+			expect(msngr.utils.isWildCardStringMatch("test", "TEST")).to.equal(true);
 
-			assert.equal(msngr.utils.isWildCardStringMatch("tes*", "snap"), false);
-			assert.equal(msngr.utils.isWildCardStringMatch(7, "snap"), false);
-			assert.equal(msngr.utils.isWildCardStringMatch("snap", 14), false);
-			assert.equal(msngr.utils.isWildCardStringMatch("test", { }), false);
-			assert.equal(msngr.utils.isWildCardStringMatch(undefined, {}), false);
-			assert.equal(msngr.utils.isWildCardStringMatch("*", function () {}), false);
+			expect(msngr.utils.isWildCardStringMatch("tes*", "snap")).to.equal(false);
+			expect(msngr.utils.isWildCardStringMatch(7, "snap")).to.equal(false);
+			expect(msngr.utils.isWildCardStringMatch("snap", 14)).to.equal(false);
+			expect(msngr.utils.isWildCardStringMatch("test", { })).to.equal(false);
+			expect(msngr.utils.isWildCardStringMatch(undefined, {})).to.equal(false);
+			expect(msngr.utils.isWildCardStringMatch("*", function () {})).to.equal(false);
 		});
 
 		it("msngr.utils.isValidMessage(message)", function () {
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "Test"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "Testing",
 				category: "MyCategory"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "Testing",
 				category: "MyCategory",
 				dataType: "application/json"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "Testing",
 				dataType: "application/json"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "*"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "Save",
 				category: "Category*",
 				dataType: "application/*"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "Testing",
 				target: "550e8400-e29b-41d4-a716-446655440000"
-			}), true);
+			})).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage("MyTopic"), true);
+			expect(msngr.utils.isValidMessage("MyTopic")).to.equal(true);
 
-			assert.equal(msngr.utils.isValidMessage(undefined), false);
+			expect(msngr.utils.isValidMessage(undefined)).to.equal(false);
 
-			assert.equal(msngr.utils.isValidMessage(null), false);
+			expect(msngr.utils.isValidMessage(null)).to.equal(false);
 
-			assert.equal(msngr.utils.isValidMessage(""), false);
+			expect(msngr.utils.isValidMessage("")).to.equal(false);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				category: "MyCat"
-			}), false);
+			})).to.equal(false);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: function () { }
-			}), false);
+			})).to.equal(false);
 
-			assert.equal(msngr.utils.isValidMessage({
+			expect(msngr.utils.isValidMessage({
 				topic: "test",
 				category: function () { }
-			}), false);
+			})).to.equal(false);
 		});
 
 		it("msngr.utils.isMessageMatch(sent, target)", function () {
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test"
 				}, {
 					topic: "test"
-				}), true);
+				})).to.equal(true);
 
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test"
 				}, {
 					topic: "*"
-				}), true);
+				})).to.equal(true);
 
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test",
 					category: "Yup"
 				}, {
 					topic: "test",
 					category: "yup"
-				}), true);
+				})).to.equal(true);
 
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test",
 					dataType: "application/json"
 				}, {
 					topic: "test",
 					dataType: "application/*"
-				}), true);
+				})).to.equal(true);
 
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test"
 				}, {
 					topic: "no"
-				}), false);
+				})).to.equal(false);
 
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test",
 					dataType: "application/json"
 				}, {
 					topic: "test",
 					dataType: "document"
-				}), false);
+				})).to.equal(false);
 
-			assert.equal(msngr.utils.isMessageMatch({
+			expect(msngr.utils.isMessageMatch({
 					topic: "test",
 					category: "document"
 				}, {
 					topic: "no",
 					category: "a*"
-				}), false);
+				})).to.equal(false);
 		});
 
 		it("msngr.utils.getPropertiesWithWildcards", function () {
-			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*" }).length, 1);
-			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*" }).length, 2);
-			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*", dataType: "type" }).length, 1);
-			assert.equal(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*", dataType: "type*" }).length, 3);
+			expect(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*" }).length).to.equal(1);
+			expect(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*" }).length).to.equal(2);
+			expect(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*", dataType: "type" }).length).to.equal(1);
+			expect(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*", dataType: "type*" }).length).to.equal(3);
 		});
 
 		it("msngr.utils.indexer.index", function () {
