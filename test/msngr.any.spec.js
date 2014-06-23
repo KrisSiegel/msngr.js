@@ -152,10 +152,11 @@ var tests = (function (description, msngr, uniqueKey) {
 
 		it("msngr.remove() removes", function () {
 			var method = msngr.receive("test100_" + uniqueKey, function () {
-
+				throw "test failure";
 			}, this);
 			expect(method).to.not.equal(undefined);
 			msngr.remove(method);
+			msngr.send("test100_" + uniqueKey);
 		});
 	});
 });

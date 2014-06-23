@@ -6,13 +6,18 @@ A natural way to write decoupled JavaScript code using messages rather than dire
 Looking for a TL;DR? This should get you going quickly.
 
 ####1. Include msngr.js
+#####Browser
 ```
 <script type="text/javascript" src="msngr.min.js"></script>
+```
+#####node.js
+```
+var msngr = require("msngr");
 ```
 ####2. Register your first receiving method.
 ```
 msngr.receive({ topic: "Alert" }, function () {
-	alert("Received!");
+	console.log("Received!");
 });
 ```
 ####3. Send your first message!

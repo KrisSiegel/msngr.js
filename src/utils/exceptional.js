@@ -16,6 +16,9 @@ msngr.extend((function () {
 			},
 			ThrowInvalidMessage: function () {
 				throw "The message is not valid";
+			},
+			ThrowEventNotFoundException: function () {
+				throw "The event is not found to be unregistered"
 			}
 		}
 	};
