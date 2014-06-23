@@ -1,5 +1,5 @@
 msngr.registry.binders.add((function () {
-
+    var listeners = {};
     var eventListeners = {
         passThrough: function (e, message) {
             msngr.send({
@@ -29,19 +29,21 @@ msngr.registry.binders.add((function () {
     };
 
     var getListener = function (message, context) {
-        return function (e) {
+        var func = function (e) {
             eventListeners.passThrough.apply(context, [e, message]);
         };
+        console.log(func);
+        return func;
     };
 
     return {
-        bind: function (element, event, message) {
+        bind: function (element, evnt, message) {
             if (msngr.utils.isNullOrUndefined(element)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
             }
 
-            if (msngr.utils.isNullOrUndefined(event)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("event");
+            if (msngr.utils.isNullOrUndefined(evnt)) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("evnt");
             }
 
             if (msngr.utils.isNullOrUndefined(message)) {
@@ -52,22 +54,38 @@ msngr.registry.binders.add((function () {
                 msngr.utils.ThrowInvalidMessage();
             }
 
+            message = msngr.utils.ensureMessage(message);
             var elm = findElement(element);
 
             if (elm === undefined) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
             }
 
-            elm.addEventListener(event, getListener(message, this), false);
+            if (listeners[elm] === undefined) {
+                listeners[elm] = {};
+            }
+
+            if (listeners[elm][evnt] === undefined) {
+                listeners[elm][evnt] = {};
+            }
+
+            if (listeners[elm][evnt][message] === undefined) {
+                listeners[elm][evnt][message] = [];
+            }
+
+            var listener = getListener(message, this);
+            listeners[elm][evnt][message].push(getListener(message, this));
+
+            elm.addEventListener(evnt, listener, false);
 
             return this;
         },
-        unbind: function (element, event, message) {
+        unbind: function (element, evnt, message) {
             if (msngr.utils.isNullOrUndefined(element)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
             }
 
-            if (msngr.utils.isNullOrUndefined(event)) {
+            if (msngr.utils.isNullOrUndefined(evnt)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("event");
             }
 
@@ -79,13 +97,21 @@ msngr.registry.binders.add((function () {
                 msngr.utils.ThrowInvalidMessage();
             }
 
+            message = msngr.utils.ensureMessage(message);
             var elm = findElement(element);
 
             if (elm === undefined) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
             }
 
-            elm.removeEventListener(event, getListener(message, this));
+            if (listeners[elm] === undefined || listeners[elm][evnt] === undefined || listeners[elm][evnt][message] === undefined || listeners[elm][evnt][message].length === 0) {
+                msngr.utils.ThrowEventNotFoundException();
+            }
+
+            for (var i = 0; i < listeners[elm][evnt][message].length; ++i) {
+                elm.removeEventListener(evnt, listeners[elm][evnt][message], false);
+            }
+            listeners[elm][evnt][message] = [];
         }
     };
 }()));
