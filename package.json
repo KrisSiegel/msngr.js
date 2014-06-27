@@ -1,6 +1,6 @@
 {
-  "name": "msngr.js",
-  "main": "msngr",
+  "name": "msngr",
+  "main": "msngr.js",
   "description": "A powerful way of conducting messaging through custom or dom related subscriptions.",
   "version": "0.1.0",
   "devDependencies": {
