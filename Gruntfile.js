@@ -69,17 +69,51 @@ module.exports = (function (grunt) {
 		var done = function () {
 			if (items.length > 0) {
 				var file = items.shift();
-				if (file.indexOf(".js") !== undefined) {
+				if (file.indexOf(".js") !== -1) {
 					delete require.cache[path.resolve(__dirname, "msngr.js")];
 					delete require.cache[path.resolve(__dirname, "msngr.min.js")];
 					require("./stress/" + file)(done);
-					console.log("");
 				}
 			}
 		};
 
 		done();
 	});
-	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "mochaTest"]);
+
+	grunt.registerTask("setRunner", "Set the client side spec runner", function () {
+		var makeScript = function (path) {
+			return "<script type='text/javascript' src='" + path + "'></script>";
+		};
+		var fs = require("fs");
+		var path = require("path");
+		var tests = fs.readdirSync("./test");
+		var scriptHtml = "";
+
+		if (tests !== undefined && tests.length > 0) {
+			var file = tests.shift();
+			while (tests.length > 0) {
+				if (file.indexOf(".client.spec.js") !== -1 || file.indexOf(".any.spec.js") !== -1) {
+					scriptHtml += makeScript(("test/" + file)) + "\n";
+				}
+				file = tests.shift();
+			}
+		}
+
+		if (scriptHtml.length > 0) {
+			var runnerHtml = fs.readFileSync("./specRunner.html", { encoding: "utf8" });
+			var scriptStart = runnerHtml.indexOf("<!-- Start Unit Tests -->");
+			var scriptEnd = runnerHtml.indexOf("<!-- End Unit Tests -->");
+
+			var newHtml = runnerHtml.substring(0, scriptStart);
+			newHtml += "<!-- Start Unit Tests -->";
+			newHtml += scriptHtml;
+			newHtml += runnerHtml.substring(scriptEnd);
+
+			fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
+		}
+
+	});
+
+	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "setRunner", "mochaTest"]);
 	grunt.registerTask("test", ["mochaTest"]);
 });
