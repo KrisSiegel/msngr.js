@@ -25,7 +25,7 @@ var tests = (function (description, msngrPath, uniqueKey) {
             var event1 = new CustomEvent("testEvent1", {});
             div.dispatchEvent(event1);
         });
-        it("msngr.bind works as expected when removing event", function (done) {
+        it("msngr.bind works as expected when removing one or more events", function (done) {
             var div = document.createElement("div");
 
             msngr.bind(div, "testEvent2", "testEvent2");
