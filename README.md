@@ -1,4 +1,5 @@
 #msngr.js
+[![Build Status](https://travis-ci.org/KrisSiegel/msngr.js.svg)](https://travis-ci.org/KrisSiegel/msngr.js/)
 
 A natural way to write decoupled JavaScript code using messages rather than direct eventing which lends well to developing intercommunication between web components.
 
