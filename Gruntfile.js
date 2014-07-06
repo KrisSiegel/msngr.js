@@ -99,21 +99,18 @@ module.exports = (function (grunt) {
 			}
 		}
 
-		if (scriptHtml.length > 0) {
-			var runnerHtml = fs.readFileSync("./specRunner.html", { encoding: "utf8" });
-			var scriptStart = runnerHtml.indexOf("<!-- Start Unit Tests -->");
-			var scriptEnd = runnerHtml.indexOf("<!-- End Unit Tests -->");
+		var runnerHtml = fs.readFileSync("./specRunner.html", { encoding: "utf8" });
+		var scriptStart = runnerHtml.indexOf("<!-- Start Unit Tests -->");
+		var scriptEnd = runnerHtml.indexOf("<!-- End Unit Tests -->");
 
-			var newHtml = runnerHtml.substring(0, scriptStart);
-			newHtml += "<!-- Start Unit Tests -->";
-			newHtml += scriptHtml;
-			newHtml += runnerHtml.substring(scriptEnd);
+		var newHtml = runnerHtml.substring(0, scriptStart);
+		newHtml += "<!-- Start Unit Tests -->";
+		newHtml += scriptHtml;
+		newHtml += runnerHtml.substring(scriptEnd);
 
-			fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
-		}
-
+		fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
 	});
 
-	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "setRunner", "mochaTest"]);
+	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 	grunt.registerTask("test", ["mochaTest"]);
 });
