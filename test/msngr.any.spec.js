@@ -136,16 +136,6 @@ var tests = (function (description, msngr, uniqueKey) {
 			});
 		});
 
-		it("msngr.sendSync() throws", function () {
-			expect(msngr.sendSync).throws();
-		});
-
-		it("msngr.sendSync() with topic", function () {
-			msngr.receive("test99_" + uniqueKey, function () {
-			}, this);
-			msngr.sendSync("test99_" + uniqueKey);
-		});
-
 		it("msngr.receive() throws", function () {
 			expect(msngr.receive).throws();
 		});
