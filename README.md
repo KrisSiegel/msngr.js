@@ -24,7 +24,7 @@ Below are the typically used API calls for an application consuming msngr; for m
 
 ###msngr.receive(message, callback, context);
 
-###msngr.send(message, callback, context);
+###msngr.send(message);
 
 ###msngr.remove(identifier);
 
@@ -51,8 +51,7 @@ There are two ways to extend how msngr handles sending, receiving and binding. R
 A router must be a JavaScript object and must implement the following interface:
 ```
 {
-    send: function (message, callback, context) { },
-    sendSync: function (message) { },
+    send: function (message) { },
     receive: function (message, callback, context) { },
     remove: function (identifier) { }
 }
