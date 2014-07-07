@@ -13,7 +13,8 @@
     "jsdom": "~0.10.5",
     "mocha": "~1.19.0",
     "expect": "git+https://github.com/LearnBoost/expect.js.git",
-    "chai": "~1.9.1"
+    "chai": "~1.9.1",
+    "benchmark": "~1.0.0"
   },
   "scripts": {
     "test": "grunt test"

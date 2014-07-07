@@ -43,7 +43,7 @@ msngr.registry.binders.add((function () {
             }
 
             if (msngr.utils.isNullOrUndefined(evnt)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("evnt");
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("event");
             }
 
             if (msngr.utils.isNullOrUndefined(message)) {
