@@ -45,6 +45,40 @@ Testing can happen in two ways at the moment but first let's explain the way tes
 
 When running unit tests there are two ways to do it. First, simply running ```npm test``` will run through all of the tests that are specified as ```any``` with mocha and node.js. The second way to cover all of the client tests is opening the ```specRunner.html``` file within a web browser. The building step updates the HTML file to have all of the correct spec files included and run upon loading the page.
 
+###Stress testing msngr.js
+Stress testing is important especially when the library is in charge of all local and possibly even remote communications between components. Stress testing is somewhat similar to how unit testing works; stress tests exist in the ```./stress/``` directory and are named using the ```*.stress.js``` convention.
+
+Stress tests are run using [benchmark.js](http://benchmarkjs.com/) in a custom context. Unlike mocha testing, stress tests are simply scripts that run via node. There is a familiar interface to running async mocha unit tests in that some data is passed into the stress test and at the end ```done()``` should be called. The best example is looking at how the indexer stress tests were created which is in the ```./stress/msngr.utils.indexer.stress.js``` file.
+
+A basic example of a stress test is as follows [which would simply do into a ```*.stress.js``` file in the ```./stress/``` directory]:
+
+```
+
+module.exports = (function (done) {
+    var benchmark = require("benchmark");
+
+    var stress = (function (description, msngr, uniqueKey) {
+        var suite = new benchmark.Suite;
+        suite.add("test", function () {
+            var answer = 5 * 5;
+        });
+
+        suite.on("cycle", function (event) {
+            console.log(String(event.target));
+        });
+
+        suite.run({ "async": false });
+
+        done();
+    });
+
+    stress("A stress example", require("../msngr.js"), Math.floor(Math.random() * 1000));
+});
+
+```
+
+To run the stress tests simply run ```grunt stress```.
+
 ###Routers versus Binders
 There are two ways to extend how msngr handles sending, receiving and binding. Routers are used for standard messages across the system whereas binders are used for binding directly to a component (typically part of the interface). Routers are more general and can be used in all aspects but binders provide an easy way to hook HTML elements and their events directly into msngr's messaging.
 
