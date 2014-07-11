@@ -28,9 +28,13 @@ msngr.registry.binders.add((function () {
         return elm;
     };
 
-    var getListener = function (message, context) {
+    var getListener = function (evnt, message, context) {
         var func = function (e) {
-            eventListeners.passThrough.apply(context, [e, message]);
+            if (eventListeners[evnt] !== undefined) {
+                eventListeners[evnt].apply(context, [e, message]);
+            } else {
+                eventListeners.passThrough.apply(context, [e, message]);
+            }
         };
         console.log(func);
         return func;
@@ -73,7 +77,7 @@ msngr.registry.binders.add((function () {
                 listeners[elm][evnt][message] = [];
             }
 
-            var listener = getListener(message, this);
+            var listener = getListener(evnt, message, this);
             listeners[elm][evnt][message].push(getListener(message, this));
 
             elm.addEventListener(evnt, listener, false);

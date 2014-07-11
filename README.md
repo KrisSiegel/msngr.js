@@ -23,14 +23,48 @@ msngr.send("HelloWorld");
 Below are the typically used API calls for an application consuming msngr; for more information regarding extending msngr then head down to the next section. There are also additional utility APIs available that are typically used internally but are exposed for general consumption.
 
 ###msngr.receive(message, callback, context);
+Sets up the receiver that will handle matching messages. The receiver can use wildcards (*) in the message object itself and will receive all matching messages.
+
+```
+msngr.receive({
+    topic: "Save",
+    category:"Form"
+    }, function () {
+        console.log("Save Form");
+});
+```
 
 ###msngr.send(message);
+Sends a specific message object which can optionally contain a payload. Send should NOT use any wildcard characters as sending should always be explicit and known where as receiving can be more general and lax.
+
+```
+msngr.send({
+    topic: "Save",
+    category: "Form",
+    dataType: "application/json",
+    payload: {
+        name: "Kris",
+        description: "Software developer"
+    }
+});
+```
 
 ###msngr.remove(identifier);
+Removes a specific receiver by supplying the callback (identifier) of the receiver.
 
 ###msngr.bind(element, event, message);
+Provides a way to bind directly to an element. Bind provides a generic interface which can then hook into multiple implementations including the default DOM (Document Object Module) binder which allows elements to be HTML elements, events to be appropriate events for the supplied element and the message object to be sent when the event triggers.
+
+The usage here is meant to separate eventing from the UI itself to allow the UI to be completely changed (theoretically allowing a web application to be transitioned into an application hooking into native graphics APIs without changing the event handling code).
+
+```
+msngr.bind("#MyButton", "click", {
+    topic: "Save"
+});
+```
 
 ###msngr.unbind(element, event, message);
+Simply unbinds the element, event and message tuple.
 
 ##Extending msngr.js
 msngr was designed to be extensible with the way it was architected. It has no dependencies, building is done through simple grunt commands, extending existing interfaces simply requires using a registry of objects and it has its own extend method to allow msngr to be extended in any way a developer may want.

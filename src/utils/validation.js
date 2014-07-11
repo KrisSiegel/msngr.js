@@ -93,10 +93,6 @@ msngr.extend((function () {
 	        		return false;
 	        	}
 
-	        	if (!this.isNullOrUndefined(message.target) && !this.isString(message.target)) {
-	        		return false;
-	        	}
-
 	        	return true;
 
 	        },
