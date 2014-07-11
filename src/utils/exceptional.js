@@ -13,6 +13,12 @@ msngr.extend((function () {
 			},
 			ThrowMismatchedInterfaceException: function (interface) {
 				throw "The implementation does not match the " + (interface || "unknown") + " interface";
+			},
+			ThrowInvalidMessage: function () {
+				throw "The message is not valid";
+			},
+			ThrowEventNotFoundException: function () {
+				throw "The event is not found to be unregistered"
 			}
 		}
 	};

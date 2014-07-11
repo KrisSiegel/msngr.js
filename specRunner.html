@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="node_modules/mocha/mocha.css" />
+    <script src="node_modules/chai/chai.js"></script>
+    <script src="node_modules/mocha/mocha.js"></script>
+
+    <script type="text/javascript">
+        mocha.setup('bdd');
+    </script>
+
+    <script src="msngr.js"></script>
+    <!-- Start Unit Tests --><script type='text/javascript' src='test/msngr.any.spec.js'></script>
+<script type='text/javascript' src='test/msngr.binders.client.spec.js'></script>
+<script type='text/javascript' src='test/msngr.utils.any.spec.js'></script>
+<!-- End Unit Tests -->
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script>
+        var runner = mocha.run();
+    </script>
+  </body>
+</html>
