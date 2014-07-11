@@ -1,17 +1,24 @@
-var tests = (function (description, msngr, uniqueKey) {
+if (typeof assert === "undefined" && typeof window === "undefined") {
 	var assert = require("assert");
+}
+if (typeof chai === "undefined" && typeof window === "undefined") {
+	var chai = require("chai");
+}
 
+var expect = chai.expect;
+
+var tests = (function (description, msngr, uniqueKey) {
 	describe(description, function () {
 		it("msngr", function () {
 			// Ensure msngr exists in the first place
-			assert.notEqual(msngr, undefined);
+			expect(msngr).to.not.equal(undefined);
 		});
 
 		it("msngr.extend()", function () {
 			// Check that extend exists
-			assert.notEqual(msngr.extend, undefined);
+			expect(msngr.extend).to.not.equal(undefined);
 			// Ensure that the method we're adding doesn't exist
-			assert.equal(msngr.test_extend, undefined);
+			expect(msngr.test_extend).to.equal(undefined);
 			// Extend msngr with new method
 			msngr.extend({
 				test_extend: function () {
@@ -19,11 +26,11 @@ var tests = (function (description, msngr, uniqueKey) {
 				}
 			});
 			// Ensure new method now exists
-			assert.notEqual(msngr.test_extend, undefined);
+			expect(msngr.test_extend).to.not.equal(undefined);
 			// Drop new method
 			delete msngr.test_extend;
 			// Ensure new method is gone again
-			assert.equal(msngr.test_extend, undefined);
+			expect(msngr.test_extend).to.equal(undefined);
 
 			// Complex extend
 			msngr.extend({
@@ -36,8 +43,8 @@ var tests = (function (description, msngr, uniqueKey) {
 					another: "test"
 				}
 			});
-			assert.equal(msngr.test_extend.test, msngr.test_extend.another);
-			assert.notEqual(msngr.test_extend.test, msngr.test);
+			expect(msngr.test_extend.test).to.equal(msngr.test_extend.another);
+			expect(msngr.test_extend.test).to.not.equal(msngr.test);
 			// Drop new methods again
 			delete msngr.test_extend;
 
@@ -53,15 +60,15 @@ var tests = (function (description, msngr, uniqueKey) {
 					tests: ["another", "weee"]
 				}
 			});
-			assert.equal(obj.testing.tests.length > 0, true);
-			assert.equal(obj.testing.tests.length === 4, true);
-			assert.equal(obj.another.length > 0, true);
-			assert.equal(msngr.utils.getType(obj.testing.tests), "[object Array]");
-			assert.equal(msngr.utils.getType(obj.another), "[object Array]");
+			expect(obj.testing.tests.length > 0).to.equal(true);
+			expect(obj.testing.tests.length === 4).to.equal(true);
+			expect(obj.another.length > 0).to.equal(true);
+			expect(msngr.utils.getType(obj.testing.tests)).to.equal("[object Array]");
+			expect(msngr.utils.getType(obj.another)).to.equal("[object Array]");
 		});
 
 		it("msngr.send() throws", function (done) {
-			assert.throws(msngr.send);
+			expect(msngr.send).to.throw();
 			done();
 		});
 
@@ -130,9 +137,17 @@ var tests = (function (description, msngr, uniqueKey) {
 		});
 
 		it("msngr.receive() throws", function () {
-			assert.throws(msngr.receive);
+			expect(msngr.receive).throws();
+		});
+
+		it("msngr.remove() removes", function () {
+			var method = msngr.receive("test100_" + uniqueKey, function () {
+				throw "test failure";
+			}, this);
+			expect(method).to.not.equal(undefined);
+			msngr.remove(method);
+			msngr.send("test100_" + uniqueKey);
 		});
 	});
 });
-tests("[Concatenated] msngr", require("../msngr.js"), Math.floor(Math.random() * 1000));
-tests("[Minified] msngr", require("../msngr.js"), Math.floor(Math.random() * 1000))	;
+tests("msngr", (typeof window !== "undefined") ? msngr : require("../msngr.js"), Math.floor(Math.random() * 1000));

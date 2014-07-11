@@ -42,5 +42,16 @@
 				})
 			}, 500);
 		});
+
+		msngr.bind(document.getElementById("save"), "click", {
+			topic: "UI_Click"
+		});
+
+		msngr.receive({
+			topic: "UI_Click"
+		}, function () {
+			alert("Clicked!");
+		});
+
 	</script>
 </html>
