@@ -2,7 +2,7 @@ msngr.registry.binders.add((function () {
     var listeners = {};
     var eventListeners = {
         passThrough: function (e, message) {
-            msngr.send({
+            msngr.emit({
                 topic: message.topic,
                 category: message.category,
                 dataType: message.dataType,
@@ -41,6 +41,7 @@ msngr.registry.binders.add((function () {
     };
 
     return {
+        domain: "dom",
         bind: function (element, evnt, message) {
             if (msngr.utils.isNullOrUndefined(element)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");

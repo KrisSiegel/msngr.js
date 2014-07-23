@@ -67,86 +67,86 @@ var tests = (function (description, msngr, uniqueKey) {
 			expect(msngr.utils.getType(obj.another)).to.equal("[object Array]");
 		});
 
-		it("msngr.send() throws", function (done) {
-			expect(msngr.send).to.throw();
+		it("msngr.emit() throws", function (done) {
+			expect(msngr.emit).to.throw();
 			done();
 		});
 
-		it("msngr.send() with topic", function (done) {
-			msngr.receive("test_" + uniqueKey, function () {
+		it("msngr.emit() with topic", function (done) {
+			msngr.register("test_" + uniqueKey, function () {
 				done();
 			}, this);
-			msngr.send("test_" + uniqueKey);
+			msngr.emit("test_" + uniqueKey);
 		});
 
-		it("msngr.send() with topic and category", function (done) {
+		it("msngr.emit() with topic and category", function (done) {
 			var msg = {
 				topic: "test2_" + uniqueKey,
 				category: "test2Cat_" + uniqueKey
 			};
-			msngr.receive(msg, function () {
+			msngr.register(msg, function () {
 				done();
 			}, this);
 
-			msngr.send(msg);
+			msngr.emit(msg);
 		});
 
-		it("msngr.send() with topic, category and dataType", function (done) {
+		it("msngr.emit() with topic, category and dataType", function (done) {
 			var msg = {
 				topic: "test3_" + uniqueKey,
 				category: "test3Cat_" + uniqueKey,
 				dataType: "test3Type_" + uniqueKey
 			};
-			msngr.receive(msg, function () {
+			msngr.register(msg, function () {
 				done();
 			}, this);
 
-			msngr.send(msg);
+			msngr.emit(msg);
 		});
 
-		it("msngr.send() with topic and partial, matching category", function (done) {
+		it("msngr.emit() with topic and partial, matching category", function (done) {
 			var msg = {
 				topic: "test4_" + uniqueKey,
 				category: "test4Cat_" + uniqueKey + "*"
 			};
-			msngr.receive(msg, function () {
+			msngr.register(msg, function () {
 				done();
 			}, this);
 
-			msngr.send({
+			msngr.emit({
 				topic: msg.topic,
 				category: "test4Cat_" + uniqueKey + "test"
 			});
 		});
 
-		it("msngr.send() with topic, category and partial, matching dataType", function (done) {
+		it("msngr.emit() with topic, category and partial, matching dataType", function (done) {
 			var msg = {
 				topic: "test5_" + uniqueKey,
 				category: "test5Cat_" + uniqueKey,
 				dataType: "test5Type_" + uniqueKey + "*"
 			};
-			msngr.receive(msg, function () {
+			msngr.register(msg, function () {
 				done();
 			}, this);
 
-			msngr.send({
+			msngr.emit({
 				topic: msg.topic,
 				category: "test5Cat_" + uniqueKey,
 				dataType: "test5Type_" + uniqueKey + "test"
 			});
 		});
 
-		it("msngr.receive() throws", function () {
-			expect(msngr.receive).throws();
+		it("msngr.register() throws", function () {
+			expect(msngr.register).throws();
 		});
 
-		it("msngr.remove() removes", function () {
-			var method = msngr.receive("test100_" + uniqueKey, function () {
+		it("msngr.unregister() removes", function () {
+			var method = msngr.register("test100_" + uniqueKey, function () {
 				throw "test failure";
 			}, this);
 			expect(method).to.not.equal(undefined);
-			msngr.remove(method);
-			msngr.send("test100_" + uniqueKey);
+			msngr.unregister(method);
+			msngr.emit("test100_" + uniqueKey);
 		});
 	});
 });
