@@ -12,6 +12,7 @@ var tests = (function (description, msngrPath, uniqueKey) {
         it("At least one binder is registered", function () {
             expect((msngr.registry.binders.count() > 0)).to.equal(true);
         });
+
         it("msngr.bind works as expected in single event", function (done) {
             var div = document.createElement("div");
 
@@ -22,9 +23,12 @@ var tests = (function (description, msngrPath, uniqueKey) {
                 done();
             });
 
-            var event1 = new CustomEvent("testEvent1", {});
+            var event1 = document.createEvent('CustomEvent');
+            event1.initCustomEvent('testEvent1', false, false, null);
             div.dispatchEvent(event1);
         });
+
+        /*
         it("msngr.bind works as expected when removing one or more events", function (done) {
             var div = document.createElement("div");
 
@@ -34,13 +38,15 @@ var tests = (function (description, msngrPath, uniqueKey) {
             });
 
             msngr.unbind(div, "testEvent2", "testEvent2");
-            var event2 = new CustomEvent("testEvent2", {});
+            var event2 = document.createEvent('CustomEvent');
+            event2.initCustomEvent('testEvent2', false, false, null);
             div.dispatchEvent(event2);
 
             window.setTimeout(function () {
                 done();
             }, 100);
         });
+        */
     });
 });
 tests("msngr.binders", undefined, Math.floor(Math.random() * 1000));
