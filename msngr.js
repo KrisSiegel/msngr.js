@@ -1,6 +1,6 @@
 var msngr = msngr || (function () {
 	return {
-		version: "0.1.0",
+		version: "0.2.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -274,34 +274,6 @@ msngr.extend((function () {
 }()));
 
 msngr.extend((function () {
-	return {
-		utils: {
-			verifyInterface: function (object, interface) {
-				if (object === undefined && interface === undefined) {
-					return true;
-				}
-				for (var key in interface) {
-					if (interface.hasOwnProperty(key)) {
-						if (object === undefined) {
-							return false;
-						}
-						if (object[key] === undefined || (msngr.utils.getType(interface[key]) !== msngr.utils.getType(object[key]))) {
-							return false;
-						}
-						if (msngr.utils.isObject(interface[key])) {
-							var result = this.verifyInterface(object[key], interface[key]);
-							if (!result) {
-								return result;
-							}
-						}
-					}
-				}
-				return true;
-			}
-		}
-	}
-}()));
-msngr.extend((function () {
 	var registered = {
 		routers: [],
 		binders: []
@@ -311,12 +283,8 @@ msngr.extend((function () {
 		if (item === undefined) {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("item");
 		}
-		
-		if (msngr.utils.verifyInterface(item, msngr.interfaces[type])) {
-			registered[type].push(item);
-		} else {
-			msngr.utils.ThrowMismatchedInterfaceException(type);
-		}
+
+		registered[type].push(item);
 	};
 
 	var get = function (index, type) {
@@ -380,24 +348,6 @@ msngr.extend((function () {
 	};
 }()));
 
-msngr.extend((function () {
-	return {
-		interfaces: {
-			router: {
-				send: function (message) {
-					msngr.utils.ThrowNotImplementedException();
-				},
-				receive: function (message, callback, context) {
-					msngr.utils.ThrowNotImplementedException();
-				},
-				remove: function (identifier) {
-					msngr.utils.ThrowNotImplementedException();
-				}
-			}
-		}
-	};
-}()));
-
 msngr.registry.routers.add((function () {
 	// receivers should be an object versus array for better efficiencies
 	// when deleting items.
@@ -416,7 +366,7 @@ msngr.registry.routers.add((function () {
 		}(method, context, params));
 	};
 
-	var handleSend = function (message) {
+	var handleEmit = function (message) {
 		if (!msngr.utils.isValidMessage(message)) {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
@@ -444,19 +394,20 @@ msngr.registry.routers.add((function () {
 	};
 
 	return {
-		send: function (message) {
+		domain: "local",
+		emit: function (message) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			return handleSend(message);
+			return handleEmit(message);
 		},
-		receive: function (message, callback, context) {
+		register: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 			return handleReceiverRegistration(message, callback, (context || this));
 		},
-		remove: function (receiver) {
+		unregister: function (receiver) {
 			if (msngr.utils.isNullOrUndefined(receiver)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("receiver");
 			}
@@ -469,7 +420,7 @@ msngr.registry.binders.add((function () {
     var listeners = {};
     var eventListeners = {
         passThrough: function (e, message) {
-            msngr.send({
+            msngr.emit({
                 topic: message.topic,
                 category: message.category,
                 dataType: message.dataType,
@@ -508,6 +459,7 @@ msngr.registry.binders.add((function () {
     };
 
     return {
+        domain: "dom",
         bind: function (element, evnt, message) {
             if (msngr.utils.isNullOrUndefined(element)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
@@ -589,22 +541,6 @@ msngr.registry.binders.add((function () {
 
 msngr.extend((function () {
     return {
-        interfaces: {
-            binder: {
-                bind: function (element, event, message) {
-                    msngr.utils.ThrowNotImplementedException();
-                },
-                unbind: function (element, event, message) {
-                    msngr.utils.ThrowNotImplementedException();
-                }
-            }
-        }
-    };
-}()));
-
-msngr.extend((function () {
-
-    return {
         bind: function (element, event, message) {
             if (!msngr.utils.isValidMessage(message)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
@@ -613,7 +549,46 @@ msngr.extend((function () {
             for (var i = 0; i < msngr.registry.binders.count(); ++i) {
                 msngr.registry.binders.get(i).bind(element, event, msngr.utils.ensureMessage(message));
             }
-        },
+        }
+    };
+}()));
+
+msngr.extend((function () {
+	return {
+		emit: function (message, context) {
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				msngr.registry.routers.get(i).emit(msngr.utils.ensureMessage(message), context);
+			}
+		}
+	};
+}()));
+
+msngr.extend((function () {
+	return {
+		register: function (message, callback, context) {
+			if (!msngr.utils.isValidMessage(message)) {
+				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
+			}
+
+			var result = [];
+			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+				result.push(msngr.registry.routers.get(i).register(msngr.utils.ensureMessage(message), callback, context));
+			}
+
+			if (result.length === 1) {
+				return result[0];
+			}
+			return result;
+		}
+	};
+}()));
+
+msngr.extend((function () {
+    return {
         unbind: function (element, event, message) {
             if (!msngr.utils.isValidMessage(message)) {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
@@ -627,53 +602,23 @@ msngr.extend((function () {
 }()));
 
 msngr.extend((function () {
+    return {
+        unregister: function (id) {
+            if (msngr.utils.isNullOrUndefined(id)) {
+                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("id");
+            }
 
-	return {
-		send: function (message, context) {
-			if (!msngr.utils.isValidMessage(message)) {
-				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
-			}
+            var result = [];
+            for (var i = 0; i < msngr.registry.routers.count(); ++i) {
+                result.push(msngr.registry.routers.get(i).unregister(id));
+            }
 
-			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				msngr.registry.routers.get(i).send(msngr.utils.ensureMessage(message), context);
-			}
-		}
-	};
-}()));
-
-msngr.extend((function () {
-	return {
-		receive: function (message, callback, context) {
-			if (!msngr.utils.isValidMessage(message)) {
-				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
-			}
-
-			var result = [];
-			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				result.push(msngr.registry.routers.get(i).receive(msngr.utils.ensureMessage(message), callback, context));
-			}
-
-			if (result.length === 1) {
-				return result[0];
-			}
-			return result;
-		},
-		remove: function (id) {
-			if (msngr.utils.isNullOrUndefined(id)) {
-				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("id");
-			}
-
-			var result = [];
-			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				result.push(msngr.registry.routers.get(i).remove(id));
-			}
-
-			if (result.length === 1) {
-				return result[0];
-			}
-			return result;
-		}
-	};
+            if (result.length === 1) {
+                return result[0];
+            }
+            return result;
+        }
+    };
 }()));
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {

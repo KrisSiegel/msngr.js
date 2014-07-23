@@ -17,7 +17,7 @@ var tests = (function (description, msngrPath, uniqueKey) {
 
             msngr.bind(div, "testEvent1", "testEvent1");
 
-            msngr.receive("testEvent1", function (e) {
+            msngr.register("testEvent1", function (e) {
                 expect(e).to.not.equal(undefined);
                 done();
             });
@@ -29,7 +29,7 @@ var tests = (function (description, msngrPath, uniqueKey) {
             var div = document.createElement("div");
 
             msngr.bind(div, "testEvent2", "testEvent2");
-            msngr.receive("testEvent2", function (e) {
+            msngr.register("testEvent2", function (e) {
                 throw "test failure";
             });
 

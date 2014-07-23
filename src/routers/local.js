@@ -16,7 +16,7 @@ msngr.registry.routers.add((function () {
 		}(method, context, params));
 	};
 
-	var handleSend = function (message) {
+	var handleEmit = function (message) {
 		if (!msngr.utils.isValidMessage(message)) {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
@@ -44,19 +44,20 @@ msngr.registry.routers.add((function () {
 	};
 
 	return {
-		send: function (message) {
+		domain: "local",
+		emit: function (message) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
-			return handleSend(message);
+			return handleEmit(message);
 		},
-		receive: function (message, callback, context) {
+		register: function (message, callback, context) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 			return handleReceiverRegistration(message, callback, (context || this));
 		},
-		remove: function (receiver) {
+		unregister: function (receiver) {
 			if (msngr.utils.isNullOrUndefined(receiver)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("receiver");
 			}
