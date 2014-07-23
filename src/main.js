@@ -1,6 +1,6 @@
 var msngr = msngr || (function () {
 	return {
-		version: "0.1.0",
+		version: "0.2.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {

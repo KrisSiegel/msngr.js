@@ -8,12 +8,8 @@ msngr.extend((function () {
 		if (item === undefined) {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("item");
 		}
-		
-		if (msngr.utils.verifyInterface(item, msngr.interfaces[type])) {
-			registered[type].push(item);
-		} else {
-			msngr.utils.ThrowMismatchedInterfaceException(type);
-		}
+
+		registered[type].push(item);
 	};
 
 	var get = function (index, type) {

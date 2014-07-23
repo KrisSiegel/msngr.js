@@ -7,26 +7,26 @@ msngr.js is a small library used to facilitate communications through messages r
 The fastest way to a Hello, World!
 
 1. Include or require ```msngr.js``` or ```msngr.min.js``` in the browser or a node.js application.
-2. Register a receiver by calling ```msngr.receive(message, callback)```.
-3. Send a message by calling ```msngr.send(message)```.
+2. Register a receiver by calling ```msngr.register(message, callback)```.
+3. Send a message by calling ```msngr.emit(message)```.
 
 Here's a complete example
 ```
 var msngr = require("msngr");
-msngr.receive("HelloWorld", function () {
+msngr.register("HelloWorld", function () {
     console.log("Hello, World!");
 });
 
-msngr.send("HelloWorld");
+msngr.emit("HelloWorld");
 ```
 ##API
 Below are the typically used API calls for an application consuming msngr; for more information regarding extending msngr then head down to the next section. There are also additional utility APIs available that are typically used internally but are exposed for general consumption.
 
-###msngr.receive(message, callback, context);
+###msngr.register(message, callback, context);
 Sets up the receiver that will handle matching messages. The receiver can use wildcards (*) in the message object itself and will receive all matching messages.
 
 ```
-msngr.receive({
+msngr.register({
     topic: "Save",
     category:"Form"
     }, function () {
@@ -34,11 +34,11 @@ msngr.receive({
 });
 ```
 
-###msngr.send(message);
+###msngr.emit(message);
 Sends a specific message object which can optionally contain a payload. Send should NOT use any wildcard characters as sending should always be explicit and known where as receiving can be more general and lax.
 
 ```
-msngr.send({
+msngr.emit({
     topic: "Save",
     category: "Form",
     dataType: "application/json",
@@ -49,7 +49,7 @@ msngr.send({
 });
 ```
 
-###msngr.remove(identifier);
+###msngr.unregister(identifier);
 Removes a specific receiver by supplying the callback (identifier) of the receiver.
 
 ###msngr.bind(element, event, message);
@@ -75,9 +75,9 @@ Building requires that the development dependencies from npm to be installed (ru
 Simply run ```grunt build``` to build msngr.js.
 
 ###Testing msngr.js
-Testing can happen in two ways at the moment but first let's explain the way tests are named. In the ```./test/``` directory you will notice there are 2 types of unit test names. ```*.any.spec.js``` and ```*.client.spec.js```. The unit tests with ```any``` in the name indicates it can be run via node.js or within a browser context. The unit tests with ```client``` in the name indicates it can only be run within a browser context.
+Testing is conducted directly using node and phantomjs for client related tests. First let's explain the way tests are named; in the ```./test/``` directory you will notice there are 2 types of unit test names. ```*.any.spec.js``` and ```*.client.spec.js```. The unit tests with ```any``` in the name indicates it can be run via node.js or within a browser context. The unit tests with ```client``` in the name indicates it can only be run within a browser context.
 
-When running unit tests there are two ways to do it. First, simply running ```npm test``` will run through all of the tests that are specified as ```any``` with mocha and node.js. The second way to cover all of the client tests is opening the ```specRunner.html``` file within a web browser. The building step updates the HTML file to have all of the correct spec files included and run upon loading the page.
+Simply running ```npm test``` will run through all of the tests that are specified as ```any``` with mocha and node.js then proceed to use phantomjs to run the ```client``` and ```any``` unit tests within a browser context. The building step updates the ```specRunner.html``` file to have all of the correct spec files included and run upon loading the page.
 
 ###Stress testing msngr.js
 Stress testing is important especially when the library is in charge of all local and possibly even remote communications between components. Stress testing is somewhat similar to how unit testing works; stress tests exist in the ```./stress/``` directory and are named using the ```*.stress.js``` convention.
@@ -119,9 +119,10 @@ There are two ways to extend how msngr handles sending, receiving and binding. R
 A router must be a JavaScript object and must implement the following interface:
 ```
 {
-    send: function (message) { },
-    receive: function (message, callback, context) { },
-    remove: function (identifier) { }
+    emit: function (message) { },
+    register: function (message, callback, context) { },
+    unregister: function (identifier) { },
+    domain: "<string>"
 }
 ```
 
@@ -129,7 +130,8 @@ A binder must be a JavaScript object and must implement the following interface:
 ```
 {
     bind: function (element, event, message) { },
-    unbind: function (element, event, message) { }
+    unbind: function (element, event, message) { },
+    domain: "<string>"
 }
 ```
 
@@ -144,7 +146,7 @@ Gets a router or binder from the registry at the specified index.
 ####msngr.register.routers.count(); msngr.register.binders.count();
 Counts the amount of registered routers or binders in the registry.
 
-####msngr.register.routers.remove(index); msngr.register.binders.remove(index);
+####msngr.register.routers.unregister(index); msngr.register.binders.unregister(index);
 Removes the router or binder at the specified index.
 
 ###msngr.extend(source, target);
@@ -180,7 +182,7 @@ The message and a unique identifying key to index.
 ###msngr.utils.indexer.query(message);
 Queries the index for messaging matching the incoming message. Checks for partials or exact matches.
 
-###msngr.utils.indexer.remove(receiver);
+###msngr.utils.indexer.unregister(receiver);
 Removes a specific item from the index by its unique key as specified when initially being added to the index.
 
 ###msngr.utils.arrayContains(arr, values);
