@@ -5,8 +5,11 @@ msngr.extend((function () {
                 msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
             }
 
+            var msg = msngr.utils.ensureMessage(message);
+            msg.domain = msg.domain || "local";
+
             for (var i = 0; i < msngr.registry.binders.count(); ++i) {
-                msngr.registry.binders.get(i).bind(element, event, msngr.utils.ensureMessage(message));
+                msngr.registry.binders.get(i).bind(element, event, msg);
             }
         }
     };

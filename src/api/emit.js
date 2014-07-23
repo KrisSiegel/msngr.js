@@ -5,8 +5,16 @@ msngr.extend((function () {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 			}
 
+			var msg = msngr.utils.ensureMessage(message);
+
 			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
-				msngr.registry.routers.get(i).emit(msngr.utils.ensureMessage(message), context);
+				var router = msngr.registry.routers.get(i);
+				if (msngr.utils.isNullOrUndefined(msg.domain)) {
+					msg.domain = "local";
+				}
+				if (msg.domain === router.domain || msg.domain === "localAndRemote") {
+					router.emit(msg, context);
+				}
 			}
 		}
 	};
