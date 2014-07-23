@@ -119,9 +119,10 @@ There are two ways to extend how msngr handles sending, receiving and binding. R
 A router must be a JavaScript object and must implement the following interface:
 ```
 {
-    send: function (message) { },
-    receive: function (message, callback, context) { },
-    remove: function (identifier) { }
+    emit: function (message) { },
+    register: function (message, callback, context) { },
+    unregister: function (identifier) { },
+    domain: "<string>"
 }
 ```
 
@@ -129,7 +130,8 @@ A binder must be a JavaScript object and must implement the following interface:
 ```
 {
     bind: function (element, event, message) { },
-    unbind: function (element, event, message) { }
+    unbind: function (element, event, message) { },
+    domain: "<string>"
 }
 ```
 
