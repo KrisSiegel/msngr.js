@@ -3,16 +3,18 @@ module.exports = (function (grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-mocha-test');
+	grunt.loadNpmTasks('grunt-mocha-phantomjs');
+
 	var paths = [
 		"src/main.js",
 		"src/utils/*.js",
 		"src/registry.js",
 		"src/routers/*.js",
 		"src/binders/*.js",
-		"src/emitters/*.js",
-		"src/receivers/*.js",
+		"src/api/*.js",
 		"src/module.exports.js"
 	];
+
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
 		clean: ["./msngr.js", "./msngr.min.js"],
@@ -44,6 +46,9 @@ module.exports = (function (grunt) {
 					"./test/*.node.spec.js"
 				]
 			}
+		},
+		mocha_phantomjs: {
+			all: ["specRunner.html"]
 		}
 	});
 
@@ -112,5 +117,5 @@ module.exports = (function (grunt) {
 	});
 
 	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
-	grunt.registerTask("test", ["mochaTest"]);
+	grunt.registerTask("test", ["mochaTest", "mocha_phantomjs"]);
 });

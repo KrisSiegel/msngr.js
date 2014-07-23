@@ -131,30 +131,6 @@ var tests = (function (description, msngr, uniqueKey) {
 			expect(msngr.utils.arrayContains([1,2,3], [0,1])).to.equal(false);
 		});
 
-		it("msngr.utils.verifyInterface(obj, interface)", function () {
-			var interface1 = {
-				tester: function () {},
-				myName: "testing",
-				myObj: {
-
-				}
-			};
-
-			expect(msngr.utils.verifyInterface({}, interface1)).to.equal(false);
-			expect(msngr.utils.verifyInterface({ tester: "test", myName: "testing", myObj: {} }, interface1)).to.equal(false);
-			expect(msngr.utils.verifyInterface({ tester: function () {}, myName: {}, myObj: {} }, interface1)).to.equal(false);
-			expect(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: "again" }, interface1)).to.equal(false);
-			expect(msngr.utils.verifyInterface({ tester: function () {}, myName: "testing", myObj: {} }, interface1)).to.equal(true);
-
-			var interface2 = {
-				test: function () {},
-				testing: function () {},
-				prop: "prop"
-			};
-
-			expect(msngr.utils.verifyInterface({ test: function () {}, prop: "prop" }, interface2)).to.equal(false);
-		});
-
 		it("msngr.utils.ensureMessage(message)", function () {
 			expect(msngr.utils.ensureMessage("MyTopic").topic, "MyTopic");
 			expect(msngr.utils.ensureMessage({ topic: "MyTopic" }).topic, "MyTopic");
