@@ -42,8 +42,8 @@ module.exports = (function (grunt) {
 					reporter: "spec"
 				},
 				src: [
-					"./test/*.any.spec.js",
-					"./test/*.node.spec.js"
+					"**/*.any.spec.js",
+					"**/*.node.spec.js"
 				]
 			}
 		},
@@ -91,14 +91,25 @@ module.exports = (function (grunt) {
 		};
 		var fs = require("fs");
 		var path = require("path");
-		var tests = fs.readdirSync("./test");
+		var tests = [];
+		var dirs = fs.readdirSync("./");
+
+		for (var i = 0; i < dirs.length; ++i) {
+			if (fs.statSync(dirs[i]).isDirectory()) {
+				var files = fs.readdirSync(dirs[i]);
+				for (var j = 0; j < files.length; ++j) {
+					tests.push(path.join("./", dirs[i], files[j]));
+				}
+			}
+		}
+
 		var scriptHtml = "";
 
 		if (tests !== undefined && tests.length > 0) {
 			var file = tests.shift();
 			while (tests.length > 0) {
 				if (file.indexOf(".client.spec.js") !== -1 || file.indexOf(".any.spec.js") !== -1) {
-					scriptHtml += makeScript(("test/" + file)) + "\n";
+					scriptHtml += makeScript(file) + "\n";
 				}
 				file = tests.shift();
 			}

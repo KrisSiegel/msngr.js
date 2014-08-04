@@ -454,7 +454,6 @@ msngr.registry.binders.add((function () {
                 eventListeners.passThrough.apply(context, [e, message]);
             }
         };
-        console.log(func);
         return func;
     };
 
