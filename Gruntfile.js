@@ -85,6 +85,14 @@ module.exports = (function (grunt) {
 		done();
 	});
 
+	grunt.registerTask("header:nodeTesting", function () {
+		grunt.log.subhead("Unit Testing with Node.js");
+	});
+
+	grunt.registerTask("header:clientTesting", function () {
+		grunt.log.subhead("Unit Testing with Phantom.js");
+	});
+
 	grunt.registerTask("setRunner", "Set the client side spec runner", function () {
 		var makeScript = function (path) {
 			return "<script type='text/javascript' src='" + path + "'></script>";
@@ -128,5 +136,5 @@ module.exports = (function (grunt) {
 	});
 
 	grunt.registerTask("build", ["clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
-	grunt.registerTask("test", ["mochaTest", "mocha_phantomjs"]);
+	grunt.registerTask("test", ["header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
 });
