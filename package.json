@@ -2,10 +2,10 @@
   "name": "msngr",
   "main": "msngr.js",
   "description": "A powerful way of conducting messaging through custom or dom related subscriptions.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "repository": {
-      "type" : "git",
-      "url" : "https://github.com/KrisSiegel/msngr.js.git"
+    "type": "git",
+    "url": "https://github.com/KrisSiegel/msngr.js.git"
   },
   "devDependencies": {
     "grunt": "~0.4.2",
@@ -18,7 +18,8 @@
     "mocha": "~1.19.0",
     "chai": "~1.9.1",
     "benchmark": "~1.0.0",
-    "grunt-mocha-phantomjs": "~0.5.0"
+    "grunt-mocha-phantomjs": "~0.5.0",
+    "grunt-available-tasks": "~0.5.0"
   },
   "scripts": {
     "test": "grunt test"
