@@ -74,10 +74,16 @@ Building requires that the development dependencies from npm to be installed (ru
 
 Simply run ```grunt build``` to build msngr.js.
 
-###Testing msngr.js
-Testing is conducted directly using node and phantomjs for client related tests. First let's explain the way tests are named; in the ```./test/``` directory you will notice there are 2 types of unit test names. ```*.any.spec.js``` and ```*.client.spec.js```. The unit tests with ```any``` in the name indicates it can be run via node.js or within a browser context. The unit tests with ```client``` in the name indicates it can only be run within a browser context.
+Note: running 'grunt' by itself will produce an available set of commands and their descriptions.
 
-Simply running ```npm test``` will run through all of the tests that are specified as ```any``` with mocha and node.js then proceed to use phantomjs to run the ```client``` and ```any``` unit tests within a browser context. The building step updates the ```specRunner.html``` file to have all of the correct spec files included and run upon loading the page.
+###Testing msngr.js
+Testing is conducted directly using node and phantomjs for client related tests. Unlike many JavaScript projects I decided to use the GO model of testing meaning each unit test sits directly next to the file it is testing (so there is no test or spec directory). There are also 3 different naming conventions for spec files.
+
+- *.aspec.js - A spec file that can be run directly within node.js or a web browser.
+- *.cspec.js - A spec file that can ONLY be run inside of a web browser.
+- *.nspec.js - A spec file that can ONLY be run inside of node.js.
+
+The reasoning for the different conventions is simple: msngr.js is meant to work in as many environments as possible however some features (such a DOM binding) are only available in very specific environments all of which need automated unit testing.
 
 ###Stress testing msngr.js
 Stress testing is important especially when the library is in charge of all local and possibly even remote communications between components. Stress testing is somewhat similar to how unit testing works; stress tests exist in the ```./stress/``` directory and are named using the ```*.stress.js``` convention.
@@ -114,9 +120,9 @@ module.exports = (function (done) {
 To run the stress tests simply run ```grunt stress```.
 
 ###Routers versus Binders
-There are two ways to extend how msngr handles sending, receiving and binding. Routers are used for standard messages across the system whereas binders are used for binding directly to a component (typically part of the interface). Routers are more general and can be used in all aspects but binders provide an easy way to hook HTML elements and their events directly into msngr's messaging.
+There are two ways to extend how msngr handles sending, receiving and binding. Routers are used for standard messages across the system whereas binders are used for binding directly to a component (typically part of the user interface). Routers are more general and can be used in all environments but binders provide an easy way to hook HTML elements and their events directly into msngr's messaging.
 
-A router must be a JavaScript object and must implement the following interface:
+A router must be a JavaScript object and must implement the following interface (a domain can be 'local' or 'localAndRemote' depending on if it's working within the local environment or doing both local and remote):
 ```
 {
     emit: function (message) { },
@@ -126,7 +132,7 @@ A router must be a JavaScript object and must implement the following interface:
 }
 ```
 
-A binder must be a JavaScript object and must implement the following interface:
+A binder must be a JavaScript object and must implement the following interface (domain should always be 'local' for binders):
 ```
 {
     bind: function (element, event, message) { },
@@ -187,9 +193,6 @@ Removes a specific item from the index by its unique key as specified when initi
 
 ###msngr.utils.arrayContains(arr, values);
 Checks whether the ```arr``` array contains the values in the ```values``` array.
-
-###msngr.utils.verifyInterface(object, interface);
-Verifies whether a specific ```object``` implements an interface. Essentially checks that the methods and properties of the ```interface``` are contained within the ```object```.
 
 ###msngr.utils.getType(obj);
 Returns the type's name in the full JavaScript format of ```[object Object]```.
