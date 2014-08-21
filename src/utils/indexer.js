@@ -1,31 +1,46 @@
 msngr.extend((function () {
-    var messages = [];
+    // This holds the deprecated indexer data.
+    // DO NOT REMOVE until deprecatedIndexer is removed.
+    var deprecatedMessages = [];
+
+    
     return {
         utils: {
+            indexer: {
+                index: function (message, fk) {
+
+                },
+                query: function (message) {
+
+                },
+                remove: function (fk) {
+
+                }
+            },
             deprecatedIndexer: {
                 index: function (message, key) {
-                    messages.push({
+                    deprecatedMessages.push({
                         message: message,
                         key: key
                     });
                 },
                 query: function (message) {
                     var result = [];
-                    for (var i = 0; i < messages.length; ++i) {
-                        if (msngr.utils.isMessageMatch(message, messages[i].message)) {
-                            result.push(messages[i].key);
+                    for (var i = 0; i < deprecatedMessages.length; ++i) {
+                        if (msngr.utils.isMessageMatch(message, deprecatedMessages[i].message)) {
+                            result.push(deprecatedMessages[i].key);
                         }
                     }
                     return result;
                 },
                 remove: function (receiver) {
-                    for (var i = 0; i < messages.length; ++i) {
-                        if (messages[i].key === receiver) {
+                    for (var i = 0; i < deprecatedMessages.length; ++i) {
+                        if (deprecatedMessages[i].key === receiver) {
                             // Swapping values is faster than splice in most cases and makes removal easier.
-                            var last = messages[messages.length - 1];
-                            messages[messages.length - 1] = messages[i];
-                            messages[i] = last;
-                            messages.pop();
+                            var last = deprecatedMessages[deprecatedMessages.length - 1];
+                            deprecatedMessages[deprecatedMessages.length - 1] = deprecatedMessages[i];
+                            deprecatedMessages[i] = last;
+                            deprecatedMessages.pop();
                         }
                     }
                 }
