@@ -11,17 +11,17 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 }
 
 describe("utils/indexer.js", function () {
-    it("msngr.utils.indexer.index", function () {
+    it("msngr.utils.deprecatedIndexer.index", function () {
         var uniqueKey = Math.floor(Math.random() * 1000);
-        
-        msngr.utils.indexer.index({
+
+        msngr.utils.deprecatedIndexer.index({
             topic: "test1555_" + uniqueKey
         }, "skjdsd" + uniqueKey);
-        msngr.utils.indexer.index({
+        msngr.utils.deprecatedIndexer.index({
             topic: "test2555_" + uniqueKey,
             category: "sdfsdg"
         }, "skjdsdfd" + uniqueKey);
-        msngr.utils.indexer.index({
+        msngr.utils.deprecatedIndexer.index({
             topic: "test4555_" + uniqueKey,
             category: "ncvx",
             dataType: "sdlajdasd"

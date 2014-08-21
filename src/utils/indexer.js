@@ -2,7 +2,7 @@ msngr.extend((function () {
     var messages = [];
     return {
         utils: {
-            indexer: {
+            deprecatedIndexer: {
                 index: function (message, key) {
                     messages.push({
                         message: message,
