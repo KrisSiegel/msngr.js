@@ -28,19 +28,21 @@ msngr.registry.routers.add((function () {
 	};
 
 	var handleReceiverRegistration = function (message, callback, context) {
-		receivers[callback] = {
+		var id = msngr.utils.id();
+		receivers[id] = {
 			message: message,
 			callback: callback,
-			context: context
+			context: context,
+			fk: id
 		};
-		msngr.utils.deprecatedIndexer.index(message, callback);
+		msngr.utils.deprecatedIndexer.index(message, id);
 		receiverCount++;
-		return callback;
+		return id;
 	};
 
-	var handleReceiverRemoval = function (receiver) {
-		msngr.utils.deprecatedIndexer.remove(receiver);
-		delete receivers[receiver];
+	var handleReceiverRemoval = function (fk) {
+		msngr.utils.deprecatedIndexer.remove(fk);
+		delete receivers[fk];
 	};
 
 	return {

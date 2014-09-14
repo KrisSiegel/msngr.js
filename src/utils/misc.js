@@ -1,4 +1,6 @@
 msngr.extend((function () {
+	var idsUsed = { };
+
 	return {
 		utils: {
 			arrayContains: function (arr, values) {
@@ -16,6 +18,18 @@ msngr.extend((function () {
 					}
 				}
 				return true;
+			},
+			id: function () {
+				var ms = Date.now();
+				var rand = Math.floor(((Math.random() + 1) * 10000));
+				var i = ms + "-" + rand;
+
+				if (idsUsed[i] !== undefined) {
+					return msngr.utils.id();
+				}
+
+				idsUsed[i] = 0;
+				return i;
 			}
 		}
 	}
