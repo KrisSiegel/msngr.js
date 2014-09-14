@@ -61,7 +61,7 @@ module.exports = (function (grunt) {
 			tasks: {
 				options: {
 					filter: "include",
-					tasks: ["build", "test", "stress"]
+					tasks: ["build", "test"]
 				}
 			}
 		}
@@ -165,5 +165,5 @@ module.exports = (function (grunt) {
 
 	grunt.registerTask("test", "Runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
 
-	grunt.registerTask("stress", "Stress testing msngr.js", ["build", "header:stressing", "stresser"]);
+	//grunt.registerTask("stress", "Stress testing msngr.js", ["build", "header:stressing", "stresser"]);
 });
