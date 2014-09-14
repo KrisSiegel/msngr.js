@@ -1,6 +1,6 @@
 var msngr = msngr || (function () {
 	return {
-		version: "0.2.0",
+		version: "0.3.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -72,39 +72,217 @@ msngr.extend((function () {
 			},
 			ThrowEventNotFoundException: function () {
 				throw "The event is not found to be unregistered"
+			},
+			ThrowForeignKeyNotUniqueException: function () {
+				throw "The provided foreign key is not unique"
 			}
 		}
 	};
 }()));
 
 msngr.extend((function () {
-    var messages = [];
+    // deprecatedMessages holds the deprecated indexer data.
+    // DO NOT REMOVE until deprecatedIndexer is removed.
+    var deprecatedMessages = [];
+
+    // NEW STUFF BELOW THIS COMMENT
+    var index = {
+        fk_message: { },
+        exact: {
+            topic: { },
+            category: { },
+            dataType: { }
+        }
+    };
+
+    var indexField = function (field, message, fk) {
+        if (msngr.utils.isNullOrUndefined(field) || msngr.utils.isEmptyString(field)) {
+            return false;
+        }
+
+        if (msngr.utils.doesFieldContainWildcard(field, message)) {
+            return false;
+        }
+
+        if (index.exact[field][message[field]] === undefined) {
+            index.exact[field][message[field]] = { };
+        }
+        index.exact[field][message[field]][fk] = 0;
+
+        return true;
+    };
+
+    var queryField = function (field, message) {
+        if (message[field] === undefined || message[field] === undefined) {
+            return undefined;
+        }
+
+        var result = { };
+
+        if (!msngr.utils.doesFieldContainWildcard(field, message)) {
+            // Field does not contain wildcard; perform exact query
+            result = index.exact[field][message[field]];
+            return result;
+        } else {
+            // Field contains wildcard; perform partial query
+            var start = (msngr.utils.isNullOrUndefined(message[field]) ? undefined : message[field].substring(0, message[field].indexOf("*")));
+            if (msngr.utils.isEmptyString(start)) {
+                start = undefined;
+            }
+            for (var key in index.exact[field]) {
+                if (index.exact[field].hasOwnProperty(key)) {
+                    if (start === undefined && index.exact[field][key] !== undefined) {
+                        for (var fk in index.exact[field][key]) {
+                            if (index.exact[field][key].hasOwnProperty(fk)) {
+                                result[fk] = 0;
+                            }
+                        }
+                    } else {
+                        if (index.exact[field][key] !== undefined && key.indexOf(start) === 0) {
+                            for (var fk in index.exact[field][key]) {
+                                if (index.exact[field][key].hasOwnProperty(fk)) {
+                                    result[fk] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+    };
+
+    var deIndexField = function (field, message, fk) {
+        var count = 0;
+        for (var key in index.exact[field][message[field]]) {
+            if (index.exact[field][message[field]].hasOwnProperty(key)) {
+                count++;
+            }
+        }
+
+        if (count === 1) {
+            delete index.exact[field][message[field]];
+            return true;
+        } else {
+            delete index.exact[field][message[field]][fk];
+            return true;
+        }
+    };
+
     return {
         utils: {
             indexer: {
-                index: function (message, key) {
-                    messages.push({
+                index: function (message, fk) {
+                    if (index.fk_message[fk] !== undefined) {
+                        msngr.utils.ThrowForeignKeyNotUniqueException();
+                    }
+
+                    message = msngr.utils.ensureMessage(message);
+
+                    index.fk_message[fk] = message;
+
+                    indexField("topic", message, fk);
+
+                    if (!msngr.utils.isNullOrUndefined(message.category)) {
+                        indexField("category", message, fk);
+                    }
+
+                    if (!msngr.utils.isNullOrUndefined(message.dataType)) {
+                        indexField("dataType", message, fk);
+                    }
+
+                },
+                query: function (message) {
+                    message = msngr.utils.ensureMessage(message);
+
+                    var topics = queryField("topic", message);
+
+                    var categories = queryField("category", message);
+                    var dataTypes = queryField("dataType", message);
+
+                    var result = {
+                        count: 0,
+                        items: { }
+                    };
+
+                    for (var fk in topics) {
+                        if (topics.hasOwnProperty(fk)) {
+                            if (message.category === undefined && message.dataType === undefined) {
+                                result.items[fk] = 0;
+                                result.count = (result.count + 1);
+                            } else {
+                                var cats = { };
+                                if (categories !== undefined && categories[fk] !== undefined) {
+                                    cats[fk] = 0;
+                                }
+
+                                var datas = { };
+                                if (dataTypes !== undefined && dataTypes[fk] !== undefined) {
+                                    datas[fk] = 0;
+                                }
+
+                                if (categories !== undefined && dataTypes !== undefined && categories[fk] === dataTypes[fk]) {
+                                    result.items[fk] = 0;
+                                    result.count = result.count + 1;
+                                }
+
+                                if ((message.category === undefined && categories === undefined) && dataTypes !== undefined && dataTypes[fk] !== undefined) {
+                                    result.items[fk] = 0;
+                                    result.count = result.count + 1;
+                                }
+
+                                if (categories !== undefined && (message.dataType === undefined && dataTypes === undefined) && categories[fk] !== undefined) {
+                                    result.items[fk] = 0;
+                                    result.count = result.count + 1;
+                                }
+                            }
+                        }
+                    }
+
+                    return result;
+                },
+                remove: function (fk) {
+                    if (index.fk_message[fk] !== undefined) {
+                        var message = index.fk_message[fk];
+
+                        deIndexField("topic", message, fk);
+
+                        if (!msngr.utils.isNullOrUndefined(message.category)) {
+                            deIndexField("category", message, fk);
+                        }
+
+                        if (!msngr.utils.isNullOrUndefined(message.dataType)) {
+                            deIndexField("dataType", message, fk);
+                        }
+
+                        delete index.fk_message[fk];
+                    }
+                }
+            },
+            deprecatedIndexer: {
+                index: function (message, fk) {
+                    deprecatedMessages.push({
                         message: message,
-                        key: key
+                        key: fk
                     });
                 },
                 query: function (message) {
                     var result = [];
-                    for (var i = 0; i < messages.length; ++i) {
-                        if (msngr.utils.isMessageMatch(message, messages[i].message)) {
-                            result.push(messages[i].key);
+                    for (var i = 0; i < deprecatedMessages.length; ++i) {
+                        if (msngr.utils.isMessageMatch(message, deprecatedMessages[i].message)) {
+                            result.push(deprecatedMessages[i].key);
                         }
                     }
                     return result;
                 },
-                remove: function (receiver) {
-                    for (var i = 0; i < messages.length; ++i) {
-                        if (messages[i].key === receiver) {
+                remove: function (fk) {
+                    for (var i = 0; i < deprecatedMessages.length; ++i) {
+                        if (deprecatedMessages[i].key === fk) {
                             // Swapping values is faster than splice in most cases and makes removal easier.
-                            var last = messages[messages.length - 1];
-                            messages[messages.length - 1] = messages[i];
-                            messages[i] = last;
-                            messages.pop();
+                            var last = deprecatedMessages[deprecatedMessages.length - 1];
+                            deprecatedMessages[deprecatedMessages.length - 1] = deprecatedMessages[i];
+                            deprecatedMessages[i] = last;
+                            deprecatedMessages.pop();
                         }
                     }
                 }
@@ -114,6 +292,8 @@ msngr.extend((function () {
 }()));
 
 msngr.extend((function () {
+	var idsUsed = { };
+
 	return {
 		utils: {
 			arrayContains: function (arr, values) {
@@ -131,10 +311,23 @@ msngr.extend((function () {
 					}
 				}
 				return true;
+			},
+			id: function () {
+				var ms = Date.now();
+				var rand = Math.floor(((Math.random() + 1) * 10000));
+				var i = ms + "-" + rand;
+
+				if (idsUsed[i] !== undefined) {
+					return msngr.utils.id();
+				}
+
+				idsUsed[i] = 0;
+				return i;
 			}
 		}
 	}
 }()));
+
 msngr.extend((function () {
 	return {
 		utils: {
@@ -177,7 +370,7 @@ msngr.extend((function () {
 	            return false;
 	        },
 	        isWildCardStringMatch: function (str1, str2) {
-	        	// SHort circuits
+	        	// Short circuits
 	        	if (!this.isNullOrUndefined(str1) && !this.isString(str1)) {
 	        		return false;
 	        	}
@@ -252,6 +445,18 @@ msngr.extend((function () {
 	        	}
 	        	return false;
 	        },
+			doesFieldContainWildcard: function (field, message) {
+				message = this.ensureMessage(message);
+				if (this.isValidMessage(message)) {
+					return (message[field] || "").indexOf("*") !== -1;
+				}
+			},
+			doesStringContainWildcard: function (str) {
+				if (!this.isString(str)) {
+					return false;
+				}
+				return (str || "").indexOf("*") !== -1;
+			},
 			getPropertiesWithWildcards: function (message) {
 				var results = [];
 
@@ -268,6 +473,9 @@ msngr.extend((function () {
 				}
 
 				return results;
+			},
+			fieldShouldMatchAny: function (str) {
+				return (this.doesStringContainWildcard(str) || this.isEmptyString(str) || this.isNullOrUndefined(str));
 			}
 	    }
 	};
@@ -372,25 +580,31 @@ msngr.registry.routers.add((function () {
 		}
 
 		var keys = msngr.utils.indexer.query(message);
-		for (var i = 0; i < keys.length; ++i) {
-			executeReceiver(receivers[keys[i]].callback, receivers[keys[i]].context, [message.payload]);
+		if (keys.count > 0) {
+			for (var key in keys.items) {
+				if (keys.items.hasOwnProperty(key)) {
+					executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
+				}
+			}
 		}
 	};
 
 	var handleReceiverRegistration = function (message, callback, context) {
-		receivers[callback] = {
+		var id = msngr.utils.id();
+		receivers[id] = {
 			message: message,
 			callback: callback,
-			context: context
+			context: context,
+			fk: id
 		};
-		msngr.utils.indexer.index(message, callback);
+		msngr.utils.indexer.index(message, id);
 		receiverCount++;
-		return callback;
+		return id;
 	};
 
-	var handleReceiverRemoval = function (receiver) {
-		msngr.utils.indexer.remove(receiver);
-		delete receivers[receiver];
+	var handleReceiverRemoval = function (fk) {
+		msngr.utils.indexer.remove(fk);
+		delete receivers[fk];
 	};
 
 	return {
@@ -454,7 +668,6 @@ msngr.registry.binders.add((function () {
                 eventListeners.passThrough.apply(context, [e, message]);
             }
         };
-        console.log(func);
         return func;
     };
 
