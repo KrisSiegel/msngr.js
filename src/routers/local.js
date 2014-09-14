@@ -22,25 +22,31 @@ msngr.registry.routers.add((function () {
 		}
 
 		var keys = msngr.utils.indexer.query(message);
-		for (var i = 0; i < keys.length; ++i) {
-			executeReceiver(receivers[keys[i]].callback, receivers[keys[i]].context, [message.payload]);
+		if (keys.count > 0) {
+			for (var key in keys.items) {
+				if (keys.items.hasOwnProperty(key)) {
+					executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
+				}
+			}
 		}
 	};
 
 	var handleReceiverRegistration = function (message, callback, context) {
-		receivers[callback] = {
+		var id = msngr.utils.id();
+		receivers[id] = {
 			message: message,
 			callback: callback,
-			context: context
+			context: context,
+			fk: id
 		};
-		msngr.utils.indexer.index(message, callback);
+		msngr.utils.indexer.index(message, id);
 		receiverCount++;
-		return callback;
+		return id;
 	};
 
-	var handleReceiverRemoval = function (receiver) {
-		msngr.utils.indexer.remove(receiver);
-		delete receivers[receiver];
+	var handleReceiverRemoval = function (fk) {
+		msngr.utils.indexer.remove(fk);
+		delete receivers[fk];
 	};
 
 	return {

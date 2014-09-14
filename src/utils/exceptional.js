@@ -19,6 +19,9 @@ msngr.extend((function () {
 			},
 			ThrowEventNotFoundException: function () {
 				throw "The event is not found to be unregistered"
+			},
+			ThrowForeignKeyNotUniqueException: function () {
+				throw "The provided foreign key is not unique"
 			}
 		}
 	};
