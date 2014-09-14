@@ -40,7 +40,7 @@ msngr.extend((function () {
 	            return false;
 	        },
 	        isWildCardStringMatch: function (str1, str2) {
-	        	// SHort circuits
+	        	// Short circuits
 	        	if (!this.isNullOrUndefined(str1) && !this.isString(str1)) {
 	        		return false;
 	        	}
@@ -115,6 +115,18 @@ msngr.extend((function () {
 	        	}
 	        	return false;
 	        },
+			doesFieldContainWildcard: function (field, message) {
+				message = this.ensureMessage(message);
+				if (this.isValidMessage(message)) {
+					return (message[field] || "").indexOf("*") !== -1;
+				}
+			},
+			doesStringContainWildcard: function (str) {
+				if (!this.isString(str)) {
+					return false;
+				}
+				return (str || "").indexOf("*") !== -1;
+			},
 			getPropertiesWithWildcards: function (message) {
 				var results = [];
 
@@ -131,6 +143,9 @@ msngr.extend((function () {
 				}
 
 				return results;
+			},
+			fieldShouldMatchAny: function (str) {
+				return (this.doesStringContainWildcard(str) || this.isEmptyString(str) || this.isNullOrUndefined(str));
 			}
 	    }
 	};

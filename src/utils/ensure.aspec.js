@@ -14,5 +14,6 @@ describe("utils/ensure.js", function () {
     it("msngr.utils.ensureMessage(message)", function () {
         expect(msngr.utils.ensureMessage("MyTopic").topic, "MyTopic");
         expect(msngr.utils.ensureMessage({ topic: "MyTopic" }).topic, "MyTopic");
+        expect(msngr.utils.ensureMessage(undefined), undefined);
     });
 });

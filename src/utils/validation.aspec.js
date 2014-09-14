@@ -289,10 +289,37 @@ describe("utils/validation.js", function () {
         })).to.equal(false);
     });
 
-    it("msngr.utils.getPropertiesWithWildcards", function () {
+    it("msngr.utils.getPropertiesWithWildcards()", function () {
         expect(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*" }).length).to.equal(1);
         expect(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*" }).length).to.equal(2);
         expect(msngr.utils.getPropertiesWithWildcards({ topic: "test", category: "cat*", dataType: "type" }).length).to.equal(1);
         expect(msngr.utils.getPropertiesWithWildcards({ topic: "test*", category: "cat*", dataType: "type*" }).length).to.equal(3);
+    });
+
+    it("msngr.utils.doesFieldContainWildcard()", function () {
+        expect(msngr.utils.doesFieldContainWildcard("topic", "*")).to.equal(true);
+        expect(msngr.utils.doesFieldContainWildcard("topic", "Testing*")).to.equal(true);
+        expect(msngr.utils.doesFieldContainWildcard("topic", "*Whatever")).to.equal(true);
+        expect(msngr.utils.doesFieldContainWildcard("topic", "Nope")).to.equal(false);
+        expect(msngr.utils.doesFieldContainWildcard("category", { topic: "test", category: undefined })).to.equal(false);
+        expect(msngr.utils.doesFieldContainWildcard("category", { topic: "test", category: null })).to.equal(false);
+    });
+
+    it("msngr.utils.doesStringContainWildcard()", function () {
+        expect(msngr.utils.doesStringContainWildcard("*")).to.equal(true);
+        expect(msngr.utils.doesStringContainWildcard("Testing*")).to.equal(true);
+        expect(msngr.utils.doesStringContainWildcard("*Whatever")).to.equal(true);
+        expect(msngr.utils.doesStringContainWildcard("Nope")).to.equal(false);
+        expect(msngr.utils.doesStringContainWildcard(undefined)).to.equal(false);
+        expect(msngr.utils.doesStringContainWildcard(null)).to.equal(false);
+    });
+
+    it("msngr.utils.fieldShouldMatchAny()", function () {
+        expect(msngr.utils.fieldShouldMatchAny("*")).to.equal(true);
+        expect(msngr.utils.fieldShouldMatchAny("")).to.equal(true);
+        expect(msngr.utils.fieldShouldMatchAny(null)).to.equal(true);
+        expect(msngr.utils.fieldShouldMatchAny(undefined)).to.equal(true);
+        expect(msngr.utils.fieldShouldMatchAny("test")).to.equal(false);
+        expect(msngr.utils.fieldShouldMatchAny({})).to.equal(false);
     });
 });
