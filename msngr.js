@@ -167,8 +167,6 @@ msngr.extend((function () {
             delete index.exact[field][message[field]][fk];
             return true;
         }
-
-        return false;
     };
 
     return {
