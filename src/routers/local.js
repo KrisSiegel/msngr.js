@@ -21,9 +21,13 @@ msngr.registry.routers.add((function () {
 			msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
 		}
 
-		var keys = msngr.utils.deprecatedIndexer.query(message);
-		for (var i = 0; i < keys.length; ++i) {
-			executeReceiver(receivers[keys[i]].callback, receivers[keys[i]].context, [message.payload]);
+		var keys = msngr.utils.indexer.query(message);
+		if (keys.count > 0) {
+			for (var key in keys.items) {
+				if (keys.items.hasOwnProperty(key)) {
+					executeReceiver(receivers[key].callback, receivers[key].context, [message.payload]);
+				}
+			}
 		}
 	};
 
@@ -35,13 +39,13 @@ msngr.registry.routers.add((function () {
 			context: context,
 			fk: id
 		};
-		msngr.utils.deprecatedIndexer.index(message, id);
+		msngr.utils.indexer.index(message, id);
 		receiverCount++;
 		return id;
 	};
 
 	var handleReceiverRemoval = function (fk) {
-		msngr.utils.deprecatedIndexer.remove(fk);
+		msngr.utils.indexer.remove(fk);
 		delete receivers[fk];
 	};
 

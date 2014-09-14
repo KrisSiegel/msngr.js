@@ -12,7 +12,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 
 describe("api/emit.js", function () {
     var uniqueKey = Math.floor(Math.random() * 1000);
-    
+
     it("msngr.emit() throws", function (done) {
         expect(msngr.emit).to.throw();
         done();
@@ -51,34 +51,32 @@ describe("api/emit.js", function () {
     });
 
     it("msngr.emit() with topic and partial, matching category", function (done) {
-        var msg = {
+        msngr.register({
             topic: "test4_" + uniqueKey,
-            category: "test4Cat_" + uniqueKey + "*"
-        };
-        msngr.register(msg, function () {
+            category: "test4Cat_" + uniqueKey + "test"
+        }, function () {
             done();
         }, this);
 
         msngr.emit({
-            topic: msg.topic,
-            category: "test4Cat_" + uniqueKey + "test"
+            topic: "test4_" + uniqueKey,
+            category: "test4Cat_" + uniqueKey + "*"
         });
     });
 
-    it("msngr.emit() with topic, category and partial, matching dataType", function (done) {
-        var msg = {
+    it("msngr.emit() with topic, category and partial, matching dataType", function (done) {;
+        msngr.register({
             topic: "test5_" + uniqueKey,
             category: "test5Cat_" + uniqueKey,
-            dataType: "test5Type_" + uniqueKey + "*"
-        };
-        msngr.register(msg, function () {
+            dataType: "test5Type_" + uniqueKey + "test"
+        }, function () {
             done();
         }, this);
 
         msngr.emit({
-            topic: msg.topic,
+            topic: "test5_" + uniqueKey,
             category: "test5Cat_" + uniqueKey,
-            dataType: "test5Type_" + uniqueKey + "test"
+            dataType: "test5Type_" + uniqueKey + "*"
         });
     });
 });
