@@ -241,3 +241,5 @@ Returns whether the message contains wildcard characters or not.
 
 ###msngr.utils.getPropertiesWithWildcards(message);
 Returns all properties associated with the ```message``` object where they contain wildcard characters.
+
+Copyright (c) 2014 Kris Siegel
