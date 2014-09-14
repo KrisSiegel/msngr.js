@@ -85,40 +85,6 @@ Testing is conducted directly using node and phantomjs for client related tests.
 
 The reasoning for the different conventions is simple: msngr.js is meant to work in as many environments as possible however some features (such a DOM binding) are only available in very specific environments all of which need automated unit testing.
 
-###Stress testing msngr.js
-Stress testing is important especially when the library is in charge of all local and possibly even remote communications between components. Stress testing is somewhat similar to how unit testing works; stress tests exist in the ```./stress/``` directory and are named using the ```*.stress.js``` convention.
-
-Stress tests are run using [benchmark.js](http://benchmarkjs.com/) in a custom context. Unlike mocha testing, stress tests are simply scripts that run via node. There is a familiar interface to running async mocha unit tests in that some data is passed into the stress test and at the end ```done()``` should be called. The best example is looking at how the indexer stress tests were created which is in the ```./stress/msngr.utils.indexer.stress.js``` file.
-
-A basic example of a stress test is as follows [which would simply do into a ```*.stress.js``` file in the ```./stress/``` directory]:
-
-```
-
-module.exports = (function (done) {
-    var benchmark = require("benchmark");
-
-    var stress = (function (description, msngr, uniqueKey) {
-        var suite = new benchmark.Suite;
-        suite.add("test", function () {
-            var answer = 5 * 5;
-        });
-
-        suite.on("cycle", function (event) {
-            console.log(String(event.target));
-        });
-
-        suite.run({ "async": false });
-
-        done();
-    });
-
-    stress("A stress example", require("../msngr.js"), Math.floor(Math.random() * 1000));
-});
-
-```
-
-To run the stress tests simply run ```grunt stress```.
-
 ###Routers versus Binders
 There are two ways to extend how msngr handles sending, receiving and binding. Routers are used for standard messages across the system whereas binders are used for binding directly to a component (typically part of the user interface). Routers are more general and can be used in all environments but binders provide an easy way to hook HTML elements and their events directly into msngr's messaging.
 
