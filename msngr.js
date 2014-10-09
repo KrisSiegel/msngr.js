@@ -714,6 +714,7 @@ msngr.registry.routers.add((function () {
 
 msngr.registry.binders.add((function () {
     var index = { };
+    var indexCount = 0;
 
     var eventHelpers = {
 
@@ -745,6 +746,7 @@ msngr.registry.binders.add((function () {
             index[path][event] = index[path][event] || [];
 
             index[path][event].push(message);
+            indexCount = indexCount + 1;
             node.addEventListener(event, listener);
 
         },
@@ -759,11 +761,15 @@ msngr.registry.binders.add((function () {
                         if (msngr.utils.isMessageMatch(message, mgs[i])) {
                             index[path][event].splice(i, 1);
                             node.removeEventListener(event, listener);
+                            indexCount = indexCount - 1;
                             break;
                         }
                     }
                 }
             }
+        },
+        count: function () {
+            return indexCount;
         }
     };
 }()));
