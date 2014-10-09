@@ -29,4 +29,24 @@ describe("binders/dom.js", function () {
         event1.initCustomEvent('testEvent1', false, false, null);
         div.dispatchEvent(event1);
     });
+
+    it("msngr.unbind works as expected", function () {
+        var div = document.createElement("div");
+
+        msngr.bind(div, "testEvent2", "testEvent2");
+
+        var count = 0;
+        for (var i = 0; i < msngr.registry.binders.count(); ++i) {
+            count = count + msngr.registry.binders.get(i).count();
+        }
+
+        msngr.unbind(div, "testEvent2", "testEvent2");
+
+        var count2 = 0;
+        for (var i = 0; i < msngr.registry.binders.count(); ++i) {
+            count2 = count2 + msngr.registry.binders.get(i).count();
+        }
+
+        expect(count - count2).to.equal(1);
+    });
 });
