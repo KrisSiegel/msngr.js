@@ -7,13 +7,6 @@ msngr.extend((function () {
 			isNullOrUndefined: function (obj) {
 				return (obj === undefined || obj === null);
 			},
-			isHtmlElement: function (obj) {
-				var t = this.getType(obj);
-				return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
-			},
-			isNodeList: function (obj) {
-				return (this.getType(obj) === "[object NodeList]");
-			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");
 	        },

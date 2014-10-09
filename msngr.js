@@ -1,6 +1,6 @@
 var msngr = msngr || (function () {
 	return {
-		version: "0.3.0",
+		version: "0.4.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -32,6 +32,95 @@ msngr.extend((function () {
 			}
 		}
 	}
+}()));
+
+msngr.extend((function () {
+    return {
+        utils: {
+            isHtmlElement: function (obj) {
+                var t = this.getType(obj);
+                return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
+            },
+            isNodeList: function (obj) {
+                return (this.getType(obj) === "[object NodeList]");
+            },
+            findElement: function (element) {
+                var elm;
+                if (msngr.utils.isHtmlElement(element)) {
+                    elm = element;
+                }
+
+                if (elm === undefined && msngr.utils.isString(element)) {
+                    var result = document.getElementById(element);
+                    result = (result !== null) ? result : document.querySelector(element);
+                    if (result !== null) {
+                        elm = result;
+                    }
+                }
+
+                return elm;
+            },
+            getDomPath: function (element) {
+                var path = undefined;
+                var node = msngr.utils.isHtmlElement(element) ? element : undefined;
+                if (node === undefined) {
+                    return undefined;
+                }
+
+                if (node.id === undefined) {
+                    node.id = msngr.utils.id();
+                }
+
+                return "#" + node.id;
+            },
+            querySelectorAllWithEq: function (selector) {
+                if (selector === undefined) {
+                    return null;
+                }
+                var queue = [];
+                var process = function (input) {
+                    if (input.indexOf(":eq(") === -1) {
+                        return undefined;
+                    }
+
+                    var eqlLoc = input.indexOf(":eq(");
+                    var sel = input.substring(0, eqlLoc);
+                    var ind = input.substring((eqlLoc + 4), input.indexOf(")", eqlLoc));
+                    selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length);
+
+                    if (sel.charAt(0) === ">") {
+                        sel = sel.substring(1, sel.length);
+                    }
+
+                    if (selector.charAt(0) === ">") {
+                        selector = selector.substring(1, selector.length);
+                    }
+
+                    queue.push({
+                        selector: sel,
+                        index: parseInt(ind, 10)
+                    });
+                }
+                while (selector.indexOf(":eq") !== -1) {
+                    process(selector);
+                }
+
+                var result;
+                while (queue.length > 0) {
+                    var item = queue.shift();
+                    result = (result || document).querySelectorAll(item.selector)[item.index];
+                }
+
+                if (selector.trim().length > 0) {
+                    return (result || document).querySelectorAll(selector);
+                }
+                return [result];
+            },
+            querySelectorWithEq: function (selector) {
+                return msngr.utils.querySelectorAllWithEq(selector)[0];
+            }
+        }
+    };
 }()));
 
 msngr.extend((function () {
@@ -337,13 +426,6 @@ msngr.extend((function () {
 			isNullOrUndefined: function (obj) {
 				return (obj === undefined || obj === null);
 			},
-			isHtmlElement: function (obj) {
-				var t = this.getType(obj);
-				return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
-			},
-			isNodeList: function (obj) {
-				return (this.getType(obj) === "[object NodeList]");
-			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");
 	        },
@@ -631,123 +713,63 @@ msngr.registry.routers.add((function () {
 }()));
 
 msngr.registry.binders.add((function () {
-    var listeners = {};
-    var eventListeners = {
-        passThrough: function (e, message) {
-            msngr.emit({
-                topic: message.topic,
-                category: message.category,
-                dataType: message.dataType,
-                payload: e
-            });
-        }
+    var index = { };
+    var indexCount = 0;
+
+    var eventHelpers = {
+
     };
 
-    var findElement = function (element) {
-        var elm;
-        if (elm === undefined && msngr.utils.isHtmlElement(element)) {
-            elm = element;
-        }
+    var listener = function (event) {
+        var node = this;
+        var path = msngr.utils.getDomPath(node);
 
-        if (elm === undefined && msngr.utils.isString(element)) {
-            var result = document.getElementById(element);
-            result = (result !== null) ? result : document.querySelector(element);
-            if (result !== null) {
-                elm = result;
+        if (index[path] !== undefined) {
+            if (index[path][event.type] !== undefined) {
+                var mgs = index[path][event.type];
+                for (var i = 0; i < mgs.length; ++i) {
+                    var m = mgs[i];
+                    m.payload = (eventHelpers[event.type] !== undefined) ? eventHelpers[event.type](event) : event;
+                    msngr.emit(m);
+                }
             }
         }
-
-        return elm;
-    };
-
-    var getListener = function (evnt, message, context) {
-        var func = function (e) {
-            if (eventListeners[evnt] !== undefined) {
-                eventListeners[evnt].apply(context, [e, message]);
-            } else {
-                eventListeners.passThrough.apply(context, [e, message]);
-            }
-        };
-        return func;
     };
 
     return {
         domain: "dom",
-        bind: function (element, evnt, message) {
-            if (msngr.utils.isNullOrUndefined(element)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
-            }
+        bind: function (element, event, message) {
+            var node = msngr.utils.findElement(element);
+            var path = msngr.utils.getDomPath(node);
 
-            if (msngr.utils.isNullOrUndefined(evnt)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("event");
-            }
+            index[path] = index[path] || { };
+            index[path][event] = index[path][event] || [];
 
-            if (msngr.utils.isNullOrUndefined(message)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
-            }
+            index[path][event].push(message);
+            indexCount = indexCount + 1;
+            node.addEventListener(event, listener);
 
-            if (!msngr.utils.isValidMessage(message)) {
-                msngr.utils.ThrowInvalidMessage();
-            }
-
-            message = msngr.utils.ensureMessage(message);
-            var elm = findElement(element);
-
-            if (elm === undefined) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
-            }
-
-            if (listeners[elm] === undefined) {
-                listeners[elm] = {};
-            }
-
-            if (listeners[elm][evnt] === undefined) {
-                listeners[elm][evnt] = {};
-            }
-
-            if (listeners[elm][evnt][message] === undefined) {
-                listeners[elm][evnt][message] = [];
-            }
-
-            var listener = getListener(evnt, message, this);
-            listeners[elm][evnt][message].push(getListener(message, this));
-
-            elm.addEventListener(evnt, listener, false);
-
-            return this;
         },
-        unbind: function (element, evnt, message) {
-            if (msngr.utils.isNullOrUndefined(element)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
-            }
+        unbind: function (element, event, message) {
+            var node = msngr.utils.findElement(element);
+            var path = msngr.utils.getDomPath(node);
 
-            if (msngr.utils.isNullOrUndefined(evnt)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("event");
+            if (index[path] !== undefined) {
+                if (index[path][event] !== undefined) {
+                    var mgs = index[path][event];
+                    for (var i = 0; i < mgs.length; ++i) {
+                        if (msngr.utils.isMessageMatch(message, mgs[i])) {
+                            index[path][event].splice(i, 1);
+                            node.removeEventListener(event, listener);
+                            indexCount = indexCount - 1;
+                            break;
+                        }
+                    }
+                }
             }
-
-            if (msngr.utils.isNullOrUndefined(message)) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
-            }
-
-            if (!msngr.utils.isValidMessage(message)) {
-                msngr.utils.ThrowInvalidMessage();
-            }
-
-            message = msngr.utils.ensureMessage(message);
-            var elm = findElement(element);
-
-            if (elm === undefined) {
-                msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("element");
-            }
-
-            if (listeners[elm] === undefined || listeners[elm][evnt] === undefined || listeners[elm][evnt][message] === undefined || listeners[elm][evnt][message].length === 0) {
-                msngr.utils.ThrowEventNotFoundException();
-            }
-
-            for (var i = 0; i < listeners[elm][evnt][message].length; ++i) {
-                elm.removeEventListener(evnt, listeners[elm][evnt][message], false);
-            }
-            listeners[elm][evnt][message] = [];
+        },
+        count: function () {
+            return indexCount;
         }
     };
 }()));
