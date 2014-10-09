@@ -2,7 +2,7 @@
   "name": "msngr",
   "main": "msngr.js",
   "description": "A powerful way of conducting messaging through custom or dom related subscriptions.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/KrisSiegel/msngr.js.git"
