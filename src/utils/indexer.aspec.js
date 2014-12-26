@@ -26,6 +26,7 @@ describe("utils/indexer.js", function () {
         msngr.utils.indexer.index({ topic: "btestTopic4", category: "btestCat2", dataType: "btestDataType2" }, msngr.utils.id());
 
         expect(msngr.utils.indexer.query({ topic: "btestTopic4" }).count).to.equal(1);
+        expect(msngr.utils.indexer.query({ topic: "btestTopic1", category: "btestCat1" }).count).to.equal(1);
         expect(msngr.utils.indexer.query({ topic: "btestTopic4", category: "btestCat2" }).count).to.equal(1);
         expect(msngr.utils.indexer.query({ topic: "btestTopic4", category: "btestCat2", dataType: "btestDataType2" }).count).to.equal(1);
         expect(msngr.utils.indexer.query({ topic: "btestTopic4", category: "btestCat2", dataType: "btestData*" }).count).to.equal(1);

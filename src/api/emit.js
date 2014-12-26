@@ -9,10 +9,10 @@ msngr.extend((function () {
 
 			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
 				var router = msngr.registry.routers.get(i);
-				if (msngr.utils.isNullOrUndefined(msg.domain)) {
-					msg.domain = "local";
+				if (msngr.utils.isNullOrUndefined(msg.scope)) {
+					msg.scope = "local";
 				}
-				if (msg.domain === router.domain || msg.domain === "localAndRemote") {
+				if (msg.scope === router.scope) {
 					router.emit(msg, context);
 				}
 			}
