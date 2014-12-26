@@ -25,6 +25,16 @@ describe("api/emit.js", function () {
         msngr.emit("test_" + uniqueKey);
     });
 
+    it("msngr.emit() with topic and category but only register topic", function (done) {
+        msngr.register("test_" + uniqueKey, function () {
+            done();
+        }, this);
+        var msg = { topic: "test_" + uniqueKey, category: "testCat_" + uniqueKey };
+        console.log(msngr.utils.indexer.query(msg));
+
+        msngr.emit(msg);
+    });
+
     it("msngr.emit() with topic and category", function (done) {
         var msg = {
             topic: "test2_" + uniqueKey,

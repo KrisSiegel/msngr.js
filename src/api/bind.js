@@ -6,7 +6,7 @@ msngr.extend((function () {
             }
 
             var msg = msngr.utils.ensureMessage(message);
-            msg.domain = msg.domain || "local";
+            msg.scope = msg.scope || "local";
 
             for (var i = 0; i < msngr.registry.binders.count(); ++i) {
                 msngr.registry.binders.get(i).bind(element, event, msg);

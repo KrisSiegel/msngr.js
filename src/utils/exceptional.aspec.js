@@ -18,8 +18,4 @@ describe("utils/exceptional.js", function () {
     it("msngr.utils.ThrowRequiredParameterMissingOrUndefinedException()", function () {
         expect(msngr.utils.ThrowRequiredParameterMissingOrUndefinedException).to.throw();
     });
-
-    it("msngr.utils.ThrowMismatchedInterfaceException()", function () {
-        expect(msngr.utils.ThrowMismatchedInterfaceException).to.throw();
-    });
 });

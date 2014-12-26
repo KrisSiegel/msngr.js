@@ -1,6 +1,6 @@
 var msngr = msngr || (function () {
 	return {
-		version: "0.4.0",
+		version: "0.5.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -152,9 +152,6 @@ msngr.extend((function () {
 				} else {
 					throw params + " is a required parameter and must not be missing or undefined";
 				}
-			},
-			ThrowMismatchedInterfaceException: function (interface) {
-				throw "The implementation does not match the " + (interface || "unknown") + " interface";
 			},
 			ThrowInvalidMessage: function () {
 				throw "The message is not valid";
@@ -690,7 +687,7 @@ msngr.registry.routers.add((function () {
 	};
 
 	return {
-		domain: "local",
+		scope: "local",
 		emit: function (message) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");
@@ -737,7 +734,7 @@ msngr.registry.binders.add((function () {
     };
 
     return {
-        domain: "dom",
+        scope: "dom",
         bind: function (element, event, message) {
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
@@ -782,7 +779,7 @@ msngr.extend((function () {
             }
 
             var msg = msngr.utils.ensureMessage(message);
-            msg.domain = msg.domain || "local";
+            msg.scope = msg.scope || "local";
 
             for (var i = 0; i < msngr.registry.binders.count(); ++i) {
                 msngr.registry.binders.get(i).bind(element, event, msg);
@@ -802,10 +799,10 @@ msngr.extend((function () {
 
 			for (var i = 0; i < msngr.registry.routers.count(); ++i) {
 				var router = msngr.registry.routers.get(i);
-				if (msngr.utils.isNullOrUndefined(msg.domain)) {
-					msg.domain = "local";
+				if (msngr.utils.isNullOrUndefined(msg.scope)) {
+					msg.scope = "local";
 				}
-				if (msg.domain === router.domain || msg.domain === "localAndRemote") {
+				if (msg.scope === router.scope) {
 					router.emit(msg, context);
 				}
 			}

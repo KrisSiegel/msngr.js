@@ -23,7 +23,7 @@ msngr.registry.binders.add((function () {
     };
 
     return {
-        domain: "dom",
+        scope: "dom",
         bind: function (element, event, message) {
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);

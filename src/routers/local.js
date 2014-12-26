@@ -50,7 +50,7 @@ msngr.registry.routers.add((function () {
 	};
 
 	return {
-		domain: "local",
+		scope: "local",
 		emit: function (message) {
 			if (!msngr.utils.isValidMessage(message)) {
 				msngr.utils.ThrowRequiredParameterMissingOrUndefinedException("message");

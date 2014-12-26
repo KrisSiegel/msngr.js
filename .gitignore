@@ -39,3 +39,6 @@ Thumbs.db
 # Node.js related #
 ###################
 node_modules
+
+# Examples bower folder #
+example/ext-lib/
