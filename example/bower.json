@@ -1,0 +1,14 @@
+{
+  "name": "msngr.js example apps",
+  "version": "0.5.0",
+  "homepage": "https://github.com/KrisSiegel/msngr.js",
+  "authors": [
+    "Kris Siegel"
+  ],
+  "description": "Example application(s) using msngr.js.",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.4.2"
+  }
+}
