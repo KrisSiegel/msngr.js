@@ -10,9 +10,9 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("utils/misc.js", function () {
+describe("./utils/misc.js", function () {
     "use strict";
-    
+
     it("msngr.utils.id()", function () {
         expect(msngr.utils.id()).to.not.equal(undefined);
 

@@ -10,9 +10,9 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("utils/dom.js", function () {
+describe("./utils/dom.js", function () {
     "use strict";
-    
+
     it("msngr.utils.isHtmlElement(obj)", function () {
         expect(msngr.utils.isHtmlElement(function () {})).to.equal(false);
         expect(msngr.utils.isHtmlElement("test")).to.equal(false);

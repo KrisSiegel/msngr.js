@@ -1,6 +1,6 @@
 msngr.extend((function () {
 	"use strict";
-	
+
 	var idsUsed = { };
 
 	return {
@@ -18,5 +18,5 @@ msngr.extend((function () {
 				return i;
 			}
 		}
-	}
+	};
 }()));

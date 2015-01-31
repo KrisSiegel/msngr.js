@@ -10,9 +10,9 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("utils/validation.js", function () {
+describe("./utils/validation.js", function () {
     "use strict";
-    
+
     it("msngr.utils.isNullOrUndefined(obj)", function () {
         expect(msngr.utils.isNullOrUndefined("test")).to.equal(false);
         expect(msngr.utils.isNullOrUndefined("")).to.equal(false);
