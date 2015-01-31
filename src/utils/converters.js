@@ -1,4 +1,6 @@
 msngr.extend((function () {
+	"use strict";
+	
 	return {
 		utils: {
 			argumentsToArray: function (args) {
