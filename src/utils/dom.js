@@ -1,4 +1,6 @@
 msngr.extend((function () {
+    "use strict";
+    
     return {
         utils: {
             isHtmlElement: function (obj) {
@@ -25,7 +27,6 @@ msngr.extend((function () {
                 return elm;
             },
             getDomPath: function (element) {
-                var path = undefined;
                 var node = msngr.utils.isHtmlElement(element) ? element : undefined;
                 if (node === undefined) {
                     return undefined;
