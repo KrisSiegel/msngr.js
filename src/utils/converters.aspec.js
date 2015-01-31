@@ -10,9 +10,9 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("utils/converters.js", function () {
+describe("./utils/converters.js", function () {
     "use strict";
-    
+
     it("msngr.utils.argumentsToArray(args)", function () {
         var func1 = function () {
             var args = msngr.utils.argumentsToArray(arguments);

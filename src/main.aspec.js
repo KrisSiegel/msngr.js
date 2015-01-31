@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../msngr");
 }
 
-describe("main.js", function () {
+describe("./main.js", function () {
     it("msngr", function () {
         // Ensure msngr exists in the first place
         expect(msngr).to.not.equal(undefined);

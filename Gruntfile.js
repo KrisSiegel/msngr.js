@@ -12,10 +12,8 @@ module.exports = (function (grunt) {
 	var paths = [
 		"src/main.js",
 		"src/utils/*.js",
-		"src/registry.js",
-		"src/routers/*.js",
-		"src/binders/*.js",
-		"src/api/*.js",
+		"src/stores/*.js",
+		"src/messengers/*.js",
 		"src/module.exports.js",
 		"!**/*.aspec.js",
 		"!**/*.cspec.js",
@@ -36,7 +34,9 @@ module.exports = (function (grunt) {
 				options: {
 					mangle: false,
 					preserveComments: false,
-					compress: true
+					compress: {
+						drop_console: true
+					}
 				},
 				files: {
 					"./msngr.min.js": paths

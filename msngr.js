@@ -29,14 +29,14 @@ var msngr = msngr || (function () {
 
 msngr.extend((function () {
 	"use strict";
-	
+
 	return {
 		utils: {
 			argumentsToArray: function (args) {
 				return Array.prototype.slice.call(args, 0);
 			}
 		}
-	}
+	};
 }()));
 
 msngr.extend((function () {
@@ -131,7 +131,7 @@ msngr.extend((function () {
 
 msngr.extend((function () {
 	"use strict";
-	
+
 	var idsUsed = { };
 
 	return {
@@ -149,7 +149,7 @@ msngr.extend((function () {
 				return i;
 			}
 		}
-	}
+	};
 }()));
 
 msngr.extend((function () {
@@ -190,6 +190,14 @@ msngr.extend((function () {
 	        }
 	    }
 	};
+}()));
+
+msngr.extend((function () {
+  "use strict";
+
+  return {
+
+  };
 }()));
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
