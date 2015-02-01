@@ -154,7 +154,7 @@ msngr.extend((function () {
 
 msngr.extend((function () {
 	"use strict";
-	
+
 	return {
 		utils: {
 			getType: function (obj) {
@@ -162,6 +162,9 @@ msngr.extend((function () {
 			},
 			isNullOrUndefined: function (obj) {
 				return (obj === undefined || obj === null);
+			},
+			exists: function (obj) {
+				return !this.isNullOrUndefined(obj);
 			},
 			isString: function (str) {
 	            return (this.getType(str) === "[object String]");

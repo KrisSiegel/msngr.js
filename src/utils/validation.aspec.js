@@ -25,6 +25,17 @@ describe("./utils/validation.js", function () {
         expect(msngr.utils.isNullOrUndefined(function () {})).to.equal(false);
     });
 
+    it("msngr.utils.exists(obj)", function () {
+        expect(msngr.utils.exists(undefined)).to.equal(false);
+        expect(msngr.utils.exists(null)).to.equal(false);
+        expect(msngr.utils.exists("")).to.equal(true);
+        expect(msngr.utils.exists(7)).to.equal(true);
+        expect(msngr.utils.exists({})).to.equal(true);
+        expect(msngr.utils.exists([])).to.equal(true);
+        expect(msngr.utils.exists(new Date())).to.equal(true);
+        expect(msngr.utils.exists(function () {})).to.equal(true);
+    });
+
     it("msngr.utils.isString(obj)", function () {
         expect(msngr.utils.isString("test")).to.equal(true);
         expect(msngr.utils.isString("")).to.equal(true);
