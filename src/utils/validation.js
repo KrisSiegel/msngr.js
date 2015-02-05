@@ -36,7 +36,10 @@ msngr.extend((function () {
 	                return true;
 	            }
 	            return false;
-	        }
+	        },
+			hasWildCard: function (str) {
+				return (str.indexOf("*") !== -1);
+			}
 	    }
 	};
 }()));

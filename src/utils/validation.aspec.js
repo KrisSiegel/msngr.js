@@ -126,4 +126,10 @@ describe("./utils/validation.js", function () {
         expect(msngr.utils.isEmptyString([])).to.equal(false);
         expect(msngr.utils.isEmptyString(new Date())).to.equal(false);
     });
+
+    it("msngr.utils.hasWildCard(str)", function () {
+        expect(msngr.utils.hasWildCard("whatever")).to.equal(false);
+        expect(msngr.utils.hasWildCard("")).to.equal(false);
+        expect(msngr.utils.hasWildCard("what*")).to.equal(true);
+    });
 });
