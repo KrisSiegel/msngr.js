@@ -6,19 +6,22 @@ msngr.js is a small library used to facilitate communication through messages ra
 
 ## Quick Start
 Documentation is boring so let's just jump into using msngr.js.
-1. Install for node applications with ```npm install msngr``` or download ```msngr.min.js``` for web pages.
-2. ```var msngr = require("msngr")``` in your node application or include ```msngr.min.js``` in your web page.
-3. Register a message receiver like so:
+
+* Install for node applications with ```npm install msngr``` or download ```msngr.min.js``` for web pages.
+
+* ```var msngr = require("msngr")``` in your node application or include ```msngr.min.js``` in your web page.
+
+* Register a message receiver like so:
 ```
 msngr.register({ topic: "Hello" }, function(payload) {
     console.log(payload);
 });
 ```
-4. Emit a message to be received like so:
+* Emit a message to be received like so:
 ```
 msngr.emit({ topic: "Hello" }, "Hello, World!");
 ```
-5. You're done.
+* You're done 
 
 Alternatively use the ```bind()``` method to tie an event to a  message and truly separate your user experience and your business logic!
 
