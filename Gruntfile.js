@@ -161,9 +161,8 @@ module.exports = (function (grunt) {
 		fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
 	});
 
-	grunt.registerTask("build", "Cleans, sets the version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
+	grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
-	grunt.registerTask("test", "Runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
+	grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
 
-	//grunt.registerTask("stress", "Stress testing msngr.js", ["build", "header:stressing", "stresser"]);
 });

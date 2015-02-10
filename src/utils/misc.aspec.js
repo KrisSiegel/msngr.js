@@ -13,6 +13,8 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/misc.js", function () {
     "use strict";
 
+    this.timeout(60000);
+
     it("msngr.utils.id()", function () {
         expect(msngr.utils.id()).to.not.equal(undefined);
 
