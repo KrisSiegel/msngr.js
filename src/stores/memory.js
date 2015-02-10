@@ -5,56 +5,78 @@ msngr.extend((function () {
   var id_to_message = { };
 
   // Direct index (no partials) for message
-  var message_topic_to_ids = { };
-  var message_category_to_ids = { };
-  var message_dataType_to_ids = { };
+  var direct_index = {
+      topic_to_id: { },
+      topic_cat_to_id: { },
+      topic_type_to_id: { },
+      topic_cat_type_to_id: { }
+  };
 
   // Message index count
   var index_count = 0;
 
-  var directIndexIndex = function (index, fieldValue, uuid) {
-      if (!msngr.utils.exists(index[fieldValue])) {
-          index[fieldValue] = [];
+  var deleteValueFromArray = function (arr, value) {
+      var inx = arr.indexOf(value);
+      var endIndex = arr.length - 1;
+      if (inx !== endIndex) {
+          var temp = arr[endIndex];
+          arr[endIndex] = arr[inx];
+          arr[inx] = temp;
       }
-      if (index[fieldValue].indexOf(uuid) === -1) {
-          index[fieldValue].push(uuid);
-          return true;
-      }
-
-      return false;
+      arr.pop();
   };
-
-  var directIndexDelete = function (index, fieldValue, uuid) {
-      if (msngr.utils.exists(index[fieldValue]) && index[fieldValue].indexOf(uuid) !== -1) {
-          var inx = index[fieldValue].indexOf(uuid);
-          var endIndex = index[fieldValue].length - 1;
-          if (inx !== endIndex) {
-              var temp = index[fieldValue][endIndex];
-              index[fieldValue][endIndex] = index[fieldValue][inx];
-              index[fieldValue][inx] = temp;
-          }
-          index[fieldValue].pop();
-      }
-  }
 
   return {
       stores: {
           memory: {
               index: function (message) {
-                  if (msngr.utils.exists(message)) {
+                  if (msngr.utils.exists(message) && msngr.utils.exists(message.topic)) {
                       var uuid = msngr.utils.id();
                       id_to_message[uuid] = message;
 
-                      if (msngr.utils.exists(message.topic)) {
-                          directIndexIndex(message_topic_to_ids, message.topic, uuid);
+                      if (direct_index.topic_to_id[message.topic] === undefined) {
+                          direct_index.topic_to_id[message.topic] = [];
                       }
+                      direct_index.topic_to_id[message.topic].push(uuid);
 
                       if (msngr.utils.exists(message.category)) {
-                          directIndexIndex(message_category_to_ids, message.category, uuid);
+                          if (direct_index.topic_cat_to_id[message.topic] === undefined) {
+                              direct_index.topic_cat_to_id[message.topic] = { };
+                          }
+
+                          if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
+                              direct_index.topic_cat_to_id[message.topic][message.category] = [];
+                          }
+
+                          direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
                       }
 
                       if (msngr.utils.exists(message.dataType)) {
-                          directIndexIndex(message_dataType_to_ids, message.dataType, uuid);
+                          if (direct_index.topic_type_to_id[message.topic] === undefined) {
+                              direct_index.topic_type_to_id[message.topic] = { };
+                          }
+
+                          if (direct_index.topic_type_to_id[message.topic][message.dataType] === undefined) {
+                              direct_index.topic_type_to_id[message.topic][message.dataType] = [];
+                          }
+
+                          direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
+                      }
+
+                      if (msngr.utils.exists(message.category) && msngr.utils.exists(message.dataType)) {
+                          if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
+                              direct_index.topic_cat_type_to_id[message.topic] = { };
+                          }
+
+                          if (direct_index.topic_cat_type_to_id[message.topic][message.category] === undefined) {
+                              direct_index.topic_cat_type_to_id[message.topic][message.category] = { };
+                          }
+
+                          if (direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] === undefined) {
+                              direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] = [];
+                          }
+
+                          direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType].push(uuid);
                       }
 
                       index_count++;
@@ -68,15 +90,19 @@ msngr.extend((function () {
                       var message = id_to_message[uuid];
 
                       if (msngr.utils.exists(message.topic)) {
-                          directIndexDelete(message_topic_to_ids, message.topic, uuid);
-                      }
+                          deleteValueFromArray(direct_index.topic_to_id[message.topic], uuid);
 
-                      if (msngr.utils.exists(message.category)) {
-                          directIndexDelete(message_category_to_ids, message.category, uuid);
-                      }
+                          if (msngr.utils.exists(message.category)) {
+                              deleteValueFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
+                          }
 
-                      if (msngr.utils.exists(message.dataType)) {
-                          directIndexDelete(message_dataType_to_ids, message.dataType, uuid);
+                          if (msngr.utils.exists(message.dataType)) {
+                              deleteValueFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
+                          }
+
+                          if (msngr.utils.exists(message.category) && msngr.utils.exists(message.dataType)) {
+                              deleteValueFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
+                          }
                       }
 
                       delete id_to_message[uuid];
@@ -87,28 +113,42 @@ msngr.extend((function () {
               },
               query: function (message) {
                   if (msngr.utils.exists(message)) {
-
                       if (msngr.utils.exists(message.topic)) {
+                          // Topic Only Results
+                          if (!msngr.utils.exists(message.category) && !msngr.utils.exists(message.dataType)) {
+                              return direct_index.topic_to_id[message.topic] || [];
+                          }
 
-                      }
+                          // Topic + Category Results
+                          if (msngr.utils.exists(message.category) && !msngr.utils.exists(message.dataType)) {
+                              return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
+                          }
 
-                      if (msngr.utils.exists(message.category)) {
+                          // Topic + Data Type Results
+                          if (msngr.utils.exists(message.dataType) && !msngr.utils.exists(message.category)) {
+                              return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
+                          }
 
-                      }
-
-                      if (msngr.utils.exists(message.dataType)) {
-
+                          // Topic + Category + Data Type Results
+                          if (msngr.utils.exists(message.category) && msngr.utils.exists(message.dataType)) {
+                              return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
+                          }
                       }
                   }
+
+                  return [];
               },
               clear: function () {
                   // Index for id to message objects
                   id_to_message = { };
 
                   // Direct index (no partials) for message
-                  message_topic_to_ids = { };
-                  message_category_to_ids = { };
-                  message_dataType_to_ids = { };
+                  direct_index = {
+                      topic_to_id: { },
+                      topic_cat_to_id: { },
+                      topic_type_to_id: { },
+                      topic_cat_type_to_id: { }
+                  };
 
                   index_count = 0;
 
