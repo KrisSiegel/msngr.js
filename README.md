@@ -8,9 +8,7 @@ msngr.js is a small library used to facilitate communication through messages ra
 Documentation is boring so let's just jump into using msngr.js.
 
 * Install for node applications with ```npm install msngr``` or download ```msngr.min.js``` for web pages.
-
 * ```var msngr = require("msngr")``` in your node application or include ```msngr.min.js``` in your web page.
-
 * Register a message receiver like so:
 ```
 msngr.register({ topic: "Hello" }, function(payload) {
