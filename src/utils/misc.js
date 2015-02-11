@@ -1,36 +1,53 @@
 msngr.extend((function () {
-	var idsUsed = { };
+	"use strict";
+
+	var nowPerformance = function () {
+		return performance.now();
+	};
+
+	var nowNode = function () {
+		return (process.hrtime()[1] / 1000000);
+	};
+
+	var nowLegacy = function () {
+		return (new Date).getTime();
+	};
+
+	var nowExec = undefined;
+	var nowExecDebugLabel = "";
+	var lastNow = undefined;
 
 	return {
 		utils: {
-			arrayContains: function (arr, values) {
-				if (msngr.utils.isNullOrUndefined(arr)) {
-					return false;
-				}
-
-				if (!msngr.utils.isArray(values)) {
-					values = [values];
-				}
-
-				for (var i = 0; i < values.length; ++i) {
-					if (arr.indexOf(values[i]) === -1) {
-						return false;
+			id: function () {
+				var d = msngr.utils.now();
+				var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+					var r = (d + Math.random()*16)%16 | 0;
+					d = Math.floor(d/16);
+					return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+				});
+				return uuid;
+			},
+			now: function (noDuplicate) {
+				if (nowExec === undefined) {
+					if (typeof performance !== "undefined") {
+						nowExec = nowPerformance;
+						nowExecDebugLabel = "performance";
+					} else if (typeof process !== "undefined") {
+						nowExec = nowNode;
+						nowExecDebugLabel = "node";
+					} else {
+						nowExec = nowLegacy;
+						nowExecDebugLabel = "legacy";
 					}
 				}
-				return true;
-			},
-			id: function () {
-				var ms = Date.now();
-				var rand = Math.floor(((Math.random() + 1) * 10000));
-				var i = ms + "-" + rand;
-
-				if (idsUsed[i] !== undefined) {
-					return msngr.utils.id();
+				var now = nowExec();
+				if (noDuplicate && lastNow === now) {
+					return msngr.utils.now(noDuplicate);
 				}
-
-				idsUsed[i] = 0;
-				return i;
+				lastNow = now;
+				return now;
 			}
 		}
-	}
+	};
 }()));
