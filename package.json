@@ -1,25 +1,29 @@
 {
   "name": "msngr",
   "main": "msngr.js",
-  "description": "A powerful way of conducting messaging through custom or dom related subscriptions.",
-  "version": "0.4.0",
+  "description": "msngr.js is a small library used to facilitate communication through messages rather than direct binding. This loose coupling allows connecting components to each other or to UI components in an abstract way on the server or the client.",
+  "version": "0.5.0",
+  "keywords": ["message", "messaging", "subscription", "delegation"],
   "repository": {
     "type": "git",
     "url": "https://github.com/KrisSiegel/msngr.js.git"
   },
+  "license": "MIT",
+  "homepage": "http://www.msngrjs.com/",
+  "author": {
+      "name": "Kris Siegel",
+      "url": "http://www.KrisSiegel.com/"
+  },
   "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-contrib-uglify": "~0.2.2",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-mocha-test": "~0.8.1",
-    "grunt-exec": "~0.4.5",
-    "jsdom": "~0.10.5",
-    "mocha": "~1.19.0",
-    "chai": "~1.9.1",
-    "benchmark": "~1.0.0",
-    "grunt-mocha-phantomjs": "~0.5.0",
-    "grunt-available-tasks": "~0.5.0"
+    "grunt": "0.4.5",
+    "grunt-contrib-uglify": "0.7.0",
+    "grunt-contrib-concat": "0.5.0",
+    "grunt-contrib-clean": "0.6.0",
+    "grunt-mocha-test": "0.12.7",
+    "mocha": "2.1.0",
+    "grunt-mocha-phantomjs": "0.6.0",
+    "grunt-available-tasks": "0.5.4",
+    "chai": "1.10.0"
   },
   "scripts": {
     "test": "grunt test"

@@ -12,10 +12,8 @@ module.exports = (function (grunt) {
 	var paths = [
 		"src/main.js",
 		"src/utils/*.js",
-		"src/registry.js",
-		"src/routers/*.js",
-		"src/binders/*.js",
-		"src/api/*.js",
+		"src/stores/*.js",
+		"src/messengers/*.js",
 		"src/module.exports.js",
 		"!**/*.aspec.js",
 		"!**/*.cspec.js",
@@ -36,7 +34,9 @@ module.exports = (function (grunt) {
 				options: {
 					mangle: false,
 					preserveComments: false,
-					compress: true
+					compress: {
+						drop_console: true
+					}
 				},
 				files: {
 					"./msngr.min.js": paths
@@ -161,9 +161,8 @@ module.exports = (function (grunt) {
 		fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
 	});
 
-	grunt.registerTask("build", "Cleans, sets the version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
+	grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
-	grunt.registerTask("test", "Runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
+	grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
 
-	//grunt.registerTask("stress", "Stress testing msngr.js", ["build", "header:stressing", "stresser"]);
 });

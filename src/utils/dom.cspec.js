@@ -10,7 +10,9 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("utils/dom.js", function () {
+describe("./utils/dom.js", function () {
+    "use strict";
+
     it("msngr.utils.isHtmlElement(obj)", function () {
         expect(msngr.utils.isHtmlElement(function () {})).to.equal(false);
         expect(msngr.utils.isHtmlElement("test")).to.equal(false);
@@ -25,6 +27,18 @@ describe("utils/dom.js", function () {
         expect(msngr.utils.isHtmlElement(document.createElement("input"))).to.equal(true);
         expect(msngr.utils.isHtmlElement(document.createElement("body"))).to.equal(true);
         expect(msngr.utils.isHtmlElement(document.createElement("canvas"))).to.equal(true);
+    });
+
+    it("msngr.utils.isNodeList(obj)", function () {
+        var div1 = document.createElement("div");
+        var div2 = document.createElement("div");
+        var div3 = document.createElement("div");
+
+        div1.appendChild(div2);
+        div1.appendChild(div3);
+
+        expect(msngr.utils.isNodeList(div1)).to.equal(false);
+        expect(msngr.utils.isNodeList(div1.childNodes)).to.equal(true);
     });
 
     it("msngr.utils.findElement(obj)", function () {
@@ -96,6 +110,36 @@ describe("utils/dom.js", function () {
         expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(0)")[0].id).to.equal("TestID3p1");
         expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(1)")[0].id).to.equal("TestID3p2");
         expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(2)")[0].id).to.equal("TestID3p3");
+
+    });
+
+    it("msngr.utils.querySelectorWithEq(selector)", function () {
+        var div = document.createElement("div");
+        div.style.display = "none";
+
+        var idiv = document.createElement("div");
+        idiv.id = "TestID3";
+
+        var p1 = document.createElement("p");
+        p1.id = "TestID3p1";
+
+        var p2 = document.createElement("p");
+        p2.id = "TestID3p2";
+
+        var p3 = document.createElement("p");
+        p3.id = "TestID3p3";
+
+        idiv.appendChild(p1);
+        idiv.appendChild(p2);
+        idiv.appendChild(p3);
+
+        div.appendChild(idiv);
+
+        document.body.appendChild(div);
+
+        expect(msngr.utils.querySelectorWithEq("div#TestID3 > p:eq(0)").id).to.equal("TestID3p1");
+        expect(msngr.utils.querySelectorWithEq("div#TestID3 > p:eq(1)").id).to.equal("TestID3p2");
+        expect(msngr.utils.querySelectorWithEq("div#TestID3 > p:eq(2)").id).to.equal("TestID3p3");
 
     });
 });
