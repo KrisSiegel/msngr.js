@@ -16,14 +16,14 @@
   },
   "devDependencies": {
     "grunt": "0.4.5",
-    "grunt-contrib-uglify": "0.7.0",
-    "grunt-contrib-concat": "0.5.0",
+    "grunt-contrib-uglify": "0.8.0",
+    "grunt-contrib-concat": "0.5.1",
     "grunt-contrib-clean": "0.6.0",
     "grunt-mocha-test": "0.12.7",
     "mocha": "2.1.0",
     "grunt-mocha-phantomjs": "0.6.0",
-    "grunt-available-tasks": "0.5.4",
-    "chai": "1.10.0"
+    "grunt-available-tasks": "0.5.6",
+    "chai": "2.0.0"
   },
   "scripts": {
     "test": "grunt test"

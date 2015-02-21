@@ -35,7 +35,7 @@ describe("./messengers/inprocess.js", function () {
         var hitCount = 0;
 
         msngr.register(message1, function (payload) {
-            expect(payload).to.exist();
+            expect(payload).to.exist;
             expect(payload).to.equal("testing");
             hitCount++;
 
@@ -45,7 +45,7 @@ describe("./messengers/inprocess.js", function () {
         });
 
         msngr.register(message2, function (payload) {
-            expect(payload).to.exist();
+            expect(payload).to.exist;
             expect(payload).to.equal("testing");
             hitCount++;
 
@@ -79,18 +79,18 @@ describe("./messengers/inprocess.js", function () {
         var startDelCount = msngr.getDelegateCount();
         var startInxCount = msngr.stores.memory.count();
 
-        expect(startDelCount).to.exist();
-        expect(startInxCount).to.exist();
+        expect(startDelCount).to.exist;
+        expect(startInxCount).to.exist;
 
         msngr.unregister({ topic: "ATest1" });
 
         var endDelCount = msngr.getDelegateCount();
         var endInxCount = msngr.stores.memory.count();
 
-        expect(endDelCount).to.exist();
+        expect(endDelCount).to.exist;
         expect(endDelCount).to.not.equal(startDelCount);
 
-        expect(endInxCount).to.exist();
+        expect(endInxCount).to.exist;
         expect(endInxCount).to.not.equal(startInxCount);
 
     });
@@ -114,18 +114,18 @@ describe("./messengers/inprocess.js", function () {
         var startDelCount = msngr.getDelegateCount();
         var startInxCount = msngr.stores.memory.count();
 
-        expect(startDelCount).to.exist();
-        expect(startInxCount).to.exist();
+        expect(startDelCount).to.exist;
+        expect(startInxCount).to.exist;
 
         msngr.unregisterAll();
 
         var endDelCount = msngr.getDelegateCount();
         var endInxCount = msngr.stores.memory.count();
 
-        expect(endDelCount).to.exist();
+        expect(endDelCount).to.exist;
         expect(endDelCount).to.equal(0);
 
-        expect(endInxCount).to.exist();
+        expect(endInxCount).to.exist;
         expect(endInxCount).to.equal(0);
     });
 });
