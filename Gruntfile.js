@@ -34,9 +34,7 @@ module.exports = (function (grunt) {
 				options: {
 					mangle: false,
 					preserveComments: false,
-					compress: {
-						drop_console: true
-					}
+					compress: { }
 				},
 				files: {
 					"./msngr.min.js": paths

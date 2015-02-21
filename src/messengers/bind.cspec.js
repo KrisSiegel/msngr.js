@@ -20,7 +20,7 @@ describe("./messengers/bind.js", function () {
         msngr.bind(div1, "testEvent2", { topic: "Topical2" });
 
         msngr.register({ topic: "Topical1" }, function (payload) {
-            expect(payload).to.exist();
+            expect(payload).to.exist;
 
             expect(msngr.getBindCount()).to.equal(2);
             msngr.unbind(div1, "testEvent1");
