@@ -4,6 +4,9 @@ msngr.extend((function () {
 	return {
 		utils: {
 			getType: function (obj) {
+				if (!msngr.utils.exists(obj)) {
+					return "" + obj;
+				}
 				return Object.prototype.toString.call(obj);
 			},
 			isNullOrUndefined: function (obj) {
