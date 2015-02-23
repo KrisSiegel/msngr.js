@@ -11,61 +11,64 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 }
 
 describe("./main.js", function () {
-    it("msngr", function () {
-        // Ensure msngr exists in the first place
-        expect(msngr).to.not.equal(undefined);
+    "use strict";
+
+    it("msngr - expect object to exist", function () {
+        expect(msngr).to.exist;
     });
 
-    it("msngr.extend()", function () {
-        // Check that extend exists
-        expect(msngr.extend).to.not.equal(undefined);
-        // Ensure that the method we're adding doesn't exist
-        expect(msngr.test_extend).to.equal(undefined);
-        // Extend msngr with new method
-        msngr.extend({
-            test_extend: function () {
+    it("msngr.extend(obj, target) - expect method to exist", function () {
+        expect(msngr.extend).to.exist;
+    });
 
-            }
-        });
-        // Ensure new method now exists
-        expect(msngr.test_extend).to.not.equal(undefined);
-        // Drop new method
-        delete msngr.test_extend;
-        // Ensure new method is gone again
-        expect(msngr.test_extend).to.equal(undefined);
+    it("msngr.extend(obj, target) - merges arrays from obj and target", function () {
+        var obj1 = { test: [1, 2] };
+        var obj2 = { test: [3, 4] };
 
-        // Complex extend
-        msngr.extend({
-            test_extend: {
-                test: "test"
-            }
-        });
-        msngr.extend({
-            test_extend: {
-                another: "test"
-            }
-        });
-        expect(msngr.test_extend.test).to.equal(msngr.test_extend.another);
-        expect(msngr.test_extend.test).to.not.equal(msngr.test);
-        // Drop new methods again
-        delete msngr.test_extend;
+        msngr.extend(obj1, obj2);
 
-        // Check mixin support with arrays; no modifying of base msngr object.
-        var obj = msngr.extend({
-            testing: {
-                tests: ["test", "again"]
-            },
-            another: ["yup", "yip", "yop"]
-        }, {
-            testing: {
-                test: "yes",
-                tests: ["another", "weee"]
+        expect(obj2.test).to.exist;
+        expect(obj2.test.length).to.equal(4);
+    });
+
+    it("msngr.extend(obj, target) - expect properties to merge from obj and target", function () {
+        var obj1 = { prop: "something" };
+        var obj2 = { some: "thing" };
+
+        msngr.extend(obj1, obj2);
+
+        expect(obj2.some).to.exist;
+        expect(obj2.prop).to.exist;
+        expect(obj2.prop).to.equal("something");
+    });
+
+    it("msngr.extend(obj, target) - expect deeply nested methods to merge from obj and target", function () {
+        var obj1 = {
+            this: {
+                is: {
+                    a: {
+                        test: {
+                            yup: function () { return "yup!"; }
+                        }
+                    }
+                }
             }
-        });
-        expect(obj.testing.tests.length > 0).to.equal(true);
-        expect(obj.testing.tests.length === 4).to.equal(true);
-        expect(obj.another.length > 0).to.equal(true);
-        expect(msngr.utils.getType(obj.testing.tests)).to.equal("[object Array]");
-        expect(msngr.utils.getType(obj.another)).to.equal("[object Array]");
+        };
+
+        var obj2 = {
+            whatever: function () { return "whatever"; }
+        };
+
+        msngr.extend(obj1, obj2);
+
+        expect(obj2.whatever).to.exist;
+        expect(obj2.whatever()).to.equal("whatever");
+
+        expect(obj2.this).to.exist;
+        expect(obj2.this.is).to.exist;
+        expect(obj2.this.is.a).to.exist;
+        expect(obj2.this.is.a.test).to.exist;
+        expect(obj2.this.is.a.test.yup).to.exist;
+        expect(obj2.this.is.a.test.yup()).to.equal("yup!");
     });
 });
