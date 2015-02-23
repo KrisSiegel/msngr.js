@@ -15,9 +15,23 @@ describe("./utils/misc.js", function () {
 
     this.timeout(60000);
 
-    it("msngr.utils.id()", function () {
+    it("msngr.utils.id() - generate 1 id", function () {
         expect(msngr.utils.id()).to.not.equal(undefined);
+    });
 
+    it("msngr.utils.id() - generate 100 unique ids", function () {
+        var ids = [];
+        for (var i = 0; i < 100; ++i) {
+            var d = msngr.utils.id();
+            if (ids.indexOf(d) === -1) {
+                ids.push(d);
+            }
+        }
+
+        expect(ids.length).to.equal(100);
+    });
+
+    it("msngr.utils.id() - generate 10000 unique ids", function () {
         var ids = [];
         for (var i = 0; i < 10000; ++i) {
             var d = msngr.utils.id();
@@ -29,7 +43,11 @@ describe("./utils/misc.js", function () {
         expect(ids.length).to.equal(10000);
     });
 
-    it("msngr.utils.now()", function () {
+    it("msngr.utils.now() - generates a value", function () {
+        expect(msngr.utils.now()).to.exist;
+    });
+
+    it("msngr.utils.now(true) - 5 consecutive calls have unique values", function () {
         var t1 = msngr.utils.now(true);
         var t2 = msngr.utils.now(true);
         var t3 = msngr.utils.now(true);

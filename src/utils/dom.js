@@ -1,6 +1,6 @@
 msngr.extend((function () {
     "use strict";
-    
+
     return {
         utils: {
             isHtmlElement: function (obj) {
