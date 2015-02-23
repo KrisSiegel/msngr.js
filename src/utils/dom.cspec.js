@@ -13,23 +13,65 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/dom.js", function () {
     "use strict";
 
-    it("msngr.utils.isHtmlElement(obj)", function () {
+    it("msngr.utils.isHtmlElement(obj) - obj is a function", function () {
         expect(msngr.utils.isHtmlElement(function () {})).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is a string", function () {
         expect(msngr.utils.isHtmlElement("test")).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is an empty string", function () {
         expect(msngr.utils.isHtmlElement("")).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is undefined", function () {
         expect(msngr.utils.isHtmlElement(undefined)).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is null", function () {
         expect(msngr.utils.isHtmlElement(null)).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is an object", function () {
         expect(msngr.utils.isHtmlElement({})).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is a number", function () {
         expect(msngr.utils.isHtmlElement(7)).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is an array", function () {
         expect(msngr.utils.isHtmlElement([])).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is a date", function () {
         expect(msngr.utils.isHtmlElement(new Date())).to.equal(false);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is a div element", function () {
         expect(msngr.utils.isHtmlElement(document.createElement("div"))).to.equal(true);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is an input element", function () {
         expect(msngr.utils.isHtmlElement(document.createElement("input"))).to.equal(true);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is a body element", function () {
         expect(msngr.utils.isHtmlElement(document.createElement("body"))).to.equal(true);
+    });
+
+    it("msngr.utils.isHtmlElement(obj) - obj is a canvas element", function () {
         expect(msngr.utils.isHtmlElement(document.createElement("canvas"))).to.equal(true);
     });
 
-    it("msngr.utils.isNodeList(obj)", function () {
+    it("msngr.utils.isNodeList(obj) - obj is a single div element", function () {
+        var div = document.createElement("div");
+
+        expect(msngr.utils.isNodeList(div)).to.equal(false);
+    });
+
+    it("msngr.utils.isNodeList(obj) - obj is a nodelist", function () {
         var div1 = document.createElement("div");
         var div2 = document.createElement("div");
         var div3 = document.createElement("div");
@@ -37,39 +79,55 @@ describe("./utils/dom.js", function () {
         div1.appendChild(div2);
         div1.appendChild(div3);
 
-        expect(msngr.utils.isNodeList(div1)).to.equal(false);
         expect(msngr.utils.isNodeList(div1.childNodes)).to.equal(true);
     });
 
-    it("msngr.utils.findElement(obj)", function () {
-        var div = document.createElement("div");
-        div.style.display = "none";
-
-        var div2 = document.createElement("div");
-        div2.setAttribute("id", "TestID1");
-
-        var div3 = document.createElement("div");
-        div3.setAttribute("class", "TestClass1");
-
-        var p1 = document.createElement("p");
-        div3.appendChild(p1);
-
-        div.appendChild(div2);
-        div.appendChild(div3);
-
-        document.body.appendChild(div);
-
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("#TestID1"))).to.equal(true);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("#TestI1"))).to.equal(false);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("TestID1"))).to.equal(true);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement(".TestClass1"))).to.equal(true);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement(".Testass1"))).to.equal(false);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("div div p"))).to.equal(true);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("p div"))).to.equal(false);
+    it("msngr.utils.findElement(obj) - obj is an HTMLElement", function () {
         expect(msngr.utils.isHtmlElement(msngr.utils.findElement(document.createElement("div")))).to.equal(true);
     });
 
-    it("msngr.utils.getDomPath(element)", function () {
+    it("msngr.utils.findElement(obj) - obj is an id (MyID)", function () {
+        var div = document.createElement("div");
+        div.setAttribute("id", "TestID1");
+        document.body.appendChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("TestID1"))).to.equal(true);
+        document.body.removeChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("TestID1"))).to.equal(false);
+    });
+
+    it("msngr.utils.findElement(obj) - obj is an id selector (#MyID)", function () {
+        var div = document.createElement("div");
+        div.setAttribute("id", "TestID1");
+        document.body.appendChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("#TestID1"))).to.equal(true);
+        document.body.removeChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("#TestID1"))).to.equal(false);
+    });
+
+    it("msngr.utils.findElement(obj) - obj is a class selector (.TestClass)", function () {
+        var div = document.createElement("div");
+        div.setAttribute("class", "TestClass");
+        document.body.appendChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement(".TestClass"))).to.equal(true);
+        document.body.removeChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement(".TestClass"))).to.equal(false);
+    });
+
+    it("msngr.utils.findElement(obj) - obj is a html target selector", function () {
+        var div = document.createElement("div");
+        var div2 = document.createElement("div");
+        var p = document.createElement("p");
+
+        div2.appendChild(p);
+        div.appendChild(div2);
+
+        document.body.appendChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("div div p"))).to.equal(true);
+        document.body.removeChild(div);
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("div div p"))).to.equal(false);
+    });
+
+    it("msngr.utils.getDomPath(element) - element is a tested HTMLElement", function () {
         var div = document.createElement("div");
         div.style.display = "none";
 
@@ -81,9 +139,10 @@ describe("./utils/dom.js", function () {
         document.body.appendChild(div);
         var path = msngr.utils.getDomPath(msngr.utils.findElement("TestID2"));
         expect(msngr.utils.querySelectorAllWithEq(path)[0].id).to.equal("TestID2");
+        document.body.removeChild(div);
     });
 
-    it("msngr.utils.querySelectorAllWithEq(selector)", function () {
+    it("msngr.utils.querySelectorAllWithEq(selector) - selector uses eq to target specific indexes", function () {
         var div = document.createElement("div");
         div.style.display = "none";
 
@@ -113,7 +172,7 @@ describe("./utils/dom.js", function () {
 
     });
 
-    it("msngr.utils.querySelectorWithEq(selector)", function () {
+    it("msngr.utils.querySelectorWithEq(selector) - selector uses eq to target specific indexes", function () {
         var div = document.createElement("div");
         div.style.display = "none";
 
