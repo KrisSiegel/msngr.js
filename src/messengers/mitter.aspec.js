@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./messengers/inprocess.js", function () {
+describe("./messengers/mitter.js", function () {
     it("msngr.emit(message, payload) / msngr.register(message, callback)", function (done) {
         var message1 = {
             topic: "TestingTopic1",
