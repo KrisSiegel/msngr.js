@@ -418,7 +418,7 @@ msngr.extend((function () {
     };
 
     return {
-        bind: function (element, event, message) {
+        bind: function (element, event, message, gather) {
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
@@ -426,6 +426,17 @@ msngr.extend((function () {
                 registerdPaths[path] = { };
             }
 
+            if (msngr.utils.exists(gather)) {
+                if (!msngr.utils.exists(message.options)) {
+                    message.options = { };
+                }
+                message.options.dom = message.options.dom || { };
+                if (msngr.utils.exists(message.options.dom.gather)) {
+                    msngr.extend(gather, message.options.dom.gather);
+                } else {
+                    message.options.dom.gather = gather;
+                }
+            }
             registerdPaths[path][event] = message;
 
             node.addEventListener(event, listener);

@@ -21,6 +21,9 @@ msngr.extend((function () {
 
     return {
         bind: function (element, event, message, gather) {
+            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(message)) {
+                return undefined;
+            }
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
@@ -28,17 +31,26 @@ msngr.extend((function () {
                 registerdPaths[path] = { };
             }
 
-            if (msngr.utils.exists(gather)) {
-                if (!msngr.utils.exists(message.options)) {
-                    message.options = { };
-                }
-                message.options.dom = message.options.dom || { };
-                if (msngr.utils.exists(message.options.dom.gather)) {
-                    msngr.extend(gather, message.options.dom.gather);
-                } else {
-                    message.options.dom.gather = gather;
+            if (!msngr.utils.exists(message.dom)) {
+                message.dom = { };
+            }
+
+            if (!msngr.utils.exists(message.dom.gather)) {
+                message.dom.gather = [];
+            } else {
+                if (!msngr.utils.isArray(message.dom.gather)) {
+                    message.dom.gather = [message.dom.gather];
                 }
             }
+
+            if (msngr.utils.exists(gather)) {
+                if (!msngr.utils.isArray(gather)) {
+                    message.dom.gather.push(gather);
+                } else {
+                    message.dom.gather = message.dom.gather.concat(gather);
+                }
+            }
+
             registerdPaths[path][event] = message;
 
             node.addEventListener(event, listener);

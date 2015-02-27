@@ -4,11 +4,24 @@ msngr.extend((function () {
     var delegates = { };
     var delegateCount = 0;
 
-    var executeSync = function (method, context, params) {
+    var handlers = { };
+
+    var executeSync = function (method, context, params, message) {
+        /*
+        for (var key in message) {
+            if (message.hasOwnProperty(key) && ["topic", "category", "dataType"].indexOf(key) === -1) {
+                if (msngr.utils.exists(handlers[key]) && msngr.utils.exists(handlers[key]["before"])) {
+                    var cont = true;
+                    handlers[key]["before"]({
+
+                    });
+                }
+            }
+        }*/
         method.apply(context, params);
     };
 
-    var execute = function (method, context, params) {
+    var execute = function (method, context, params, message) {
         (function (m, c, p) {
             setTimeout(function () {
                 executeSync(m, c, p);
@@ -22,7 +35,7 @@ msngr.extend((function () {
             if (uuids.length > 0) {
                 for (var i = 0; i < uuids.length; ++i) {
                     var del = delegates[uuids[i]];
-                    execute(del.callback, del.context, [payload || message.payload]);
+                    execute(del.callback, del.context, [payload || message.payload], message);
                 }
             }
 
@@ -48,6 +61,31 @@ msngr.extend((function () {
                     delegateCount--;
 
                     msngr.stores.memory.delete(uuid);
+                }
+            }
+
+            return msngr;
+        },
+        handle: function (property, when, handler) {
+            if (msngr.utils.exists(property)) {
+                if (msngr.utils.isFunction(when) && !msngr.utils.exists(handler)) {
+                    handler = when;
+                    when = "before";
+                }
+
+                if (msngr.utils.exists(when) && msngr.utils.exists(handler)) {
+                    handlers[property][when] = handler;
+                }
+            }
+
+            return msngr;
+        },
+        unhandle: function (property, when) {
+            if (msngr.utils.exists(property)) {
+                if (!msngr.utils.exists(when)) {
+                    delete handlers[property];
+                } else {
+                    delete handlers[property][when];
                 }
             }
 
