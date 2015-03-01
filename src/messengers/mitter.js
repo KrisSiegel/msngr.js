@@ -1,104 +1,180 @@
 msngr.extend((function () {
     "use strict";
 
+    // Throw statements
+    var InvalidParameters = function (str) {
+        return {
+            severity: "unrecoverable",
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
     var delegates = { };
     var delegateCount = 0;
 
-    var handlers = { };
-
     var executeSync = function (method, context, params, message) {
-        /*
-        for (var key in message) {
-            if (message.hasOwnProperty(key) && ["topic", "category", "dataType"].indexOf(key) === -1) {
-                if (msngr.utils.exists(handlers[key]) && msngr.utils.exists(handlers[key]["before"])) {
-                    var cont = true;
-                    handlers[key]["before"]({
-
-                    });
+        (function (m, c, p, msg) {
+            var cont = true;
+            var wrap = {
+                preventDefault: function () {
+                    cont = false;
+                },
+                payload: p[0],
+                done: function () {
+                    if (cont === true) {
+                        m.apply(c, [wrap.payload]);
+                    }
                 }
-            }
-        }*/
-        method.apply(context, params);
+            };
+            msngr.act(msg, wrap);
+        }(method, context, params, message));
     };
 
     var execute = function (method, context, params, message) {
-        (function (m, c, p) {
+        (function (m, c, p, msg) {
             setTimeout(function () {
-                executeSync(m, c, p);
+                executeSync(m, c, p, msg);
             }, 0);
-        }(method, context, params));
+        }(method, context, params, message));
+    };
+
+    var _emit = function (message, payload) {
+        var uuids = msngr.store.query(message);
+        if (uuids.length > 0) {
+            for (var i = 0; i < uuids.length; ++i) {
+                var del = delegates[uuids[i]];
+                var params = [];
+                if (msngr.utils.exists(payload || message.payload)) {
+                    params.push(payload || message.payload);
+                }
+                execute(del.callback, del.context, params, message);
+            }
+        }
+
+        return msngr;
+    };
+
+    var _on = function (message, callback) {
+        var uuid = msngr.store.index(message);
+        delegates[uuid] = {
+            callback: callback,
+            context: (message.context || this),
+            onedMessage: message
+        };
+        delegateCount++;
+
+        return msngr;
+    };
+
+    var _drop = function (message) {
+        var uuids = msngr.store.query(message);
+        if (uuids.length > 0) {
+            for (var i = 0; i < uuids.length; ++i) {
+                var uuid = uuids[i];
+                delete delegates[uuid];
+                delegateCount--;
+
+                msngr.store.delete(uuid);
+            }
+        }
+
+        return msngr;
     };
 
     return {
-        emit: function (message, payload) {
-            var uuids = msngr.stores.memory.query(message);
-            if (uuids.length > 0) {
-                for (var i = 0; i < uuids.length; ++i) {
-                    var del = delegates[uuids[i]];
-                    execute(del.callback, del.context, [payload || message.payload], message);
-                }
+        emit: function (topic, category, dataType, payload) {
+            if (!msngr.utils.exists(topic)) {
+                throw InvalidParameters("emit");
             }
 
-            return msngr;
-        },
-        register: function (message, callback) {
-            var uuid = msngr.stores.memory.index(message);
-            delegates[uuid] = {
-                callback: callback,
-                context: (message.context || this),
-                registeredMessage: message
-            };
-            delegateCount++;
-
-            return msngr;
-        },
-        unregister: function (message) {
-            var uuids = msngr.stores.memory.query(message);
-            if (uuids.length > 0) {
-                for (var i = 0; i < uuids.length; ++i) {
-                    var uuid = uuids[i];
-                    delete delegates[uuid];
-                    delegateCount--;
-
-                    msngr.stores.memory.delete(uuid);
+            var message;
+            if (msngr.utils.isObject(topic)) {
+                message = topic;
+                if (!msngr.utils.exists(payload) && msngr.utils.exists(category)) {
+                    payload = category;
                 }
+                return _emit(message, payload);
+            }
+            if (arguments.length > 1) {
+                message = { };
+                var args = msngr.utils.argumentsToArray(arguments);
+
+                payload = payload || args.pop();
+
+                message.topic = args.shift();
+
+                message.category = args.shift();
+                message.dataType = args.shift();
+
+                return _emit(message, payload);
             }
 
-            return msngr;
+            throw InvalidParameters("emit");
         },
-        handle: function (property, when, handler) {
-            if (msngr.utils.exists(property)) {
-                if (msngr.utils.isFunction(when) && !msngr.utils.exists(handler)) {
-                    handler = when;
-                    when = "before";
-                }
-
-                if (msngr.utils.exists(when) && msngr.utils.exists(handler)) {
-                    handlers[property][when] = handler;
-                }
+        on: function (topic, category, dataType, callback) {
+            if (!msngr.utils.exists(topic)) {
+                throw InvalidParameters("on");
             }
 
-            return msngr;
-        },
-        unhandle: function (property, when) {
-            if (msngr.utils.exists(property)) {
-                if (!msngr.utils.exists(when)) {
-                    delete handlers[property];
-                } else {
-                    delete handlers[property][when];
+            var message;
+            if (msngr.utils.isObject(topic)) {
+                message = topic;
+                if (!msngr.utils.exists(callback) && msngr.utils.exists(category)) {
+                    callback = category;
                 }
+                return _on(message, callback);
+            }
+            if (arguments.length > 1) {
+                message = { };
+                var args = msngr.utils.argumentsToArray(arguments);
+
+                callback = callback || args.pop();
+
+                message.topic = args.shift();
+
+                message.category = args.shift();
+                message.dataType = args.shift();
+
+                return _on(message, callback);
             }
 
-            return msngr;
+            throw InvalidParameters("on");
         },
-        unregisterAll: function () {
+        drop: function (topic, category, dataType) {
+            if (!msngr.utils.exists(topic)) {
+                throw InvalidParameters("drop");
+            }
+
+            var message;
+            if (msngr.utils.isObject(topic)) {
+                message = topic;
+                return _drop(message);
+            } else {
+                message = { };
+                if (msngr.utils.exists(topic)) {
+                    message.topic = topic;
+                }
+
+                if (msngr.utils.exists(category)) {
+                    message.category = category;
+                }
+
+                if (msngr.utils.exists(dataType)) {
+                    message.dataType = dataType;
+                }
+                return _drop(message);
+            }
+
+            throw InvalidParameters("drop");
+        },
+        dropAll: function () {
             delegates = { };
             delegateCount = 0;
-            msngr.stores.memory.clear();
+            msngr.store.clear();
 
             return msngr;
         },
-        getDelegateCount: function () {
+        getMessageCount: function () {
             return delegateCount;
         }
     };

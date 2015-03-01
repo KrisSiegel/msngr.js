@@ -1,6 +1,21 @@
 msngr.extend((function () {
     "use strict";
 
+    // Throw statements
+    var InvalidParametersException = function (str) {
+        return {
+            severity: "unrecoverable",
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
+    var UnexpectedException = function (str) {
+        return {
+            severity: "unrecoverable",
+            message: ("An unexpected exception occured in the {method} method".replace("{method}", str))
+        };
+    };
+
     var registerdPaths = { };
     var registerdEvents = 0;
 
@@ -14,15 +29,14 @@ msngr.extend((function () {
             }
         }
 
-        // How did we get here? Must be a memory leak or something
-        console.log("Warning: msngr core event listener triggered without a message. Memory leak?");
+        // How did we get here? Must be a memory leak or something. Ugh
         return msngr;
     };
 
     return {
         bind: function (element, event, message, gather) {
             if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(message)) {
-                return undefined;
+                throw InvalidParametersException("bind");
             }
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
