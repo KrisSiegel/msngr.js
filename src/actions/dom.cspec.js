@@ -27,9 +27,8 @@ describe("./actions/dom.js", function () {
 
         msngr.on("TestTopic", function (payload) {
             expect(payload).to.exist;
-            expect(payload.gathered).to.exist;
-            expect(payload.gathered["Name"]).to.exist;
-            expect(payload.gathered["Name"]).to.equal("Kris");
+            expect(payload["Name"]).to.exist;
+            expect(payload["Name"]).to.equal("Kris");
 
             document.body.removeChild(input);
 
