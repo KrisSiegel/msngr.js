@@ -18,46 +18,46 @@ describe("./messengers/mitter.js", function () {
         done();
     });
 
-    it("msngr.emit('TestTopic', 'Hello, World Payload!') is received by msngr.on('TestTopic', function (payload))", function (done) {
+    it("msngr.emit('TestTopic', { str: 'Hello, World Payload!' }) is received by msngr.on('TestTopic', function (payload))", function (done) {
         expect(msngr.getMessageCount()).to.exist;
         expect(msngr.getMessageCount()).to.equal(0);
 
         msngr.on("TestTopic", function (payload) {
             expect(payload).to.exist;
-            expect(payload).to.equal("Hello, World Payload!");
+            expect(payload.str).to.equal("Hello, World Payload!");
 
             done();
         });
 
-        msngr.emit("TestTopic", "Hello, World Payload!");
+        msngr.emit("TestTopic", { str: "Hello, World Payload!" });
     });
 
-    it("msngr.emit('TestTopic', 'TestCategory', 'MyPayload') is received by msngr.on('TestTopic', 'TestCategory', function (payload))", function (done) {
+    it("msngr.emit('TestTopic', 'TestCategory', { str: 'MyPayload' }) is received by msngr.on('TestTopic', 'TestCategory', function (payload))", function (done) {
         expect(msngr.getMessageCount()).to.exist;
         expect(msngr.getMessageCount()).to.equal(0);
 
         msngr.on("TestTopic", "TestCategory", function (payload) {
             expect(payload).to.exist;
-            expect(payload).to.equal("MyPayload");
+            expect(payload.str).to.equal("MyPayload");
 
             done();
         });
 
-        msngr.emit("TestTopic", "TestCategory", "MyPayload");
+        msngr.emit("TestTopic", "TestCategory", { str: "MyPayload" });
     });
 
-    it("msngr.emit('TestTopic', 'TestCategory', 'TestDataType', 'AnotherPayload') is received by msngr.on('TestTopic', 'TestCategory', 'TestDataType', function (payload))", function (done) {
+    it("msngr.emit('TestTopic', 'TestCategory', 'TestDataType', { str: 'AnotherPayload' }) is received by msngr.on('TestTopic', 'TestCategory', 'TestDataType', function (payload))", function (done) {
         expect(msngr.getMessageCount()).to.exist;
         expect(msngr.getMessageCount()).to.equal(0);
 
         msngr.on("TestTopic", "TestCategory", "TestDataType", function (payload) {
             expect(payload).to.exist;
-            expect(payload).to.equal("AnotherPayload");
+            expect(payload.str).to.equal("AnotherPayload");
 
             done();
         });
 
-        msngr.emit("TestTopic", "TestCategory", "TestDataType", "AnotherPayload");
+        msngr.emit("TestTopic", "TestCategory", "TestDataType", { str: "AnotherPayload" });
     });
 
     it("msngr.emit({ topic: 'TestTopic' }, 'WeePayload') is received by msngr.on({ topic: 'TestTopic' }, function (payload))", function (done) {
@@ -100,6 +100,34 @@ describe("./messengers/mitter.js", function () {
         });
 
         msngr.emit({ topic: "TestTopic", category: "TestCategory", dataType: "TestType" }, "MY PAYLOAD");
+    });
+
+    it("msngr.emit('TestTopic1', 'TestCategory1') is received by msngr.on('TestTopic1', 'TestCategory1') and not msngr.on('TestTopic1', 'TestCategory2')", function (done) {
+        expect(msngr.getMessageCount()).to.exist;
+        expect(msngr.getMessageCount()).to.equal(0);
+
+        var counter = 0;
+        var cat1 = undefined;
+        var cat2 = undefined;
+
+        msngr.on("TestTopic1", "TestCategory1", function () {
+            counter++;
+            cat1 = true;
+        });
+
+        msngr.on("TestTopic1", "TestCategory2", function () {
+            counter++;
+            cat2 = true;
+        });
+
+        msngr.emit("TestTopic1", "TestCategory1");
+
+        setTimeout(function () {
+            expect(cat1).to.equal(true);
+            expect(cat2).to.equal(undefined);
+            expect(counter).to.equal(1);
+            done();
+        }, 500);
     });
 
     it("msngr.drop('TestTopic') drops msngr.on('TestTopic')", function (done) {

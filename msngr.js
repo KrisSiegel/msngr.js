@@ -592,11 +592,23 @@ msngr.extend((function () {
                 message = { };
                 var args = msngr.utils.argumentsToArray(arguments);
 
-                payload = payload || args.pop();
-
                 message.topic = args.shift();
 
+                if (!msngr.utils.exists(payload)) {
+                    if (args.length > 0 && msngr.utils.isObject(args[0])) {
+                        payload = args.shift();
+
+                        return _emit(message, payload);
+                    }
+                }
+
                 message.category = args.shift();
+
+                if (args.length > 0 && msngr.utils.isObject(args[0])) {
+                    payload = args.shift();
+
+                    return _emit(message, payload);
+                }
                 message.dataType = args.shift();
 
                 return _emit(message, payload);
