@@ -17,19 +17,66 @@ describe("./stores/memory.js", function () {
         msngr.store.clear();
     });
 
-    it("msngr.store.index(message)", function () {
+    it("msngr.store.index(message) - indexes a message with only a topic", function () {
+        var message = {
+            topic: "TestTopic1"
+        };
+
+        expect(msngr.store.count()).to.equal(0);
+        var id = msngr.store.index(message);
+        expect(id).to.exist;
+        expect(msngr.store.count()).to.equal(1);
+    });
+
+    it("msngr.store.index(message) - indexes a message with a topic and category", function () {
+        var message = {
+            topic: "TestTopic1",
+            category: "TestCategory1"
+        };
+
+        expect(msngr.store.count()).to.equal(0);
+        var id = msngr.store.index(message);
+        expect(id).to.exist;
+        expect(msngr.store.count()).to.equal(1);
+    });
+
+    it("msngr.store.index(message) - indexes a message with a topic and dataType", function () {
+        var message = {
+            topic: "TestTopic1",
+            dataType: "TestDataType1"
+        };
+
+        expect(msngr.store.count()).to.equal(0);
+        var id = msngr.store.index(message);
+        expect(id).to.exist;
+        expect(msngr.store.count()).to.equal(1);
+    });
+
+    it("msngr.store.index(message) - indexes a message with a topic, category and dataType", function () {
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
             dataType: "TestDataType1"
         };
 
+        expect(msngr.store.count()).to.equal(0);
         var id = msngr.store.index(message);
         expect(id).to.exist;
         expect(msngr.store.count()).to.equal(1);
     });
 
-    it("msngr.store.delete(uuid)", function () {
+    it("msngr.store.index(message) - invalid message shouldn't index", function () {
+        var message = {
+            cookie: "monster"
+        };
+
+        expect(msngr.store.count()).to.equal(0);
+        var id = msngr.store.index(message);
+        expect(id).to.not.exist;
+        expect(msngr.store.count()).to.equal(0);
+    });
+
+    it("msngr.store.delete(uuid) - deletes a valid uuid", function () {
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
@@ -42,6 +89,13 @@ describe("./stores/memory.js", function () {
         var result = msngr.store.delete(id);
         expect(result).to.exist;
         expect(result).to.equal(true);
+        expect(msngr.store.count()).to.equal(0);
+    });
+
+    it("msngr.store.delete(uuid) - doesn't delete an invalid uuid", function () {
+        var result = msngr.store.delete("sldfjslkfjlwrjlskdfjs");
+        expect(result).to.exist;
+        expect(result).to.equal(false);
         expect(msngr.store.count()).to.equal(0);
     });
 

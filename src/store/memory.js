@@ -109,6 +109,7 @@ msngr.extend((function () {
 
                   return true;
               }
+              return false;
           },
           query: function (message) {
               if (msngr.utils.exists(message)) {
