@@ -102,6 +102,34 @@ describe("./messengers/mitter.js", function () {
         msngr.emit({ topic: "TestTopic", category: "TestCategory", dataType: "TestType" }, "MY PAYLOAD");
     });
 
+    it("msngr.emit('TestTopic1') is received by msngr.on('TestTopic1') and not msngr.on('TestTopic2')", function (done) {
+        expect(msngr.getMessageCount()).to.exist;
+        expect(msngr.getMessageCount()).to.equal(0);
+
+        var counter = 0;
+        var cat1 = undefined;
+        var cat2 = undefined;
+
+        msngr.on("TestTopic1", function () {
+            counter++;
+            cat1 = true;
+        });
+
+        msngr.on("TestTopic2", function () {
+            counter++;
+            cat2 = true;
+        });
+
+        msngr.emit("TestTopic1");
+
+        setTimeout(function () {
+            expect(cat1).to.equal(true);
+            expect(cat2).to.equal(undefined);
+            expect(counter).to.equal(1);
+            done();
+        }, 250);
+    });
+
     it("msngr.emit('TestTopic1', 'TestCategory1') is received by msngr.on('TestTopic1', 'TestCategory1') and not msngr.on('TestTopic1', 'TestCategory2')", function (done) {
         expect(msngr.getMessageCount()).to.exist;
         expect(msngr.getMessageCount()).to.equal(0);
@@ -127,7 +155,63 @@ describe("./messengers/mitter.js", function () {
             expect(cat2).to.equal(undefined);
             expect(counter).to.equal(1);
             done();
-        }, 500);
+        }, 250);
+    });
+
+    it("msngr.emit('TestTopic1', undefined, 'DataType1') is received by msngr.on('TestTopic1', undefined, 'DataType1') and not msngr.on('TestTopic1', undefined, 'DataType2')", function (done) {
+        expect(msngr.getMessageCount()).to.exist;
+        expect(msngr.getMessageCount()).to.equal(0);
+
+        var counter = 0;
+        var cat1 = undefined;
+        var cat2 = undefined;
+
+        msngr.on("TestTopic1", undefined, "DataType1", function () {
+            counter++;
+            cat1 = true;
+        });
+
+        msngr.on("TestTopic2", undefined, "DataType2", function () {
+            counter++;
+            cat2 = true;
+        });
+
+        msngr.emit("TestTopic1", undefined, "DataType1");
+
+        setTimeout(function () {
+            expect(cat1).to.equal(true);
+            expect(cat2).to.equal(undefined);
+            expect(counter).to.equal(1);
+            done();
+        }, 250);
+    });
+
+    it("msngr.emit('TestTopic1', 'TestCategory1', 'TestDataType1') is received by msngr.on('TestTopic1', 'TestCategory1', 'TestDataType1') and not msngr.on('TestTopic1', 'TestCategory1', 'TestDataType2')", function (done) {
+        expect(msngr.getMessageCount()).to.exist;
+        expect(msngr.getMessageCount()).to.equal(0);
+
+        var counter = 0;
+        var cat1 = undefined;
+        var cat2 = undefined;
+
+        msngr.on("TestTopic1", "TestCategory1", "TestDataType1", function () {
+            counter++;
+            cat1 = true;
+        });
+
+        msngr.on("TestTopic1", "TestCategory1", "TestDataType2", function () {
+            counter++;
+            cat2 = true;
+        });
+
+        msngr.emit("TestTopic1", "TestCategory1", "TestDataType1");
+
+        setTimeout(function () {
+            expect(cat1).to.equal(true);
+            expect(cat2).to.equal(undefined);
+            expect(counter).to.equal(1);
+            done();
+        }, 250);
     });
 
     it("msngr.drop('TestTopic') drops msngr.on('TestTopic')", function (done) {

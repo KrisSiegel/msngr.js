@@ -95,33 +95,30 @@ msngr.extend((function () {
                 }
                 return _emit(message, payload);
             }
-            if (arguments.length > 1) {
-                message = { };
-                var args = msngr.utils.argumentsToArray(arguments);
 
-                message.topic = args.shift();
+            message = { };
+            var args = msngr.utils.argumentsToArray(arguments);
 
-                if (!msngr.utils.exists(payload)) {
-                    if (args.length > 0 && msngr.utils.isObject(args[0])) {
-                        payload = args.shift();
+            message.topic = args.shift();
 
-                        return _emit(message, payload);
-                    }
-                }
-
-                message.category = args.shift();
-
+            if (!msngr.utils.exists(payload)) {
                 if (args.length > 0 && msngr.utils.isObject(args[0])) {
                     payload = args.shift();
 
                     return _emit(message, payload);
                 }
-                message.dataType = args.shift();
+            }
+
+            message.category = args.shift();
+
+            if (args.length > 0 && msngr.utils.isObject(args[0])) {
+                payload = args.shift();
 
                 return _emit(message, payload);
             }
+            message.dataType = args.shift();
 
-            throw InvalidParameters("emit");
+            return _emit(message, payload);
         },
         on: function (topic, category, dataType, callback) {
             if (!msngr.utils.exists(topic)) {
