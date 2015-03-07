@@ -10,15 +10,23 @@ msngr.extend((function () {
             isNodeList: function (obj) {
                 return (this.getType(obj) === "[object NodeList]");
             },
-            findElement: function (element) {
-                var elm;
-                if (msngr.utils.isHtmlElement(element)) {
-                    elm = element;
+            findElement: function (element, root) {
+                var elms = msngr.utils.findElements(element);
+                if (elms !== undefined && elms.length > 0) {
+                    return elms[0];
                 }
 
-                if (elm === undefined && msngr.utils.isString(element)) {
-                    var result = document.getElementById(element);
-                    result = (result !== null) ? result : document.querySelector(element);
+                return elms;
+            },
+            findElements: function (selector, root) {
+                var elm;
+                if (msngr.utils.isHtmlElement(selector)) {
+                    elm = selector;
+                }
+
+                if (elm === undefined && msngr.utils.isString(selector)) {
+                    var doc = root || document;
+                    var result = doc.querySelectorAll(selector);
                     if (result !== null) {
                         elm = result;
                     }
@@ -38,10 +46,11 @@ msngr.extend((function () {
 
                 return "#" + node.id;
             },
-            querySelectorAllWithEq: function (selector) {
+            querySelectorAllWithEq: function (selector, root) {
                 if (selector === undefined) {
                     return null;
                 }
+                var doc = root || document;
                 var queue = [];
                 var process = function (input) {
                     if (input.indexOf(":eq(") === -1) {
@@ -73,11 +82,11 @@ msngr.extend((function () {
                 var result;
                 while (queue.length > 0) {
                     var item = queue.shift();
-                    result = (result || document).querySelectorAll(item.selector)[item.index];
+                    result = (result || doc).querySelectorAll(item.selector)[item.index];
                 }
 
                 if (selector.trim().length > 0) {
-                    return (result || document).querySelectorAll(selector);
+                    return (result || doc).querySelectorAll(selector);
                 }
                 return [result];
             },

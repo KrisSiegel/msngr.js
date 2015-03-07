@@ -51,15 +51,23 @@ msngr.extend((function () {
             isNodeList: function (obj) {
                 return (this.getType(obj) === "[object NodeList]");
             },
-            findElement: function (element) {
-                var elm;
-                if (msngr.utils.isHtmlElement(element)) {
-                    elm = element;
+            findElement: function (element, root) {
+                var elms = msngr.utils.findElements(element);
+                if (elms !== undefined && elms.length > 0) {
+                    return elms[0];
                 }
 
-                if (elm === undefined && msngr.utils.isString(element)) {
-                    var result = document.getElementById(element);
-                    result = (result !== null) ? result : document.querySelector(element);
+                return elms;
+            },
+            findElements: function (selector, root) {
+                var elm;
+                if (msngr.utils.isHtmlElement(selector)) {
+                    elm = selector;
+                }
+
+                if (elm === undefined && msngr.utils.isString(selector)) {
+                    var doc = root || document;
+                    var result = doc.querySelectorAll(selector);
                     if (result !== null) {
                         elm = result;
                     }
@@ -79,10 +87,11 @@ msngr.extend((function () {
 
                 return "#" + node.id;
             },
-            querySelectorAllWithEq: function (selector) {
+            querySelectorAllWithEq: function (selector, root) {
                 if (selector === undefined) {
                     return null;
                 }
+                var doc = root || document;
                 var queue = [];
                 var process = function (input) {
                     if (input.indexOf(":eq(") === -1) {
@@ -114,11 +123,11 @@ msngr.extend((function () {
                 var result;
                 while (queue.length > 0) {
                     var item = queue.shift();
-                    result = (result || document).querySelectorAll(item.selector)[item.index];
+                    result = (result || doc).querySelectorAll(item.selector)[item.index];
                 }
 
                 if (selector.trim().length > 0) {
-                    return (result || document).querySelectorAll(selector);
+                    return (result || doc).querySelectorAll(selector);
                 }
                 return [result];
             },
@@ -431,10 +440,14 @@ msngr.extend((function () {
     };
 
     return {
-        bind: function (element, event, message, gather) {
-            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(message)) {
+        bind: function (element, event, topic, category, dataType) {
+            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(topic)) {
                 throw InvalidParametersException("bind");
             }
+            if (msngr.utils.isObject(topic) && !msngr.utils.exists(topic.topic)) {
+                throw InvalidParametersException("bind");
+            }
+
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
@@ -442,23 +455,19 @@ msngr.extend((function () {
                 registerdPaths[path] = { };
             }
 
-            if (!msngr.utils.exists(message.dom)) {
-                message.dom = { };
-            }
-
-            if (!msngr.utils.exists(message.dom.gather)) {
-                message.dom.gather = [];
+            var message = undefined;
+            if (msngr.utils.isObject(topic)) {
+                message = topic;
             } else {
-                if (!msngr.utils.isArray(message.dom.gather)) {
-                    message.dom.gather = [message.dom.gather];
-                }
-            }
+                message = { };
+                message.topic = topic;
 
-            if (msngr.utils.exists(gather)) {
-                if (!msngr.utils.isArray(gather)) {
-                    message.dom.gather.push(gather);
-                } else {
-                    message.dom.gather = message.dom.gather.concat(gather);
+                if (msngr.utils.exists(category)) {
+                    message.category = category;
+                }
+
+                if (msngr.utils.exists(dataType)) {
+                    message.dataType = dataType;
                 }
             }
 
@@ -751,19 +760,51 @@ msngr.extend((function () {
 msngr.action("dom", function (message, wrap) {
     "use strict";
 
-    if (msngr.utils.exists(message.dom.gather)) {
-        var toGet = (msngr.utils.isArray(message.dom.gather) ? message.dom.gather : [message.dom.gather]);
-        if (!msngr.utils.isObject(wrap.payload)) {
-            wrap.payload = { };
+    if (msngr.utils.exists(message.dom)) {
+        var norm = {
+            gather: undefined,
+            doc: undefined
+        };
+        if (!msngr.utils.isObject(message.dom)) {
+            if (msngr.utils.isArray(message.dom)) {
+                norm.gather = message.dom;
+            } else if (msngr.utils.isString(message.dom)) {
+                norm.gather = [message.dom];
+            }
+        } else {
+            if (msngr.utils.exists(message.dom.gather)) {
+                norm.gather = (msngr.utils.isArray(message.dom.gather) ? message.dom.gather : [message.dom.gather]);
+            }
+            if (msngr.utils.exists(message.dom.root || message.dom.doc)) {
+                norm.doc = message.dom.root || message.dom.doc;
+            }
         }
 
-        for (var i = 0; i < toGet.length; ++i) {
-            var elm = msngr.utils.findElement(toGet[i]);
-            if (msngr.utils.exists(elm) && msngr.utils.exists(elm.getAttribute("name"))) {
-                wrap.payload[elm.getAttribute("name")] = elm.value;
+        if (msngr.utils.exists(norm.gather) && norm.gather.length > 0) {
+            if (!msngr.utils.isObject(wrap.payload)) {
+                wrap.payload = { };
+            }
+
+            for (var i = 0; i < norm.gather.length; ++i) {
+                var elms = msngr.utils.findElements(norm.gather[i], message.dom.root);
+                if (msngr.utils.exists(elms) && elms.length > 0) {
+                    for (var j = 0; j < elms.length; ++j) {
+                        var prop;
+                        if (msngr.utils.exists(elms[j].getAttribute("name"))) {
+                            prop = elms[j].getAttribute("name");
+                        } else if (msngr.utils.exists(elms[j].id)) {
+                            prop = elms[j].getAttribute("id");
+                        } else {
+                            prop = elms[j].tagName.toLowerCase() + j;
+                        }
+                        wrap.payload[prop] = elms[j].value;
+                    }
+                }
             }
         }
     }
+
+    return msngr;
 });
 
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {

@@ -18,24 +18,32 @@ describe("./actions/dom.js", function () {
         done();
     });
 
-    it("dom.gather gathers element values", function (done) {
-        var input = document.createElement("input");
-        input.setAttribute("name", "Name");
-        input.value = "Kris";
+    it("dom action - gathers multiple values with a selector that matches multiple elements", function (done) {
+        var input1 = document.createElement("input");
+        input1.setAttribute("name", "Name");
+        input1.value = "Kris";
 
-        document.body.appendChild(input);
+        var input2 = document.createElement("input");
+        input2.setAttribute("name", "Email");
+        input2.value = "AnEmail@Address.here";
+
+        document.body.appendChild(input1);
+        document.body.appendChild(input2);
 
         msngr.on("TestTopic", function (payload) {
+            console.log(payload);
             expect(payload).to.exist;
             expect(payload["Name"]).to.exist;
             expect(payload["Name"]).to.equal("Kris");
+            expect(payload["Email"]).to.exist;
+            expect(payload["Email"]).to.equal("AnEmail@Address.here");
 
-            document.body.removeChild(input);
+            document.body.removeChild(input1);
+            document.body.removeChild(input2);
 
             done();
         });
 
-        msngr.emit({ topic: "TestTopic", dom: { gather: ["input"] }}, { });
+        msngr.emit({ topic: "TestTopic", dom: ["input"] });
     });
-
 });
