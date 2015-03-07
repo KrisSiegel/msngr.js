@@ -31,7 +31,6 @@ describe("./actions/dom.js", function () {
         document.body.appendChild(input2);
 
         msngr.on("TestTopic", function (payload) {
-            console.log(payload);
             expect(payload).to.exist;
             expect(payload["Name"]).to.exist;
             expect(payload["Name"]).to.equal("Kris");
