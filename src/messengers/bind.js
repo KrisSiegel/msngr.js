@@ -34,10 +34,14 @@ msngr.extend((function () {
     };
 
     return {
-        bind: function (element, event, message, gather) {
-            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(message)) {
+        bind: function (element, event, topic, category, dataType) {
+            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(topic)) {
                 throw InvalidParametersException("bind");
             }
+            if (msngr.utils.isObject(topic) && !msngr.utils.exists(topic.topic)) {
+                throw InvalidParametersException("bind");
+            }
+
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
@@ -45,23 +49,19 @@ msngr.extend((function () {
                 registerdPaths[path] = { };
             }
 
-            if (!msngr.utils.exists(message.dom)) {
-                message.dom = { };
-            }
-
-            if (!msngr.utils.exists(message.dom.gather)) {
-                message.dom.gather = [];
+            var message = undefined;
+            if (msngr.utils.isObject(topic)) {
+                message = topic;
             } else {
-                if (!msngr.utils.isArray(message.dom.gather)) {
-                    message.dom.gather = [message.dom.gather];
-                }
-            }
+                message = { };
+                message.topic = topic;
 
-            if (msngr.utils.exists(gather)) {
-                if (!msngr.utils.isArray(gather)) {
-                    message.dom.gather.push(gather);
-                } else {
-                    message.dom.gather = message.dom.gather.concat(gather);
+                if (msngr.utils.exists(category)) {
+                    message.category = category;
+                }
+
+                if (msngr.utils.exists(dataType)) {
+                    message.dataType = dataType;
                 }
             }
 
