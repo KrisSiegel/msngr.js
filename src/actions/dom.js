@@ -30,15 +30,19 @@ msngr.action("dom", function (message, wrap) {
                 var elms = msngr.utils.findElements(norm.gather[i], message.dom.root);
                 if (msngr.utils.exists(elms) && elms.length > 0) {
                     for (var j = 0; j < elms.length; ++j) {
+                        var elm = elms[j];
+
                         var prop;
-                        if (msngr.utils.exists(elms[j].getAttribute("name"))) {
-                            prop = elms[j].getAttribute("name");
-                        } else if (msngr.utils.exists(elms[j].id)) {
-                            prop = elms[j].getAttribute("id");
+                        if (msngr.utils.exists(elm.getAttribute("name")) && !msngr.utils.isEmptyString(elm.getAttribute("name"))) {
+                            prop = elm.getAttribute("name");
+                        } else if (msngr.utils.exists(elm.id) && !msngr.utils.isEmptyString(elm.id)) {
+                            prop = elm.getAttribute("id");
+                            console.log(elm.id);
                         } else {
-                            prop = elms[j].tagName.toLowerCase() + j;
+                            prop = elm.tagName.toLowerCase() + j;
                         }
-                        wrap.payload[prop] = elms[j].value;
+                        
+                        wrap.payload[prop] = elm.value;
                     }
                 }
             }
