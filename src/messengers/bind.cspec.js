@@ -115,4 +115,51 @@ describe("./messengers/bind.js", function () {
             done();
         }, 250);
     });
+
+    it("msngr.unbind(element, event) - Unbind and ensure the message originally bound does not get sent", function (done) {
+        var div = document.createElement("div");
+
+        msngr.bind(div, "testEvent1", "MyTopic1", "MyCategory1");
+        msngr.bind(div, "testEvent2", "MyTopic2", "MyCategory2");
+        var flag = false;
+
+        msngr.on("MyTopic1", "MyCategory1", function () {
+            flag = true;
+        });
+
+        msngr.on("MyTopic2", "MyCategory2", function () {
+            flag = true;
+        });
+
+        var testEvent1 = document.createEvent("CustomEvent");
+        testEvent1.initCustomEvent("testEven1", false, false, null);
+
+        var testEvent2 = document.createEvent("CustomEvent");
+        testEvent2.initCustomEvent("testEven1", false, false, null);
+
+        msngr.unbind(div, "testEvent1");
+        msngr.unbind(div, "testEvent2");
+
+        div.dispatchEvent(testEvent1);
+        div.dispatchEvent(testEvent2);
+
+        setTimeout(function () {
+            expect(flag).to.equal(false);
+            done();
+        }, 250);
+    });
+
+    it("msngr.getBindCount() - Accurately tracks the bind count", function () {
+        var div = document.createElement("div");
+
+        var start = msngr.getBindCount();
+        msngr.bind(div, "testEvent1", "MyTopic1", "MyCategory1");
+        msngr.bind(div, "testEvent2", "MyTopic2", "MyCategory2");
+
+        expect(msngr.getBindCount()).to.equal(start + 2);
+
+        msngr.unbind(div, "testEvent1");
+
+        expect(msngr.getBindCount()).to.equal(start + 1);
+    });
 });
