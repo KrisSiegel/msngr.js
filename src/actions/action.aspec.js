@@ -18,7 +18,7 @@ describe("./actions/action.js", function () {
         done();
     });
 
-    it("msngr.action('poke', function () { }) adds poke to payload", function (done) {
+    it("msngr.action(property, function () { }) - adds an action which successfully acts on a message payload", function (done) {
         msngr.on("TestTopic", function (payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("Payload Poke!");
@@ -37,6 +37,77 @@ describe("./actions/action.js", function () {
         });
 
         msngr.emit({ topic: "TestTopic" , poke: true }, "Payload");
+    });
+
+    it("msngr.action(property, function () { }) - adds multiple actions which all successfully act on a message payload", function (done) {
+        msngr.on("TestTopic", function (payload) {
+            expect(payload).to.exist;
+            expect(payload.numbers).to.exist;
+            expect(payload.numbers.length).to.equal(3);
+            expect(payload.words).to.exist;
+            expect(payload.words.length).to.equal(3);
+            expect(payload.original).to.exist;
+            expect(payload.original).to.equal("TestBorg");
+
+            msngr.inaction("numbers");
+            msngr.inaction("words");
+
+            done();
+        });
+
+        var start = msngr.getActionCount();
+        expect(start).to.exist;
+        msngr.action("numbers", function (message, wrap) {
+            wrap.payload.numbers = [12, 15, 97];
+        });
+
+        msngr.action("words", function (message, wrap) {
+            wrap.payload.words = ["float", "chicken", "springs"];
+        });
+        expect(msngr.getActionCount()).to.equal(start + 2);
+
+        msngr.emit({ topic: "TestTopic" , numbers: true, words: true }, { original: "TestBorg" });
+    });
+
+    it("msngr.action(property, function () { }) - adds multiple actions but only one acts on a message payload", function (done) {
+        msngr.on("TestTopic", function (payload) {
+            expect(payload).to.exist;
+            expect(payload.numbers).to.exist;
+            expect(payload.numbers.length).to.equal(3);
+            expect(payload.words).to.not.exist;
+            expect(payload.original).to.exist;
+            expect(payload.original).to.equal("TestBorg");
+
+            msngr.inaction("numbers");
+            msngr.inaction("words");
+
+            done();
+        });
+
+        var start = msngr.getActionCount();
+        expect(start).to.exist;
+        msngr.action("numbers", function (message, wrap) {
+            wrap.payload.numbers = [12, 15, 97];
+        });
+
+        msngr.action("words", function (message, wrap) {
+            wrap.payload.words = ["float", "chicken", "springs"];
+        });
+        expect(msngr.getActionCount()).to.equal(start + 2);
+
+        msngr.emit({ topic: "TestTopic" , numbers: true }, { original: "TestBorg" });
+    });
+
+    it("msngr.getActionCount() - Returns the correct amount of actions", function () {
+        var start = msngr.getActionCount();
+        
+        msngr.action("chicken", function (message, wrap) {
+            // Nothing here necessary
+        });
+
+        expect(msngr.getActionCount()).to.equal(start + 1);
+        msngr.inaction("chicken");
+        expect(msngr.getActionCount()).to.equal(start);
     });
 
 });
