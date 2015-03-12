@@ -65,4 +65,10 @@ describe("./utils/misc.js", function () {
         expect(t4).to.not.equal(t3);
         expect(t5).to.not.equal(t4);
     });
+
+    it("msngr.utils.now('sdfkjsdfl') - Correctly handles invalid input", function () {
+        var t = msngr.utils.now("sdfkjsdfl");
+
+        expect(t).to.exist;
+    });
 });
