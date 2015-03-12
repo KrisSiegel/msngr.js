@@ -87,8 +87,8 @@ Now the payload will include an object with the values of each input specified. 
 msngr.bind("input[type=submit]", "click", {
     topic: "Save",
     category: "Profile",
-    dom: ["input"}
-);
+    dom: ["input"]
+});
 ```
 
 Aggregated values are always stored with their name as the key. If the name doesn't exist then it uses an id. Should an id not exist then it defaults to tagname + count (so "input0", "input1");
