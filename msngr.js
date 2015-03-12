@@ -182,7 +182,7 @@ msngr.extend((function () {
 					}
 				}
 				var now = nowExec();
-				if (noDuplicate && lastNow === now) {
+				if (noDuplicate === true && lastNow === now) {
 					return msngr.utils.now(noDuplicate);
 				}
 				lastNow = now;
