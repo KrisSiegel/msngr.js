@@ -3,7 +3,7 @@
 
 msngr.js is a small library to manage messages between components with the goal of isolating business logic from a user interface or server framework. For example messages can be bound directly to DOM elements and activities can gather values allowing the handling of click events to know absolutely zero about the user interface itself.
 
-What does that mean, exactly? Read on.
+What does that mean, exactly? Read on. Want to just jump right in? Check out [this jsfiddle](http://jsfiddle.net/jnjaosfz/) page with msngr.js already included with a "Hello, World!" example.
 
 ## Quick Start
 Installation can occur via bower or npm (alternatively just download msngr.js or msngr.min.js).
