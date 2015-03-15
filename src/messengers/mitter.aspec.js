@@ -214,6 +214,36 @@ describe("./messengers/mitter.js", function () {
         }, 250);
     });
 
+    it("msngr.emit('TestTopic1') is received by multiple msngr.on('TestTopic1')", function (done) {
+        var count = 0;
+        var hits = { one: undefined, two: undefined, three: undefined };
+
+        msngr.on("TestTopic1", function () {
+            count++;
+            hits.one = true;
+        });
+
+        msngr.on("TestTopic1", function () {
+            count++;
+            hits.two = true;
+        });
+
+        msngr.on("TestTopic1", function () {
+            count++;
+            hits.three = true;
+        });
+
+        msngr.emit("TestTopic1");
+
+        setTimeout(function () {
+            expect(count).to.equal(3);
+            expect(hits.one).to.exist;
+            expect(hits.two).to.exist;
+            expect(hits.three).to.exist;
+            done();
+        }, 250);
+    });
+
     it("msngr.drop('TestTopic') drops msngr.on('TestTopic')", function (done) {
         expect(msngr.getMessageCount()).to.exist;
         expect(msngr.getMessageCount()).to.equal(0);
