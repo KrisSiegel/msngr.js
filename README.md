@@ -1,110 +1,165 @@
 # msngr.js
-[![Build Status](https://travis-ci.org/KrisSiegel/msngr.js.svg)](https://travis-ci.org/KrisSiegel/msngr.js/) [![Dependency Status](https://gemnasium.com/KrisSiegel/msngr.js.svg)](https://gemnasium.com/KrisSiegel/msngr.js)
+[![npm version](https://badge.fury.io/js/msngr.svg)](http://badge.fury.io/js/msngr) [![Bower version](https://badge.fury.io/bo/msngr.svg)](http://badge.fury.io/bo/msngr) [![Build Status](https://travis-ci.org/KrisSiegel/msngr.js.svg)](https://travis-ci.org/KrisSiegel/msngr.js/) [![Dependency Status](https://gemnasium.com/KrisSiegel/msngr.js.svg)](https://gemnasium.com/KrisSiegel/msngr.js)
 
-msngr.js is a small library used to facilitate communication through messages rather than direct binding. This loose coupling allows connecting components to each other or to UI components in an abstract way on the server or the client.
+msngr.js is a small library to manage messages between components with the goal of isolating business logic from a user interface or server framework. For example messages can be bound directly to DOM elements and activities can gather values allowing the handling of click events to know absolutely zero about the user interface itself.
 
-## Quick start
-msngr.js can be used within a web browser or a node application so instead of reading boring documentation let's just jump into both!
+What does that mean, exactly? Read on.
 
-### Web browser
-For a web browser you need to either download msngr.js the old fashion way or use bower (```bower install msngr```). Once downloaded include msngr.js in your web application.
-```
-<script type='text/javascript' src="msngr.js"></script>
-```
+## Quick Start
+Installation can occur via bower or npm (alternatively just download msngr.js or msngr.min.js).
 
-Once included a msngr object will be created and placed at the window level for easy access throughout your application. Now let's look at a quick example of binding a client event to a specific message.
-
-index.html
-```
-<button id="MyButton">Click me!</button>
+```batch
+bower install msngr.js
 ```
 
-index.js
-```
-msngr.bind("#MyButton", "click", { topic: "Click" });
-
-msngr.register({ topic: "Click" }, function (payload) {
-    console.log("The button was clicked!");
-
-    msngr.unbind("#MyButton", "click");  
-});
+```batch
+npm install msngr
 ```
 
-### node.js application
-So node doesn't have HTML elements to bind to but messaging is still a powerful way to decouple things. Messaging in this context can work in both node and the web browser. To get started with node first install msngr.js via npm (```npm install msngr```). Once installed simply include it in the file(s) you want to use it in.
+Once installed simply include it into your project.
+```html
+<script type='text/javascript' src="msngr.min.js"></script>
 ```
+
+```javascript
 var msngr = require("msngr");
 ```
 
-Now the real fun begins. Here's an example of sending and receiving a message.
-```
-msngr.register({ topic: "Save", category: "Profile", dataType: "application/json" }, function (payload) {
-    console.log("Save profile information here");
-});
+Now you're ready to start messaging!
 
-msngr.emit({ topic: "Save", category: "Profile", dataType: "application/json" }, {
-    name: "Kris",
-    country: "United States"
-});
-```
+### Binding messages to DOM elements
+One of the most handy things msngr.js can do is bind a message directly to a DOM element. Let's look at the following example.
 
-## The API [in all its glory]
-So now that we've gone through a few examples let's dive into the API (which is pretty minimal) so a full reference is available.
-
-### Message format and rules
-All messages are simply JSON objects that can contain 3 fields: topic, category and dataType. The topic field is **always** required but category and dataType are optional and are meant to provide more specific ways of handling messages.
-
-A good rule of thumb is to always send as many of the 3 fields as possible when emitting data but receiving can be a little more open ended. For instance you may have a method to save a profile but it can handle multiple types so dataType can be omitted. However, ensuring the correct dataType is still emitted makes future updating and specialization much easier. You should always know what you're sending but not necessarily what you're receiving.
-
-An example of a message.
-```
-{
-    topic: "MyTopic",
-    category: "MyCategory",
-    dataType: "MyDataType"
-}
+index.html
+```html
+<input type="text" name="Name" />
+<br />
+<input type="text" name="Email" />
+<br />
+<input type="submit" name="Save" />
 ```
 
-### msngr.emit(message, payload)
-Emit sends a message, which should be as descriptive as possible, along with a payload to any registered callbacks.
-
-Example
-```
-msngr.emit({ topic: "MyTopic", category: "MyCategory", dataType: "text"}, "Test");
+userinterface.js
+```javascript
+msngr.bind("input[type=submit]", "click", "Profile", "Save");
 ```
 
-### msngr.register(message, callback)
-Register a callback to a specific message. For registration a message should be as simple as possible (meaning omitting category and / or dataType when specialization is not necessary). The callback receives a payload from the message sending.
-
-Example
-```
-msngr.register({ topic: "MyTopic", category: "MyCategory" }, function (payload) {
-    // Code that handles the payload goes here
+business.js
+```javascript
+msngr.on("Profile", "Save", function () {
+    console.log("The profile has been saved!");
 });
 ```
 
-### msngr.unregister(message)
-Unregisters all callbacks that match the message passed in.
+As you can see ```msngr.bind()``` can accept typical selectors, an event and then a message which can be made up of a topic, category and dataType (omit the ones you do not want to use).
 
-Example
-```
-msngr.unregister({ topic: "MyTopic" });
-```
+So this is cool, the UI and the frontend can be separated, right? Well how do you get those name and email values? Put DOM accessing code in business.js? Heck no! You can use the DOM activity to specify what values should be grabbed.
 
-### msngr.bind(element, event, message) *(web browser only)*
-Bind provides a way of taking traditional HTML elements and attaching a message to their events to allow a full separation between the user experience and the business logic. An element can be a valid HTML element or a selector to an element. An event must be an event the element supports and the message is what you wish to be emitted when the event occurs.
-
-Example
-```
-msngr.bind("#MyButton", "click", { topic: "Click" });
+index.html
+```html
+<input type="text" name="Name" />
+<br />
+<input type="text" name="Email" />
+<br />
+<input type="submit" name="Save" />
 ```
 
-### msngr.unbind(element, event) *(web browser only)*
-Unbind provides a way to remove a message from being bound to an event of an element. This is useful in avoiding memory leaks.
-
-Example
+userinterface.js
+```javascript
+msngr.bind("input[type=submit]", "click", {
+    topic: "Profile",
+    category: "Save",
+    dom: ["input[name=Name]", "input[name=Email]"]}
+);
 ```
-msngr.unbind("#MyButton", "click");
+
+business.js
+```javascript
+msngr.on("Profile", "Save", function (payload) {
+    console.log(payload.Name);
+    console.log(payload.Email);
+});
 ```
 
-Copyright (c) 2014-2015 Kris Siegel
+Now the payload will include an object with the values of each input specified. You can even simplify the selector even more to get the same data back like so:
+
+```javascript
+msngr.bind("input[type=submit]", "click", {
+    topic: "Profile",
+    category: "Save",
+    dom: ["input"]
+});
+```
+
+Aggregated values are always stored with their name as the key. If the name doesn't exist then it uses an id. Should an id not exist then it defaults to tagname + count (so "input0", "input1");
+
+### What about JavaScript that doesn't touch the DOM?
+So msngr.js can also be used outside of situations that involve the DOM and be just as handy! A common example is abstracting away a specific library through the use of messages. An example is outlined below.
+
+elasticsearch.js
+```javascript
+msngr.on("Profile", "Save", "application/json", function (payload) {
+    // Save profile object into ElasticSearch
+});
+```
+
+business.js
+```javascript
+msngr.emit("Profile", "Save", "application/json", profile);
+```
+
+So in the example above we can save a Profile object without actually knowing who or what is going to save this. This let's us to, later on, use a configuration to allow alternative data stores such as a Mock store without changing the business.js file. So that may look like:
+
+mock.js
+```javascript
+msngr.on("Profile", "Save", "application/json", function (payload) {
+    // Save profile object into a mock data store
+});
+```
+
+### So what are activities anyway?
+An activity is simply a registered method, executed synchronously, designed to be called before payload delivery should any properties within the message object match the registered method's property.
+
+For example the built-in DOM activity is registered with the 'dom' property. Therefore anytime someone emits a message with the 'dom' property the registered method is called before being delivered. This allows extending msngr.js in various ways without changing any method signatures.
+
+For instance if you want to create an activity that added two numbers together.
+
+```javascript
+msngr.action("add", function (message, wrap) {
+    wrap.payload.result = wrap.payload.number1 + wrap.payload.number2;
+});
+
+msngr.on("Addition", function (payload) {
+    console.log(payload.result); // Outputs 7
+});
+
+msngr.emit({ topic: "Addition", add: { } }, { number1: 5, number2: 2 });
+```
+
+Note that what is typically supplied to the action's property in the message object is any related options the particular action may need. In this add example nothing was necessary so an empty object was passed in but for others, such as the dom action, you would pass in an array of html selectors.
+
+## API
+Below are the methods exposed via the msngr object, their parameters and return values.
+
+#### msngr.on(message, function) / msngr.on(topic, category, dataType, function)
+This method accepts a JavaScript object with the properties "topic", "category" and "dataType" or simply fill in the first 3 parameters with those values. The function is a callback that's executed when a matching message is received and provides a payload parameter.
+
+#### msngr.emit(message, payload) / msngr.emit(topic, category, dataType, payload)
+This method sends a message by either providing a JavaScript object with the properties "topic", "category" and "dataType" or by simply entering each values as a parameter. The payload can be anything you want to send to a receiving callback.
+
+#### msngr.drop(message) / msngr.drop(topic, category, dataType)
+This method removes a message from being executed.
+
+#### msngr.bind(element, event, message) / msngr.bind(element, event, topic, category, dataType)
+This method takes an HTML element (can be an element or selector), an event and a message then binds all 3 together. When the specified event occurs on the element the message will be emitted. Optionally add the 'dom' property to the message object to supply selectors you wish msngr would gather values from and return in the payload.
+
+#### msngr.unbind(element, event) / msngr.unbind(element, event)
+This method stops an element's event from emitting a previously bound message.
+
+#### msngr.action(property, function)
+This method provides a way of extending msngr. The property is anything (except for 'topic', 'category' or 'dataType') that is supplied within a message object. If a message is emitted with a matching property the function is called with the message and an object that allows stopping the emitting entirely (via calling ```obj.preventDefault()```) or modifying the payload itself.
+
+#### msngr.inaction(property)
+This method removes the action being called on a property.
+
+Copyright © 2014-2015 Kris Siegel

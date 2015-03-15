@@ -86,13 +86,8 @@ describe("./utils/dom.js", function () {
         expect(msngr.utils.isHtmlElement(msngr.utils.findElement(document.createElement("div")))).to.equal(true);
     });
 
-    it("msngr.utils.findElement(obj) - obj is an id (MyID)", function () {
-        var div = document.createElement("div");
-        div.setAttribute("id", "TestID1");
-        document.body.appendChild(div);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("TestID1"))).to.equal(true);
-        document.body.removeChild(div);
-        expect(msngr.utils.isHtmlElement(msngr.utils.findElement("TestID1"))).to.equal(false);
+    it("msngr.utils.findElement(obj) - obj is an HTMLElement with root specified", function () {
+        expect(msngr.utils.isHtmlElement(msngr.utils.findElement(document.createElement("div"), document))).to.equal(true);
     });
 
     it("msngr.utils.findElement(obj) - obj is an id selector (#MyID)", function () {
@@ -127,6 +122,49 @@ describe("./utils/dom.js", function () {
         expect(msngr.utils.isHtmlElement(msngr.utils.findElement("div div p"))).to.equal(false);
     });
 
+    it("msngr.utils.findElements(obj) - obj is an id selector (#MyID)", function () {
+        var div = document.createElement("div");
+        div.setAttribute("id", "TestID1");
+        document.body.appendChild(div);
+        expect(msngr.utils.isNodeList(msngr.utils.findElements("#TestID1"))).to.equal(true);
+        expect(msngr.utils.findElements("#TestID1").length).to.equal(1);
+        document.body.removeChild(div);
+        expect(msngr.utils.isNodeList(msngr.utils.findElement("#TestID1"))).to.equal(true);
+        expect(msngr.utils.findElements("#TestID1").length).to.equal(0);
+    });
+
+    it("msngr.utils.findElements(obj) - obj is a class selector (.TestClass)", function () {
+        var div = document.createElement("div");
+        div.setAttribute("class", "TestClass");
+
+        var div2 = document.createElement("div");
+        div2.setAttribute("class", "TestClass");
+        document.body.appendChild(div);
+        document.body.appendChild(div2);
+        expect(msngr.utils.isNodeList(msngr.utils.findElements(".TestClass"))).to.equal(true);
+        expect(msngr.utils.findElements(".TestClass").length).to.equal(2);
+        document.body.removeChild(div);
+        document.body.removeChild(div2);
+        expect(msngr.utils.isNodeList(msngr.utils.findElements(".TestClass"))).to.equal(true);
+        expect(msngr.utils.findElements(".TestClass").length).to.equal(0);
+    });
+
+    it("msngr.utils.findElement(obj) - obj is a html target selector", function () {
+        var div = document.createElement("div");
+        var div2 = document.createElement("div");
+        var p = document.createElement("p");
+
+        div2.appendChild(p);
+        div.appendChild(div2);
+
+        document.body.appendChild(div);
+        expect(msngr.utils.isNodeList(msngr.utils.findElements("div div p"))).to.equal(true);
+        expect(msngr.utils.findElements("div div p").length).to.equal(1);
+        document.body.removeChild(div);
+        expect(msngr.utils.isNodeList(msngr.utils.findElements("div div p"))).to.equal(true);
+        expect(msngr.utils.findElements("div div p").length).to.equal(0);
+    });
+
     it("msngr.utils.getDomPath(element) - element is a tested HTMLElement", function () {
         var div = document.createElement("div");
         div.style.display = "none";
@@ -137,7 +175,7 @@ describe("./utils/dom.js", function () {
         div.appendChild(p);
 
         document.body.appendChild(div);
-        var path = msngr.utils.getDomPath(msngr.utils.findElement("TestID2"));
+        var path = msngr.utils.getDomPath(msngr.utils.findElement("#TestID2"));
         expect(msngr.utils.querySelectorAllWithEq(path)[0].id).to.equal("TestID2");
         document.body.removeChild(div);
     });
@@ -169,6 +207,36 @@ describe("./utils/dom.js", function () {
         expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(0)")[0].id).to.equal("TestID3p1");
         expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(1)")[0].id).to.equal("TestID3p2");
         expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(2)")[0].id).to.equal("TestID3p3");
+
+    });
+
+    it("msngr.utils.querySelectorAllWithEq(selector) - selector uses eq to target specific indexes and works with specific root", function () {
+        var div = document.createElement("div");
+        div.style.display = "none";
+
+        var idiv = document.createElement("div");
+        idiv.id = "TestID3";
+
+        var p1 = document.createElement("p");
+        p1.id = "TestID3p1";
+
+        var p2 = document.createElement("p");
+        p2.id = "TestID3p2";
+
+        var p3 = document.createElement("p");
+        p3.id = "TestID3p3";
+
+        idiv.appendChild(p1);
+        idiv.appendChild(p2);
+        idiv.appendChild(p3);
+
+        div.appendChild(idiv);
+
+        document.body.appendChild(div);
+
+        expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(0)", document)[0].id).to.equal("TestID3p1");
+        expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(1)", document)[0].id).to.equal("TestID3p2");
+        expect(msngr.utils.querySelectorAllWithEq("div#TestID3 > p:eq(2)", document)[0].id).to.equal("TestID3p3");
 
     });
 

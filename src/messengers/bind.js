@@ -1,6 +1,21 @@
 msngr.extend((function () {
     "use strict";
 
+    // Throw statements
+    var InvalidParametersException = function (str) {
+        return {
+            severity: "unrecoverable",
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
+    var UnexpectedException = function (str) {
+        return {
+            severity: "unrecoverable",
+            message: ("An unexpected exception occured in the {method} method".replace("{method}", str))
+        };
+    };
+
     var registerdPaths = { };
     var registerdEvents = 0;
 
@@ -14,18 +29,40 @@ msngr.extend((function () {
             }
         }
 
-        // How did we get here? Must be a memory leak or something
-        console.log("Warning: msngr core event listener triggered without a message. Memory leak?");
+        // How did we get here? Must be a memory leak or something. Ugh
         return msngr;
     };
 
     return {
-        bind: function (element, event, message) {
+        bind: function (element, event, topic, category, dataType) {
+            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(topic)) {
+                throw InvalidParametersException("bind");
+            }
+            if (msngr.utils.isObject(topic) && !msngr.utils.exists(topic.topic)) {
+                throw InvalidParametersException("bind");
+            }
+
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
             if (!msngr.utils.exists(registerdPaths[path])) {
                 registerdPaths[path] = { };
+            }
+
+            var message = undefined;
+            if (msngr.utils.isObject(topic)) {
+                message = topic;
+            } else {
+                message = { };
+                message.topic = topic;
+
+                if (msngr.utils.exists(category)) {
+                    message.category = category;
+                }
+
+                if (msngr.utils.exists(dataType)) {
+                    message.dataType = dataType;
+                }
             }
 
             registerdPaths[path][event] = message;
