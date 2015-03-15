@@ -140,17 +140,24 @@ msngr.emit({ topic: "Addition", add: { } }, { number1: 5, number2: 2 });
 Below are the methods exposed via the msngr object, their parameters and return values.
 
 #### msngr.on(message, function) / msngr.on(topic, category, dataType, function)
+This method accepts a JavaScript object with the properties "topic", "category" and "dataType" or simply fill in the first 3 parameters with those values. The function is a callback that's executed when a matching message is received and provides a payload parameter.
 
 #### msngr.emit(message, payload) / msngr.emit(topic, category, dataType, payload)
+This method sends a message by either providing a JavaScript object with the properties "topic", "category" and "dataType" or by simply entering each values as a parameter. The payload can be anything you want to send to a receiving callback.
 
 #### msngr.drop(message) / msngr.drop(topic, category, dataType)
+This method simply removed a message from being executed.
 
 #### msngr.bind(element, event, message) / msngr.bind(element, event, topic, category, dataType)
+This method simply takes an HTML element (can be an element or selector), an event and a message and binds all 3 together. When the specified event occurs on the specified element the message will be emitted. Optionally add the 'dom' property to the message object to supply selectors you wish msngr would gather values from and return in the payload.
 
 #### msngr.unbind(element, event) / msngr.unbind(element, event)
+This method simply stops an element's event from emitting a previously bound message.
 
 #### msngr.action(property, function)
+This method provides a way of extending msngr. The property is anything (except for 'topic', 'category' or 'dataType') that is supplied within a message object. If a message is emitted with a matching property the function is called with the message and an object that allows stopping the emitting entirely (via calling ```obj.preventDefault()```) or modifying the payload itself.
 
 #### msngr.inaction(property)
+This method simply removes the action being called on a property.
 
 Copyright © 2014-2015 Kris Siegel
