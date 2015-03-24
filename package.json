@@ -23,7 +23,7 @@
     "mocha": "2.2.1",
     "grunt-mocha-phantomjs": "0.6.1",
     "grunt-available-tasks": "0.5.7",
-    "chai": "2.1.1"
+    "chai": "2.1.2"
   },
   "scripts": {
     "test": "grunt test"
