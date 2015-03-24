@@ -38,7 +38,7 @@ msngr.extend((function () {
         }(method, context, params, message));
     };
 
-    var _emit = function (message, payload) {
+    var _emit = function (message, payload, callback) {
         var uuids = msngr.store.query(message);
         if (uuids.length > 0) {
             for (var i = 0; i < uuids.length; ++i) {
@@ -82,7 +82,7 @@ msngr.extend((function () {
     };
 
     return {
-        emit: function (topic, category, dataType, payload) {
+        emit: function (topic, category, dataType, payload, callback) {
             if (!msngr.utils.exists(topic)) {
                 throw InvalidParameters("emit");
             }
@@ -93,7 +93,10 @@ msngr.extend((function () {
                 if (!msngr.utils.exists(payload) && msngr.utils.exists(category)) {
                     payload = category;
                 }
-                return _emit(message, payload);
+                if (!msngr.utils.exists(callback) && msngr.utils.exists(dataType) && msngr.utils.isFunction(dataType)) {
+                    callback = dataType;
+                }
+                return _emit(message, payload, callback);
             }
 
             message = { };
