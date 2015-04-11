@@ -40,5 +40,5 @@ Thumbs.db
 ###################
 node_modules
 
-# Examples bower folder #
-example/ext-lib/
+# msngr.js specific
+specRunner.html
