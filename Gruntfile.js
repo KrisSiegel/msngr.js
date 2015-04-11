@@ -1,4 +1,6 @@
 module.exports = (function (grunt) {
+	"use strict";
+	
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -6,9 +8,12 @@ module.exports = (function (grunt) {
 	grunt.loadNpmTasks('grunt-mocha-phantomjs');
 	grunt.loadNpmTasks('grunt-available-tasks');
 
-	// Get rid of the header output nonsense
+	// Get rid of the header output nonsense from grunt (they should really fix this)
 	grunt.log.header = function () {};
 
+	/*
+		These are the paths to include or exclude in concatenation and minification steps.
+	*/
 	var paths = [
 		"src/main.js",
 		"src/utils/*.js",
@@ -68,6 +73,10 @@ module.exports = (function (grunt) {
 
 	grunt.registerTask("default", ["availabletasks"]);
 
+	/*
+		Grabs the version specified in `package.json` and writes it into the main.js file.
+	*/
+
 	grunt.registerTask("verisionify", "Verisionifying msngr.js", function () {
 		var fs = require("fs");
 		var pkg = grunt.file.readJSON('package.json');
@@ -82,24 +91,9 @@ module.exports = (function (grunt) {
 		fs.writeFileSync("src/main.js", ified, { encoding: "utf8" });
 	});
 
-	grunt.registerTask("stresser", "Stress testing", function () {
-		var fs = require("fs");
-		var path = require("path");
-		var items = fs.readdirSync("./stress");
-
-		var done = function () {
-			if (items.length > 0) {
-				var file = items.shift();
-				if (file.indexOf(".js") !== -1) {
-					delete require.cache[path.resolve(__dirname, "msngr.js")];
-					delete require.cache[path.resolve(__dirname, "msngr.min.js")];
-					require("./stress/" + file)(done);
-				}
-			}
-		};
-
-		done();
-	});
+	/*
+		Grunt is kinda funky; these header:* tasks just print out pretty headers.
+	*/
 
 	grunt.registerTask("header:building", function () {
 		grunt.log.subhead("Building msngr.js");
@@ -117,6 +111,10 @@ module.exports = (function (grunt) {
 		grunt.log.subhead("Client-side unit testing with phantom.js");
 	});
 
+	/*
+		The setRunner task modifies the specRuner.html file, dynamically, with the 
+		unit tests within the project to allow test running with phantomjs.
+	*/
 	grunt.registerTask("setRunner", "Set the client side spec runner", function () {
 		var makeScript = function (path) {
 			return "<script type='text/javascript' src='" + path + "'></script>";
@@ -159,6 +157,12 @@ module.exports = (function (grunt) {
 
 		fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
 	});
+
+	/*
+		'build' and 'test' are roll-up tasks; they have specific descriptions and execute
+		multiple tasks each to accomplish their goals. These are the only intended tasks
+		to be run by the developer.
+	*/
 
 	grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
