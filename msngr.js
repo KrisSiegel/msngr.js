@@ -701,8 +701,17 @@ msngr.extend((function () {
     // Throw statements
     var InvalidParameters = function (str) {
         return {
+            name: "InvalidParameters",
             severity: "unrecoverable",
             message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
+    var ReservedKeywords = function (keyword) {
+        return {
+            name: "ReservedKeywordsException",
+            severity: "unrecoverable",
+            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
         };
     };
 
@@ -714,6 +723,10 @@ msngr.extend((function () {
         action: function (property, handler) {
             if (!msngr.utils.exists(property) || !msngr.utils.exists(handler)) {
                 throw InvalidParameters("action");
+            }
+
+            if (reservedProperties.indexOf(property) !== -1) {
+                throw ReservedKeywords(property);
             }
 
             actions[property] = handler;
