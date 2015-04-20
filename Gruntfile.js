@@ -1,6 +1,6 @@
 module.exports = (function (grunt) {
 	"use strict";
-	
+
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -59,7 +59,7 @@ module.exports = (function (grunt) {
 			}
 		},
 		mocha_phantomjs: {
-			all: ["specRunner.html"]
+			all: ["specRunner.html", "specRunner.min.html"]
 		},
 		availabletasks: {
 			tasks: {
@@ -112,7 +112,7 @@ module.exports = (function (grunt) {
 	});
 
 	/*
-		The setRunner task modifies the specRuner.html file, dynamically, with the 
+		The setRunner task modifies the specRuner.html file, dynamically, with the
 		unit tests within the project to allow test running with phantomjs.
 	*/
 	grunt.registerTask("setRunner", "Set the client side spec runner", function () {
@@ -156,6 +156,7 @@ module.exports = (function (grunt) {
 		newHtml += runnerHtml.substring(scriptEnd);
 
 		fs.writeFileSync("./specRunner.html", newHtml, { encoding: "utf8" });
+		fs.writeFileSync("./specRunner.min.html", newHtml, { encoding: "utf8" });
 	});
 
 	/*
