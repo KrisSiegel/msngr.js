@@ -42,3 +42,4 @@ node_modules
 
 # msngr.js specific
 specRunner.html
+specRunner.min.html
