@@ -44,7 +44,7 @@ msngr.extend((function () {
             for (var i = 0; i < uuids.length; ++i) {
                 var del = delegates[uuids[i]];
                 var params = [];
-                if (msngr.utils.exists(payload || message.payload)) {
+                if (msngr.utils.exist(payload || message.payload)) {
                     params.push(payload || message.payload);
                 }
                 execute(del.callback, del.context, params, message);
@@ -83,17 +83,17 @@ msngr.extend((function () {
 
     return {
         emit: function (topic, category, dataType, payload, callback) {
-            if (!msngr.utils.exists(topic)) {
+            if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("emit");
             }
 
             var message;
             if (msngr.utils.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exists(payload) && msngr.utils.exists(category)) {
+                if (!msngr.utils.exist(payload) && msngr.utils.exist(category)) {
                     payload = category;
                 }
-                if (!msngr.utils.exists(callback) && msngr.utils.exists(dataType) && msngr.utils.isFunction(dataType)) {
+                if (!msngr.utils.exist(callback) && msngr.utils.exist(dataType) && msngr.utils.isFunction(dataType)) {
                     callback = dataType;
                 }
                 return _emit(message, payload, callback);
@@ -104,7 +104,7 @@ msngr.extend((function () {
 
             message.topic = args.shift();
 
-            if (!msngr.utils.exists(payload)) {
+            if (!msngr.utils.exist(payload)) {
                 if (args.length > 0 && msngr.utils.isObject(args[0])) {
                     payload = args.shift();
 
@@ -124,14 +124,14 @@ msngr.extend((function () {
             return _emit(message, payload);
         },
         on: function (topic, category, dataType, callback) {
-            if (!msngr.utils.exists(topic)) {
+            if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("on");
             }
 
             var message;
             if (msngr.utils.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exists(callback) && msngr.utils.exists(category)) {
+                if (!msngr.utils.exist(callback) && msngr.utils.exist(category)) {
                     callback = category;
                 }
                 return _on(message, callback);
@@ -153,7 +153,7 @@ msngr.extend((function () {
             throw InvalidParameters("on");
         },
         drop: function (topic, category, dataType) {
-            if (!msngr.utils.exists(topic)) {
+            if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("drop");
             }
 
@@ -163,15 +163,15 @@ msngr.extend((function () {
                 return _drop(message);
             } else {
                 message = { };
-                if (msngr.utils.exists(topic)) {
+                if (msngr.utils.exist(topic)) {
                     message.topic = topic;
                 }
 
-                if (msngr.utils.exists(category)) {
+                if (msngr.utils.exist(category)) {
                     message.category = category;
                 }
 
-                if (msngr.utils.exists(dataType)) {
+                if (msngr.utils.exist(dataType)) {
                     message.dataType = dataType;
                 }
                 return _drop(message);

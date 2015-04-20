@@ -24,7 +24,7 @@ msngr.extend((function () {
 
     return {
         action: function (property, handler) {
-            if (!msngr.utils.exists(property) || !msngr.utils.exists(handler)) {
+            if (!msngr.utils.exist(property) || !msngr.utils.exist(handler)) {
                 throw InvalidParameters("action");
             }
 
@@ -36,7 +36,7 @@ msngr.extend((function () {
             actionsCount++;
         },
         inaction: function (property) {
-            if (!msngr.utils.exists(property)) {
+            if (!msngr.utils.exist(property)) {
                 throw InvalidParameters("inaction");
             }
 
@@ -44,7 +44,7 @@ msngr.extend((function () {
             actionsCount--;
         },
         act: function (message, superWrap) {
-            if (!msngr.utils.exists(message) || !msngr.utils.exists(superWrap)) {
+            if (!msngr.utils.exist(message) || !msngr.utils.exist(superWrap)) {
                 throw InvalidParameters("act");
             }
 

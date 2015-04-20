@@ -23,8 +23,8 @@ msngr.extend((function () {
         var node = this;
         var path = msngr.utils.getDomPath(node);
 
-        if (msngr.utils.exists(registerdPaths[path])) {
-            if (msngr.utils.exists(registerdPaths[path][event.type])) {
+        if (msngr.utils.exist(registerdPaths[path])) {
+            if (msngr.utils.exist(registerdPaths[path][event.type])) {
                 return msngr.emit(registerdPaths[path][event.type], event);
             }
         }
@@ -35,17 +35,17 @@ msngr.extend((function () {
 
     return {
         bind: function (element, event, topic, category, dataType) {
-            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(topic)) {
+            if (!msngr.utils.exist(element) || !msngr.utils.exist(event) || !msngr.utils.exist(topic)) {
                 throw InvalidParametersException("bind");
             }
-            if (msngr.utils.isObject(topic) && !msngr.utils.exists(topic.topic)) {
+            if (msngr.utils.isObject(topic) && !msngr.utils.exist(topic.topic)) {
                 throw InvalidParametersException("bind");
             }
 
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
-            if (!msngr.utils.exists(registerdPaths[path])) {
+            if (!msngr.utils.exist(registerdPaths[path])) {
                 registerdPaths[path] = { };
             }
 
@@ -56,11 +56,11 @@ msngr.extend((function () {
                 message = { };
                 message.topic = topic;
 
-                if (msngr.utils.exists(category)) {
+                if (msngr.utils.exist(category)) {
                     message.category = category;
                 }
 
-                if (msngr.utils.exists(dataType)) {
+                if (msngr.utils.exist(dataType)) {
                     message.dataType = dataType;
                 }
             }
@@ -77,8 +77,8 @@ msngr.extend((function () {
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
-            if (msngr.utils.exists(registerdPaths[path])) {
-                if (msngr.utils.exists(registerdPaths[path][event])) {
+            if (msngr.utils.exist(registerdPaths[path])) {
+                if (msngr.utils.exist(registerdPaths[path][event])) {
                     node.removeEventListener(event, listener);
 
                     delete registerdPaths[path][event];
