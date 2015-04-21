@@ -72,6 +72,9 @@ msngr.extend((function () {
         },
         getActionCount: function () {
             return actionsCount;
+        },
+        getAvailableActions: function () {
+            return Object.keys(actions);
         }
     };
 }()));

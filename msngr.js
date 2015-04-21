@@ -196,6 +196,49 @@ msngr.extend((function () {
 	};
 }()));
 
+/*
+    ./src/utils/smart.js
+
+    Smart arguments is a programatic way of defining how data passed into a method
+    is translated into a JavaScript object to allow shorthand calling of methods
+
+    Smart argument definition is as follows with this example:
+    {
+        expanded: [
+            { key: "topic", type: smartypes.string },
+            { key: "category", type: smartypes.string },
+            { key: "dataType", type: smartypes.string },
+            { key: "payload", type: smartypes.any },
+        ],
+        final: [smartypes.object, smartypes.function]
+    }
+*/
+msngr.extend((function () {
+	"use strict";
+
+	return {
+		utils: {
+            smartypes: {
+                string: "[object String]",
+                date: "[object Date]",
+                array: "[object Array]",
+                object: "[object Object]",
+                function: "[object Function]",
+                number: "[object Number]",
+                any: "[object *]"
+            },
+			smart: function (definition, args) {
+                var result = [];
+                if (!msngr.utils.exist(definition) || !msngr.utils.exist(args)) {
+                    return result;
+                }
+
+
+            }
+		}
+	};
+}()));
+
 msngr.extend((function () {
 	"use strict";
 
@@ -287,6 +330,41 @@ msngr.extend((function () {
 				return result;
 			}
 	    }
+	};
+}()));
+
+/*
+    ./src/builders/message.js
+*/
+msngr.extend((function () {
+	"use strict";
+
+	return {
+		builders: {
+			msg: function () {
+				return (function () {
+					var message = { };
+					var props = ["topic", "category", "dataType", "payload"].concat(msngr.getAvailableActions());
+
+					var obj = {
+						build: function () {
+							return message;
+						}
+					};
+
+					for (var i = 0; i < props.length; ++i) {
+						(function (key) {
+							obj[key] = function (input) {
+								message[key] = input;
+								return obj;
+							};
+						}(props[i]));
+					}
+
+					return obj;
+				}());
+			}
+		}
 	};
 }()));
 
@@ -818,6 +896,9 @@ msngr.extend((function () {
         },
         getActionCount: function () {
             return actionsCount;
+        },
+        getAvailableActions: function () {
+            return Object.keys(actions);
         }
     };
 }()));
