@@ -1,4 +1,6 @@
 # msngr.js
+
+[![Join the chat at https://gitter.im/KrisSiegel/msngr.js](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/KrisSiegel/msngr.js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![npm version](https://badge.fury.io/js/msngr.svg)](http://badge.fury.io/js/msngr) [![Bower version](https://badge.fury.io/bo/msngr.js.svg)](http://badge.fury.io/bo/msngr.js) [![Build Status](https://travis-ci.org/KrisSiegel/msngr.js.svg)](https://travis-ci.org/KrisSiegel/msngr.js/) [![Dependency Status](https://gemnasium.com/KrisSiegel/msngr.js.svg)](https://gemnasium.com/KrisSiegel/msngr.js)
 
 msngr.js is a small library to manage messages between components with the goal of isolating business logic from a user interface or server framework. For example messages can be bound directly to DOM elements and activities can gather values allowing the handling of click events to know absolutely zero about the user interface itself.
