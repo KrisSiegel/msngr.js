@@ -36,4 +36,26 @@ describe("./builders/message.js", function () {
         expect(message.topic).to.equal("TestTopic1");
         expect(message.dom).to.equal(true);
     });
+
+    it("msngr.builders.msg() - Builds multiple messages while maintaining separate instances", function () {
+        var build1 = msngr.builders.msg();
+        var build2 = msngr.builders.msg();
+        var build3 = msngr.builders.msg();
+
+        build1.topic("ChickenFeet");
+        build2.category("Beer");
+        build3.topic("Floating");
+        build2.topic("Something");
+        build1.category("Fowl");
+
+        build1 = build1.build();
+        build2 = build2.build();
+        build3 = build3.build();
+
+        expect(build1.topic).to.equal("ChickenFeet");
+        expect(build1.category).to.equal("Fowl");
+        expect(build2.topic).to.equal("Something");
+        expect(build2.category).to.equal("Beer");
+        expect(build3.topic).to.equal("Floating");
+    });
 });
