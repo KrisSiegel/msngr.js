@@ -100,7 +100,7 @@ describe("./actions/action.js", function () {
 
     it("msngr.getActionCount() - Returns the correct amount of actions", function () {
         var start = msngr.getActionCount();
-        
+
         msngr.action("chicken", function (message, wrap) {
             // Nothing here necessary
         });
@@ -109,5 +109,4 @@ describe("./actions/action.js", function () {
         msngr.inaction("chicken");
         expect(msngr.getActionCount()).to.equal(start);
     });
-
 });

@@ -147,8 +147,8 @@ This method accepts a JavaScript object with the properties "topic", "category" 
 #### msngr.emit(message, payload) / msngr.emit(topic, category, dataType, payload)
 This method sends a message by either providing a JavaScript object with the properties "topic", "category" and "dataType" or by simply entering each values as a parameter. The payload can be anything you want to send to a receiving callback.
 
-#### msngr.drop(message) / msngr.drop(topic, category, dataType)
-This method removes a message from being executed.
+#### msngr.drop(message, handler) / msngr.drop(topic, category, dataType, handler)
+This method removes a message from being executed. Specify the handler to remove or drop all handlers by specifying undefined.
 
 #### msngr.bind(element, event, message) / msngr.bind(element, event, topic, category, dataType)
 This method takes an HTML element (can be an element or selector), an event and a message then binds all 3 together. When the specified event occurs on the element the message will be emitted. Optionally add the 'dom' property to the message object to supply selectors you wish msngr would gather values from and return in the payload.

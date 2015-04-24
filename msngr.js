@@ -3,7 +3,7 @@ var msngr = msngr || (function () {
 	"use strict";
 
 	return {
-		version: "1.0.0",
+		version: "1.1.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -33,6 +33,10 @@ msngr.extend((function () {
 	return {
 		utils: {
 			argumentsToArray: function (args) {
+				if (msngr.utils.isArray(args)) {
+					return args;
+				}
+
 				return Array.prototype.slice.call(args, 0);
 			}
 		}
@@ -198,35 +202,62 @@ msngr.extend((function () {
 	return {
 		utils: {
 			getType: function (obj) {
-				if (!msngr.utils.exists(obj)) {
+				if (!msngr.utils.exist(obj)) {
 					return "" + obj;
 				}
 				return Object.prototype.toString.call(obj);
 			},
+			isArguments: function (obj) {
+				return (msngr.utils.getType(obj) === "[object Arguments]");
+			},
+			areArguments: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isArguments, msngr.utils.argumentsToArray(arguments));
+			},
 			isNullOrUndefined: function (obj) {
 				return (obj === undefined || obj === null);
 			},
-			exists: function (obj) {
+			exist: function (obj) {
 				return !msngr.utils.isNullOrUndefined(obj);
+			},
+			exists: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.exist, msngr.utils.argumentsToArray(arguments));
 			},
 			isString: function (str) {
 	            return (msngr.utils.getType(str) === "[object String]");
 	        },
+			areStrings: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isString, msngr.utils.argumentsToArray(arguments));
+			},
 	        isDate: function (obj) {
 	            return (msngr.utils.getType(obj) === "[object Date]");
 	        },
+			areDates: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isDate, msngr.utils.argumentsToArray(arguments));
+			},
 	        isArray: function (obj) {
 	            return (msngr.utils.getType(obj) === "[object Array]");
 	        },
+			areArrays: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isArray, msngr.utils.argumentsToArray(arguments));
+			},
 	        isNumber: function (obj) {
 	            return (msngr.utils.getType(obj) === "[object Number]");
 	        },
+			areNumbers: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isNumber, msngr.utils.argumentsToArray(arguments));
+			},
 	        isObject: function (obj) {
 	            return (msngr.utils.getType(obj) === "[object Object]");
 	        },
+			areObjects: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isObject, msngr.utils.argumentsToArray(arguments));
+			},
 	        isFunction: function (func) {
 	            return (msngr.utils.getType(func) === "[object Function]");
 	        },
+			areFunctions: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isFunction, msngr.utils.argumentsToArray(arguments));
+			},
 	        isEmptyString: function (str) {
 	            var isStr = msngr.utils.isString(str);
 	            if (str === undefined || str === null || (isStr && str.toString().trim().length === 0)) {
@@ -234,10 +265,63 @@ msngr.extend((function () {
 	            }
 	            return false;
 	        },
+			areEmptyStrings: function () {
+				return msngr.utils.reiterativeValidation(msngr.utils.isEmptyString, msngr.utils.argumentsToArray(arguments));
+			},
 			hasWildCard: function (str) {
 				return (str.indexOf("*") !== -1);
+			},
+			reiterativeValidation: function (validationMethod, inputs) {
+				var result = false;
+				if (msngr.utils.exist(validationMethod) && msngr.utils.exist(inputs)) {
+					if (!msngr.utils.isArray(inputs)) {
+						inputs = [inputs];
+					}
+					for (var i = 0; i < inputs.length; ++i) {
+						result = validationMethod.apply(this, [inputs[i]]);
+						if (result === false) {
+							break;
+						}
+					}
+				}
+				return result;
 			}
 	    }
+	};
+}()));
+
+/*
+    ./src/builders/message.js
+*/
+msngr.extend((function () {
+	"use strict";
+
+	return {
+		builders: {
+			msg: function () {
+				return (function () {
+					var message = { };
+					var props = ["topic", "category", "dataType", "payload"].concat(msngr.getAvailableActions());
+
+					var obj = {
+						build: function () {
+							return message;
+						}
+					};
+
+					for (var i = 0; i < props.length; ++i) {
+						(function (key) {
+							obj[key] = function (input) {
+								message[key] = input;
+								return obj;
+							};
+						}(props[i]));
+					}
+
+					return obj;
+				}());
+			}
+		}
 	};
 }()));
 
@@ -272,7 +356,7 @@ msngr.extend((function () {
   return {
       store: {
           index: function (message) {
-              if (msngr.utils.exists(message) && msngr.utils.exists(message.topic)) {
+              if (msngr.utils.exist(message) && msngr.utils.exist(message.topic)) {
                   var uuid = msngr.utils.id();
                   id_to_message[uuid] = message;
 
@@ -281,7 +365,7 @@ msngr.extend((function () {
                   }
                   direct_index.topic_to_id[message.topic].push(uuid);
 
-                  if (msngr.utils.exists(message.category)) {
+                  if (msngr.utils.exist(message.category)) {
                       if (direct_index.topic_cat_to_id[message.topic] === undefined) {
                           direct_index.topic_cat_to_id[message.topic] = { };
                       }
@@ -293,7 +377,7 @@ msngr.extend((function () {
                       direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
                   }
 
-                  if (msngr.utils.exists(message.dataType)) {
+                  if (msngr.utils.exist(message.dataType)) {
                       if (direct_index.topic_type_to_id[message.topic] === undefined) {
                           direct_index.topic_type_to_id[message.topic] = { };
                       }
@@ -305,7 +389,7 @@ msngr.extend((function () {
                       direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
                   }
 
-                  if (msngr.utils.exists(message.category) && msngr.utils.exists(message.dataType)) {
+                  if (msngr.utils.exist(message.category) && msngr.utils.exist(message.dataType)) {
                       if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
                           direct_index.topic_cat_type_to_id[message.topic] = { };
                       }
@@ -328,21 +412,21 @@ msngr.extend((function () {
               return undefined;
           },
           delete: function (uuid) {
-              if (msngr.utils.exists(uuid) && msngr.utils.exists(id_to_message[uuid])) {
+              if (msngr.utils.exist(uuid) && msngr.utils.exist(id_to_message[uuid])) {
                   var message = id_to_message[uuid];
 
-                  if (msngr.utils.exists(message.topic)) {
+                  if (msngr.utils.exist(message.topic)) {
                       deleteValueFromArray(direct_index.topic_to_id[message.topic], uuid);
 
-                      if (msngr.utils.exists(message.category)) {
+                      if (msngr.utils.exist(message.category)) {
                           deleteValueFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
                       }
 
-                      if (msngr.utils.exists(message.dataType)) {
+                      if (msngr.utils.exist(message.dataType)) {
                           deleteValueFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
                       }
 
-                      if (msngr.utils.exists(message.category) && msngr.utils.exists(message.dataType)) {
+                      if (msngr.utils.exist(message.category) && msngr.utils.exist(message.dataType)) {
                           deleteValueFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
                       }
                   }
@@ -355,25 +439,25 @@ msngr.extend((function () {
               return false;
           },
           query: function (message) {
-              if (msngr.utils.exists(message)) {
-                  if (msngr.utils.exists(message.topic)) {
+              if (msngr.utils.exist(message)) {
+                  if (msngr.utils.exist(message.topic)) {
                       // Topic Only Results
-                      if (!msngr.utils.exists(message.category) && !msngr.utils.exists(message.dataType)) {
+                      if (!msngr.utils.exist(message.category) && !msngr.utils.exist(message.dataType)) {
                           return direct_index.topic_to_id[message.topic] || [];
                       }
 
                       // Topic + Category Results
-                      if (msngr.utils.exists(message.category) && !msngr.utils.exists(message.dataType)) {
+                      if (msngr.utils.exist(message.category) && !msngr.utils.exist(message.dataType)) {
                           return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
                       }
 
                       // Topic + Data Type Results
-                      if (msngr.utils.exists(message.dataType) && !msngr.utils.exists(message.category)) {
+                      if (msngr.utils.exist(message.dataType) && !msngr.utils.exist(message.category)) {
                           return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
                       }
 
                       // Topic + Category + Data Type Results
-                      if (msngr.utils.exists(message.category) && msngr.utils.exists(message.dataType)) {
+                      if (msngr.utils.exist(message.category) && msngr.utils.exist(message.dataType)) {
                           return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
                       }
                   }
@@ -429,8 +513,8 @@ msngr.extend((function () {
         var node = this;
         var path = msngr.utils.getDomPath(node);
 
-        if (msngr.utils.exists(registerdPaths[path])) {
-            if (msngr.utils.exists(registerdPaths[path][event.type])) {
+        if (msngr.utils.exist(registerdPaths[path])) {
+            if (msngr.utils.exist(registerdPaths[path][event.type])) {
                 return msngr.emit(registerdPaths[path][event.type], event);
             }
         }
@@ -441,17 +525,17 @@ msngr.extend((function () {
 
     return {
         bind: function (element, event, topic, category, dataType) {
-            if (!msngr.utils.exists(element) || !msngr.utils.exists(event) || !msngr.utils.exists(topic)) {
+            if (!msngr.utils.exist(element) || !msngr.utils.exist(event) || !msngr.utils.exist(topic)) {
                 throw InvalidParametersException("bind");
             }
-            if (msngr.utils.isObject(topic) && !msngr.utils.exists(topic.topic)) {
+            if (msngr.utils.isObject(topic) && !msngr.utils.exist(topic.topic)) {
                 throw InvalidParametersException("bind");
             }
 
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
-            if (!msngr.utils.exists(registerdPaths[path])) {
+            if (!msngr.utils.exist(registerdPaths[path])) {
                 registerdPaths[path] = { };
             }
 
@@ -462,11 +546,11 @@ msngr.extend((function () {
                 message = { };
                 message.topic = topic;
 
-                if (msngr.utils.exists(category)) {
+                if (msngr.utils.exist(category)) {
                     message.category = category;
                 }
 
-                if (msngr.utils.exists(dataType)) {
+                if (msngr.utils.exist(dataType)) {
                     message.dataType = dataType;
                 }
             }
@@ -483,8 +567,8 @@ msngr.extend((function () {
             var node = msngr.utils.findElement(element);
             var path = msngr.utils.getDomPath(node);
 
-            if (msngr.utils.exists(registerdPaths[path])) {
-                if (msngr.utils.exists(registerdPaths[path][event])) {
+            if (msngr.utils.exist(registerdPaths[path])) {
+                if (msngr.utils.exist(registerdPaths[path][event])) {
                     node.removeEventListener(event, listener);
 
                     delete registerdPaths[path][event];
@@ -541,13 +625,13 @@ msngr.extend((function () {
         }(method, context, params, message));
     };
 
-    var _emit = function (message, payload) {
+    var _emit = function (message, payload, callback) {
         var uuids = msngr.store.query(message);
         if (uuids.length > 0) {
             for (var i = 0; i < uuids.length; ++i) {
                 var del = delegates[uuids[i]];
                 var params = [];
-                if (msngr.utils.exists(payload || message.payload)) {
+                if (msngr.utils.exist(payload || message.payload)) {
                     params.push(payload || message.payload);
                 }
                 execute(del.callback, del.context, params, message);
@@ -569,15 +653,24 @@ msngr.extend((function () {
         return msngr;
     };
 
-    var _drop = function (message) {
+    var _drop = function (message, func) {
         var uuids = msngr.store.query(message);
         if (uuids.length > 0) {
             for (var i = 0; i < uuids.length; ++i) {
                 var uuid = uuids[i];
-                delete delegates[uuid];
-                delegateCount--;
+                if (msngr.utils.exist(func)) {
+                    if (delegates[uuid].callback === func) {
+                        delete delegates[uuid];
+                        delegateCount--;
 
-                msngr.store.delete(uuid);
+                        msngr.store.delete(uuid);
+                    }
+                } else {
+                    delete delegates[uuid];
+                    delegateCount--;
+
+                    msngr.store.delete(uuid);
+                }
             }
         }
 
@@ -585,18 +678,21 @@ msngr.extend((function () {
     };
 
     return {
-        emit: function (topic, category, dataType, payload) {
-            if (!msngr.utils.exists(topic)) {
+        emit: function (topic, category, dataType, payload, callback) {
+            if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("emit");
             }
 
             var message;
             if (msngr.utils.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exists(payload) && msngr.utils.exists(category)) {
+                if (!msngr.utils.exist(payload) && msngr.utils.exist(category)) {
                     payload = category;
                 }
-                return _emit(message, payload);
+                if (!msngr.utils.exist(callback) && msngr.utils.exist(dataType) && msngr.utils.isFunction(dataType)) {
+                    callback = dataType;
+                }
+                return _emit(message, payload, callback);
             }
 
             message = { };
@@ -604,7 +700,7 @@ msngr.extend((function () {
 
             message.topic = args.shift();
 
-            if (!msngr.utils.exists(payload)) {
+            if (!msngr.utils.exist(payload)) {
                 if (args.length > 0 && msngr.utils.isObject(args[0])) {
                     payload = args.shift();
 
@@ -624,14 +720,14 @@ msngr.extend((function () {
             return _emit(message, payload);
         },
         on: function (topic, category, dataType, callback) {
-            if (!msngr.utils.exists(topic)) {
+            if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("on");
             }
 
             var message;
             if (msngr.utils.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exists(callback) && msngr.utils.exists(category)) {
+                if (!msngr.utils.exist(callback) && msngr.utils.exist(category)) {
                     callback = category;
                 }
                 return _on(message, callback);
@@ -640,41 +736,65 @@ msngr.extend((function () {
                 message = { };
                 var args = msngr.utils.argumentsToArray(arguments);
 
-                callback = callback || args.pop();
-
                 message.topic = args.shift();
 
                 message.category = args.shift();
                 message.dataType = args.shift();
+
+                callback = callback || args.pop();
+
+                if (msngr.utils.isFunction(message.category) && !msngr.utils.exist(message.dataType)) {
+                    callback = message.category;
+                    delete message.category;
+                    delete message.dataType;
+                }
+
+                if (msngr.utils.isFunction(message.dataType) && msngr.utils.exist(message.category)) {
+                    callback = message.dataType;
+                    delete message.dataType;
+                }
 
                 return _on(message, callback);
             }
 
             throw InvalidParameters("on");
         },
-        drop: function (topic, category, dataType) {
-            if (!msngr.utils.exists(topic)) {
+        drop: function (topic, category, dataType, callback) {
+            if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("drop");
             }
 
             var message;
             if (msngr.utils.isObject(topic)) {
                 message = topic;
-                return _drop(message);
-            } else {
+                if (!msngr.utils.exist(callback) && msngr.utils.exist(category)) {
+                    callback = category;
+                }
+                return _drop(message, callback);
+            }
+            if (arguments.length > 0) {
                 message = { };
-                if (msngr.utils.exists(topic)) {
-                    message.topic = topic;
+                var args = msngr.utils.argumentsToArray(arguments);
+
+                message.topic = args.shift();
+
+                message.category = args.shift();
+                message.dataType = args.shift();
+
+                callback = callback || args.pop();
+
+                if (msngr.utils.isFunction(message.category) && !msngr.utils.exist(message.dataType)) {
+                    callback = message.category;
+                    delete message.category;
+                    delete message.dataType;
                 }
 
-                if (msngr.utils.exists(category)) {
-                    message.category = category;
+                if (msngr.utils.isFunction(message.dataType) && msngr.utils.exist(message.category)) {
+                    callback = message.dataType;
+                    delete message.dataType;
                 }
 
-                if (msngr.utils.exists(dataType)) {
-                    message.dataType = dataType;
-                }
-                return _drop(message);
+                return _drop(message, callback);
             }
 
             throw InvalidParameters("drop");
@@ -698,8 +818,17 @@ msngr.extend((function () {
     // Throw statements
     var InvalidParameters = function (str) {
         return {
+            name: "InvalidParameters",
             severity: "unrecoverable",
             message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
+    var ReservedKeywords = function (keyword) {
+        return {
+            name: "ReservedKeywordsException",
+            severity: "unrecoverable",
+            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
         };
     };
 
@@ -709,15 +838,19 @@ msngr.extend((function () {
 
     return {
         action: function (property, handler) {
-            if (!msngr.utils.exists(property) || !msngr.utils.exists(handler)) {
+            if (!msngr.utils.exist(property) || !msngr.utils.exist(handler)) {
                 throw InvalidParameters("action");
+            }
+
+            if (reservedProperties.indexOf(property) !== -1) {
+                throw ReservedKeywords(property);
             }
 
             actions[property] = handler;
             actionsCount++;
         },
         inaction: function (property) {
-            if (!msngr.utils.exists(property)) {
+            if (!msngr.utils.exist(property)) {
                 throw InvalidParameters("inaction");
             }
 
@@ -725,7 +858,7 @@ msngr.extend((function () {
             actionsCount--;
         },
         act: function (message, superWrap) {
-            if (!msngr.utils.exists(message) || !msngr.utils.exists(superWrap)) {
+            if (!msngr.utils.exist(message) || !msngr.utils.exist(superWrap)) {
                 throw InvalidParameters("act");
             }
 
@@ -753,6 +886,9 @@ msngr.extend((function () {
         },
         getActionCount: function () {
             return actionsCount;
+        },
+        getAvailableActions: function () {
+            return Object.keys(actions);
         }
     };
 }()));
@@ -760,7 +896,7 @@ msngr.extend((function () {
 msngr.action("dom", function (message, wrap) {
     "use strict";
 
-    if (msngr.utils.exists(message.dom)) {
+    if (msngr.utils.exist(message.dom)) {
         var norm = {
             gather: undefined,
             doc: undefined
@@ -772,35 +908,35 @@ msngr.action("dom", function (message, wrap) {
                 norm.gather = [message.dom];
             }
         } else {
-            if (msngr.utils.exists(message.dom.gather)) {
+            if (msngr.utils.exist(message.dom.gather)) {
                 norm.gather = (msngr.utils.isArray(message.dom.gather) ? message.dom.gather : [message.dom.gather]);
             }
-            if (msngr.utils.exists(message.dom.root || message.dom.doc)) {
+            if (msngr.utils.exist(message.dom.root || message.dom.doc)) {
                 norm.doc = message.dom.root || message.dom.doc;
             }
         }
 
-        if (msngr.utils.exists(norm.gather) && norm.gather.length > 0) {
+        if (msngr.utils.exist(norm.gather) && norm.gather.length > 0) {
             if (!msngr.utils.isObject(wrap.payload)) {
                 wrap.payload = { };
             }
 
             for (var i = 0; i < norm.gather.length; ++i) {
                 var elms = msngr.utils.findElements(norm.gather[i], message.dom.root);
-                if (msngr.utils.exists(elms) && elms.length > 0) {
+                if (msngr.utils.exist(elms) && elms.length > 0) {
                     for (var j = 0; j < elms.length; ++j) {
                         var elm = elms[j];
 
                         var prop;
-                        if (msngr.utils.exists(elm.getAttribute("name")) && !msngr.utils.isEmptyString(elm.getAttribute("name"))) {
+                        if (msngr.utils.exist(elm.getAttribute("name")) && !msngr.utils.isEmptyString(elm.getAttribute("name"))) {
                             prop = elm.getAttribute("name");
-                        } else if (msngr.utils.exists(elm.id) && !msngr.utils.isEmptyString(elm.id)) {
+                        } else if (msngr.utils.exist(elm.id) && !msngr.utils.isEmptyString(elm.id)) {
                             prop = elm.getAttribute("id");
                             console.log(elm.id);
                         } else {
                             prop = elm.tagName.toLowerCase() + j;
                         }
-                        
+
                         wrap.payload[prop] = elm.value;
                     }
                 }

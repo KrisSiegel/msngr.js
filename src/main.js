@@ -3,7 +3,7 @@ var msngr = msngr || (function () {
 	"use strict";
 
 	return {
-		version: "1.0.0",
+		version: "1.1.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {

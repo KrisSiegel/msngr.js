@@ -4,8 +4,17 @@ msngr.extend((function () {
     // Throw statements
     var InvalidParameters = function (str) {
         return {
+            name: "InvalidParameters",
             severity: "unrecoverable",
             message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
+    var ReservedKeywords = function (keyword) {
+        return {
+            name: "ReservedKeywordsException",
+            severity: "unrecoverable",
+            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
         };
     };
 
@@ -15,15 +24,19 @@ msngr.extend((function () {
 
     return {
         action: function (property, handler) {
-            if (!msngr.utils.exists(property) || !msngr.utils.exists(handler)) {
+            if (!msngr.utils.exist(property) || !msngr.utils.exist(handler)) {
                 throw InvalidParameters("action");
+            }
+
+            if (reservedProperties.indexOf(property) !== -1) {
+                throw ReservedKeywords(property);
             }
 
             actions[property] = handler;
             actionsCount++;
         },
         inaction: function (property) {
-            if (!msngr.utils.exists(property)) {
+            if (!msngr.utils.exist(property)) {
                 throw InvalidParameters("inaction");
             }
 
@@ -31,7 +44,7 @@ msngr.extend((function () {
             actionsCount--;
         },
         act: function (message, superWrap) {
-            if (!msngr.utils.exists(message) || !msngr.utils.exists(superWrap)) {
+            if (!msngr.utils.exist(message) || !msngr.utils.exist(superWrap)) {
                 throw InvalidParameters("act");
             }
 
@@ -59,6 +72,9 @@ msngr.extend((function () {
         },
         getActionCount: function () {
             return actionsCount;
+        },
+        getAvailableActions: function () {
+            return Object.keys(actions);
         }
     };
 }()));

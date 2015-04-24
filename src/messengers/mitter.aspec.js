@@ -288,4 +288,40 @@ describe("./messengers/mitter.js", function () {
 
         done();
     });
+
+    it("msngr.drop('TestTopic', callback) drops specific callbacks and not the entire message", function (done) {
+        var func1Ran = false;
+        var func2Ran = false;
+
+        var func1 = function () {
+            func1Ran = true;
+        }
+
+        var func2 = function () {
+            func2Ran = true;
+        }
+
+        msngr.on("TestTopic", func1);
+        msngr.on("TestTopic", func2);
+
+        msngr.emit("TestTopic");
+
+        setTimeout(function () {
+            expect(func1Ran).to.equal(true);
+            expect(func2Ran).to.equal(true);
+
+            func1Ran = false;
+            func2Ran = false;
+
+            msngr.drop("TestTopic", func2);
+
+            msngr.emit("TestTopic");
+
+            setTimeout(function () {
+                expect(func1Ran).to.equal(true);
+                expect(func2Ran).to.equal(false);
+                done();
+            }, 250);
+        }, 250);
+    });
 });
