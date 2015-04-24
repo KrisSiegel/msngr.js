@@ -3,7 +3,7 @@ var msngr = msngr || (function () {
 	"use strict";
 
 	return {
-		version: "2.0.0",
+		version: "1.1.0",
 		extend: function (obj, target) {
 			target = (target || msngr);
 			if (Object.prototype.toString.call(obj) === "[object Object]") {
@@ -192,49 +192,6 @@ msngr.extend((function () {
 				lastNow = now;
 				return now;
 			}
-		}
-	};
-}()));
-
-/*
-    ./src/utils/smart.js
-
-    Smart arguments is a programatic way of defining how data passed into a method
-    is translated into a JavaScript object to allow shorthand calling of methods
-
-    Smart argument definition is as follows with this example:
-    {
-        expanded: [
-            { key: "topic", type: smartypes.string },
-            { key: "category", type: smartypes.string },
-            { key: "dataType", type: smartypes.string },
-            { key: "payload", type: smartypes.any },
-        ],
-        final: [smartypes.object, smartypes.function]
-    }
-*/
-msngr.extend((function () {
-	"use strict";
-
-	return {
-		utils: {
-            smartypes: {
-                string: "[object String]",
-                date: "[object Date]",
-                array: "[object Array]",
-                object: "[object Object]",
-                function: "[object Function]",
-                number: "[object Number]",
-                any: "[object *]"
-            },
-			smart: function (definition, args) {
-                var result = [];
-                if (!msngr.utils.exist(definition) || !msngr.utils.exist(args)) {
-                    return result;
-                }
-
-
-            }
 		}
 	};
 }()));
@@ -696,15 +653,24 @@ msngr.extend((function () {
         return msngr;
     };
 
-    var _drop = function (message) {
+    var _drop = function (message, func) {
         var uuids = msngr.store.query(message);
         if (uuids.length > 0) {
             for (var i = 0; i < uuids.length; ++i) {
                 var uuid = uuids[i];
-                delete delegates[uuid];
-                delegateCount--;
+                if (msngr.utils.exist(func)) {
+                    if (delegates[uuid].callback === func) {
+                        delete delegates[uuid];
+                        delegateCount--;
 
-                msngr.store.delete(uuid);
+                        msngr.store.delete(uuid);
+                    }
+                } else {
+                    delete delegates[uuid];
+                    delegateCount--;
+
+                    msngr.store.delete(uuid);
+                }
             }
         }
 
@@ -770,19 +736,30 @@ msngr.extend((function () {
                 message = { };
                 var args = msngr.utils.argumentsToArray(arguments);
 
-                callback = callback || args.pop();
-
                 message.topic = args.shift();
 
                 message.category = args.shift();
                 message.dataType = args.shift();
+
+                callback = callback || args.pop();
+
+                if (msngr.utils.isFunction(message.category) && !msngr.utils.exist(message.dataType)) {
+                    callback = message.category;
+                    delete message.category;
+                    delete message.dataType;
+                }
+
+                if (msngr.utils.isFunction(message.dataType) && msngr.utils.exist(message.category)) {
+                    callback = message.dataType;
+                    delete message.dataType;
+                }
 
                 return _on(message, callback);
             }
 
             throw InvalidParameters("on");
         },
-        drop: function (topic, category, dataType) {
+        drop: function (topic, category, dataType, callback) {
             if (!msngr.utils.exist(topic)) {
                 throw InvalidParameters("drop");
             }
@@ -790,21 +767,34 @@ msngr.extend((function () {
             var message;
             if (msngr.utils.isObject(topic)) {
                 message = topic;
-                return _drop(message);
-            } else {
+                if (!msngr.utils.exist(callback) && msngr.utils.exist(category)) {
+                    callback = category;
+                }
+                return _drop(message, callback);
+            }
+            if (arguments.length > 0) {
                 message = { };
-                if (msngr.utils.exist(topic)) {
-                    message.topic = topic;
+                var args = msngr.utils.argumentsToArray(arguments);
+
+                message.topic = args.shift();
+
+                message.category = args.shift();
+                message.dataType = args.shift();
+
+                callback = callback || args.pop();
+
+                if (msngr.utils.isFunction(message.category) && !msngr.utils.exist(message.dataType)) {
+                    callback = message.category;
+                    delete message.category;
+                    delete message.dataType;
                 }
 
-                if (msngr.utils.exist(category)) {
-                    message.category = category;
+                if (msngr.utils.isFunction(message.dataType) && msngr.utils.exist(message.category)) {
+                    callback = message.dataType;
+                    delete message.dataType;
                 }
 
-                if (msngr.utils.exist(dataType)) {
-                    message.dataType = dataType;
-                }
-                return _drop(message);
+                return _drop(message, callback);
             }
 
             throw InvalidParameters("drop");
