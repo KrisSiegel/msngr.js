@@ -13,6 +13,14 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/validation.js", function () {
     "use strict";
 
+    before(function () {
+        msngr.debug = true;
+    });
+
+    after(function () {
+        msngr.debug = false;
+    });
+
     it("msngr.getType(obj) - obj is a function", function () {
         expect(msngr.getType(function () {})).to.equal("[object Function]");
     });
@@ -481,24 +489,20 @@ describe("./utils/validation.js", function () {
 
     // reiterativeValidation(func, inputs)
     it("msngr.internal.reiterativeValidation(func, inputs) - func is undefined", function () {
-        msngr.debug = true;
         expect(msngr.internal.reiterativeValidation(undefined, [true, false, 15, "534"])).to.equal(false);
     });
 
     it("msngr.internal.reiterativeValidation(func, inputs) - inputs is undefined", function () {
-        msngr.debug = true;
         expect(msngr.internal.reiterativeValidation(msngr.exists, undefined)).to.equal(false);
     });
 
     it("msngr.internal.reiterativeValidation(func, inputs) - func is msngr.exists and inputs is a single value", function () {
-        msngr.debug = true;
         expect(msngr.internal.reiterativeValidation(msngr.exists, true)).to.equal(true);
         expect(msngr.internal.reiterativeValidation(msngr.exists, undefined)).to.equal(false);
         expect(msngr.internal.reiterativeValidation(msngr.exists, null)).to.equal(false);
     });
 
     it("msngr.internal.reiterativeValidation(func, inputs) - func is msngr.exists and inputs are various values", function () {
-        msngr.debug = true;
         expect(msngr.internal.reiterativeValidation(msngr.exists, [true, false, 15, "534"])).to.equal(true);
         expect(msngr.internal.reiterativeValidation(msngr.exists, [undefined, false, 15, "534"])).to.equal(false);
         expect(msngr.internal.reiterativeValidation(msngr.exists, [true, undefined, 15, "534"])).to.equal(false);

@@ -13,8 +13,15 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./stores/memory.js", function () {
     "use strict";
 
-    beforeEach(function() {
+    before(function () {
         msngr.debug = true;
+    });
+
+    after(function () {
+        msngr.debug = false;
+    });
+
+    beforeEach(function() {
         msngr.internal.store.clear();
     });
 

@@ -94,6 +94,7 @@ describe("./main.js", function () {
     });
 
     it("msngr.debug - property setting exports internal object for testing and debugging", function () {
+        msngr.debug = false;
         expect(msngr.internal).to.not.exist;
         msngr.debug = true;
         expect(msngr.internal).to.exist;
