@@ -71,4 +71,33 @@ describe("./main.js", function () {
         expect(obj2.this.is.a.test.yup).to.exist;
         expect(obj2.this.is.a.test.yup()).to.equal("yup!");
     });
+
+    it("msngr.extend(func, target) - extends a method with properties", function () {
+        var myTest = function () {
+            return 15;
+        };
+
+        var func2 = function (external, internal) {
+            expect(external).to.exist;
+            expect(internal).to.exist;
+
+            return {
+                val: 12
+            };
+        };
+
+        msngr.extend(func2, myTest);
+
+        expect(myTest.val).to.exist;
+        expect(myTest.val).to.equal(12);
+        expect(myTest()).to.equal(15);
+    });
+
+    it("msngr.debug - property setting exports internal object for testing and debugging", function () {
+        expect(msngr.internal).to.not.exist;
+        msngr.debug = true;
+        expect(msngr.internal).to.exist;
+        msngr.debug = false;
+        expect(msngr.internal).to.not.exist;
+    });
 });

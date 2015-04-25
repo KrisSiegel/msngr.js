@@ -83,11 +83,11 @@ module.exports = (function (grunt) {
 		var pkg = grunt.file.readJSON('package.json');
 
 		var main = fs.readFileSync("src/main.js", { encoding: "utf8" });
-		var indexOfVersion = main.indexOf("version: ");
-		var indexOfNextComma = main.indexOf(",", indexOfVersion);
+		var indexOfVersion = main.indexOf("external.version = ");
+		var indexOfNextSemiColon = main.indexOf(";", indexOfVersion);
 		var ified = main.substring(0, indexOfVersion);
-		ified = ified + "version: \"" + pkg.version + "\"";
-		ified = ified + main.substring(indexOfNextComma, main.length);
+		ified = ified + "external.version = \"" + pkg.version + "\"";
+		ified = ified + main.substring(indexOfNextSemiColon, main.length);
 
 		fs.writeFileSync("src/main.js", ified, { encoding: "utf8" });
 	});

@@ -1,4 +1,4 @@
-msngr.extend((function () {
+msngr.extend((function (external, internal) {
     "use strict";
 
     // Throw statements
@@ -24,7 +24,7 @@ msngr.extend((function () {
 
     return {
         action: function (property, handler) {
-            if (!msngr.utils.exist(property) || !msngr.utils.exist(handler)) {
+            if (!external.exist(property) || !external.exist(handler)) {
                 throw InvalidParameters("action");
             }
 
@@ -36,7 +36,7 @@ msngr.extend((function () {
             actionsCount++;
         },
         inaction: function (property) {
-            if (!msngr.utils.exist(property)) {
+            if (!external.exist(property)) {
                 throw InvalidParameters("inaction");
             }
 
@@ -44,7 +44,7 @@ msngr.extend((function () {
             actionsCount--;
         },
         act: function (message, superWrap) {
-            if (!msngr.utils.exist(message) || !msngr.utils.exist(superWrap)) {
+            if (!external.exist(message) || !external.exist(superWrap)) {
                 throw InvalidParameters("act");
             }
 
@@ -77,4 +77,4 @@ msngr.extend((function () {
             return Object.keys(actions);
         }
     };
-}()));
+}));

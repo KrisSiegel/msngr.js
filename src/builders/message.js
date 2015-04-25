@@ -1,7 +1,7 @@
 /*
     ./src/builders/message.js
 */
-msngr.extend((function () {
+msngr.extend((function (external, internal) {
 	"use strict";
 
 	return {
@@ -31,4 +31,4 @@ msngr.extend((function () {
 			}
 		}
 	};
-}()));
+}));

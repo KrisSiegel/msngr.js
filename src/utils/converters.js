@@ -1,15 +1,13 @@
-msngr.extend((function () {
+msngr.extend((function (external, internal) {
 	"use strict";
 
 	return {
-		utils: {
-			argumentsToArray: function (args) {
-				if (msngr.utils.isArray(args)) {
-					return args;
-				}
-
-				return Array.prototype.slice.call(args, 0);
+		argumentsToArray: function (args) {
+			if (external.isArray(args)) {
+				return args;
 			}
+
+			return Array.prototype.slice.call(args, 0);
 		}
 	};
-}()));
+}));

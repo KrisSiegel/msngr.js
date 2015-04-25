@@ -1,4 +1,4 @@
-msngr.extend((function () {
+msngr.extend((function (external, internal) {
     "use strict";
 
     // Throw statements
@@ -39,12 +39,12 @@ msngr.extend((function () {
     };
 
     var _emit = function (message, payload, callback) {
-        var uuids = msngr.store.query(message);
+        var uuids = internal.store.query(message);
         if (uuids.length > 0) {
             for (var i = 0; i < uuids.length; ++i) {
                 var del = delegates[uuids[i]];
                 var params = [];
-                if (msngr.utils.exist(payload || message.payload)) {
+                if (external.exist(payload || message.payload)) {
                     params.push(payload || message.payload);
                 }
                 execute(del.callback, del.context, params, message);
@@ -55,7 +55,7 @@ msngr.extend((function () {
     };
 
     var _on = function (message, callback) {
-        var uuid = msngr.store.index(message);
+        var uuid = internal.store.index(message);
         delegates[uuid] = {
             callback: callback,
             context: (message.context || this),
@@ -67,22 +67,22 @@ msngr.extend((function () {
     };
 
     var _drop = function (message, func) {
-        var uuids = msngr.store.query(message);
+        var uuids = internal.store.query(message);
         if (uuids.length > 0) {
             for (var i = 0; i < uuids.length; ++i) {
                 var uuid = uuids[i];
-                if (msngr.utils.exist(func)) {
+                if (external.exist(func)) {
                     if (delegates[uuid].callback === func) {
                         delete delegates[uuid];
                         delegateCount--;
 
-                        msngr.store.delete(uuid);
+                        internal.store.delete(uuid);
                     }
                 } else {
                     delete delegates[uuid];
                     delegateCount--;
 
-                    msngr.store.delete(uuid);
+                    internal.store.delete(uuid);
                 }
             }
         }
@@ -91,30 +91,61 @@ msngr.extend((function () {
     };
 
     return {
+        msg: function (topic, category, dataType) {
+            if (!external.exist(topic)) {
+                throw InvalidParameters("topic");
+            }
+
+            var message;
+            if (external.isObject(topic)) {
+                message = topic;
+            } else {
+                message = {
+                    topic: topic,
+                    category: category,
+                    dataType: dataType
+                };
+            }
+
+            return {
+                emit: function (payload) {
+
+                },
+                on: function (callback) {
+
+                },
+                drop: function (callback) {
+
+                },
+                dropAll: function () {
+
+                }
+            };
+        },
         emit: function (topic, category, dataType, payload, callback) {
-            if (!msngr.utils.exist(topic)) {
+            if (!external.exist(topic)) {
                 throw InvalidParameters("emit");
             }
 
             var message;
-            if (msngr.utils.isObject(topic)) {
+            if (external.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exist(payload) && msngr.utils.exist(category)) {
+                if (!external.exist(payload) && external.exist(category)) {
                     payload = category;
                 }
-                if (!msngr.utils.exist(callback) && msngr.utils.exist(dataType) && msngr.utils.isFunction(dataType)) {
+                if (!external.exist(callback) && external.exist(dataType) && external.isFunction(dataType)) {
                     callback = dataType;
                 }
                 return _emit(message, payload, callback);
             }
 
             message = { };
-            var args = msngr.utils.argumentsToArray(arguments);
+            var args = external.argumentsToArray(arguments);
 
             message.topic = args.shift();
 
-            if (!msngr.utils.exist(payload)) {
-                if (args.length > 0 && msngr.utils.isObject(args[0])) {
+            if (!external.exist(payload)) {
+                if (args.length > 0 && external.isObject(args[0])) {
                     payload = args.shift();
 
                     return _emit(message, payload);
@@ -123,7 +154,7 @@ msngr.extend((function () {
 
             message.category = args.shift();
 
-            if (args.length > 0 && msngr.utils.isObject(args[0])) {
+            if (args.length > 0 && external.isObject(args[0])) {
                 payload = args.shift();
 
                 return _emit(message, payload);
@@ -133,21 +164,21 @@ msngr.extend((function () {
             return _emit(message, payload);
         },
         on: function (topic, category, dataType, callback) {
-            if (!msngr.utils.exist(topic)) {
+            if (!external.exist(topic)) {
                 throw InvalidParameters("on");
             }
 
             var message;
-            if (msngr.utils.isObject(topic)) {
+            if (external.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exist(callback) && msngr.utils.exist(category)) {
+                if (!external.exist(callback) && external.exist(category)) {
                     callback = category;
                 }
                 return _on(message, callback);
             }
             if (arguments.length > 1) {
                 message = { };
-                var args = msngr.utils.argumentsToArray(arguments);
+                var args = external.argumentsToArray(arguments);
 
                 message.topic = args.shift();
 
@@ -156,13 +187,13 @@ msngr.extend((function () {
 
                 callback = callback || args.pop();
 
-                if (msngr.utils.isFunction(message.category) && !msngr.utils.exist(message.dataType)) {
+                if (external.isFunction(message.category) && !external.exist(message.dataType)) {
                     callback = message.category;
                     delete message.category;
                     delete message.dataType;
                 }
 
-                if (msngr.utils.isFunction(message.dataType) && msngr.utils.exist(message.category)) {
+                if (external.isFunction(message.dataType) && external.exist(message.category)) {
                     callback = message.dataType;
                     delete message.dataType;
                 }
@@ -173,21 +204,21 @@ msngr.extend((function () {
             throw InvalidParameters("on");
         },
         drop: function (topic, category, dataType, callback) {
-            if (!msngr.utils.exist(topic)) {
+            if (!external.exist(topic)) {
                 throw InvalidParameters("drop");
             }
 
             var message;
-            if (msngr.utils.isObject(topic)) {
+            if (external.isObject(topic)) {
                 message = topic;
-                if (!msngr.utils.exist(callback) && msngr.utils.exist(category)) {
+                if (!external.exist(callback) && external.exist(category)) {
                     callback = category;
                 }
                 return _drop(message, callback);
             }
             if (arguments.length > 0) {
                 message = { };
-                var args = msngr.utils.argumentsToArray(arguments);
+                var args = external.argumentsToArray(arguments);
 
                 message.topic = args.shift();
 
@@ -196,13 +227,13 @@ msngr.extend((function () {
 
                 callback = callback || args.pop();
 
-                if (msngr.utils.isFunction(message.category) && !msngr.utils.exist(message.dataType)) {
+                if (external.isFunction(message.category) && !external.exist(message.dataType)) {
                     callback = message.category;
                     delete message.category;
                     delete message.dataType;
                 }
 
-                if (msngr.utils.isFunction(message.dataType) && msngr.utils.exist(message.category)) {
+                if (external.isFunction(message.dataType) && external.exist(message.category)) {
                     callback = message.dataType;
                     delete message.dataType;
                 }
@@ -215,7 +246,7 @@ msngr.extend((function () {
         dropAll: function () {
             delegates = { };
             delegateCount = 0;
-            msngr.store.clear();
+            internal.store.clear();
 
             return msngr;
         },
@@ -223,4 +254,4 @@ msngr.extend((function () {
             return delegateCount;
         }
     };
-}()));
+}));

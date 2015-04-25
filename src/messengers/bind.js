@@ -1,4 +1,4 @@
-msngr.extend((function () {
+msngr.extend((function (external, internal) {
     "use strict";
 
     // Throw statements
@@ -21,10 +21,10 @@ msngr.extend((function () {
 
     var listener = function (event) {
         var node = this;
-        var path = msngr.utils.getDomPath(node);
+        var path = external.getDomPath(node);
 
-        if (msngr.utils.exist(registerdPaths[path])) {
-            if (msngr.utils.exist(registerdPaths[path][event.type])) {
+        if (external.exist(registerdPaths[path])) {
+            if (external.exist(registerdPaths[path][event.type])) {
                 return msngr.emit(registerdPaths[path][event.type], event);
             }
         }
@@ -35,32 +35,32 @@ msngr.extend((function () {
 
     return {
         bind: function (element, event, topic, category, dataType) {
-            if (!msngr.utils.exist(element) || !msngr.utils.exist(event) || !msngr.utils.exist(topic)) {
+            if (!external.exist(element) || !external.exist(event) || !external.exist(topic)) {
                 throw InvalidParametersException("bind");
             }
-            if (msngr.utils.isObject(topic) && !msngr.utils.exist(topic.topic)) {
+            if (external.isObject(topic) && !external.exist(topic.topic)) {
                 throw InvalidParametersException("bind");
             }
 
-            var node = msngr.utils.findElement(element);
-            var path = msngr.utils.getDomPath(node);
+            var node = external.findElement(element);
+            var path = external.getDomPath(node);
 
-            if (!msngr.utils.exist(registerdPaths[path])) {
+            if (!external.exist(registerdPaths[path])) {
                 registerdPaths[path] = { };
             }
 
             var message = undefined;
-            if (msngr.utils.isObject(topic)) {
+            if (external.isObject(topic)) {
                 message = topic;
             } else {
                 message = { };
                 message.topic = topic;
 
-                if (msngr.utils.exist(category)) {
+                if (external.exist(category)) {
                     message.category = category;
                 }
 
-                if (msngr.utils.exist(dataType)) {
+                if (external.exist(dataType)) {
                     message.dataType = dataType;
                 }
             }
@@ -74,11 +74,11 @@ msngr.extend((function () {
             return msngr;
         },
         unbind: function (element, event) {
-            var node = msngr.utils.findElement(element);
-            var path = msngr.utils.getDomPath(node);
+            var node = external.findElement(element);
+            var path = external.getDomPath(node);
 
-            if (msngr.utils.exist(registerdPaths[path])) {
-                if (msngr.utils.exist(registerdPaths[path][event])) {
+            if (external.exist(registerdPaths[path])) {
+                if (external.exist(registerdPaths[path][event])) {
                     node.removeEventListener(event, listener);
 
                     delete registerdPaths[path][event];
@@ -93,4 +93,4 @@ msngr.extend((function () {
             return registerdEvents;
         }
     };
-}()));
+}));

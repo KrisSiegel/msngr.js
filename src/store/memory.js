@@ -1,4 +1,4 @@
-msngr.extend((function () {
+msngr.extend((function (external, internal) {
   "use strict";
 
   // Index for id to message objects
@@ -26,137 +26,138 @@ msngr.extend((function () {
       arr.pop();
   };
 
-  return {
-      store: {
-          index: function (message) {
-              if (msngr.utils.exist(message) && msngr.utils.exist(message.topic)) {
-                  var uuid = msngr.utils.id();
-                  id_to_message[uuid] = message;
+  internal.store = {
+      index: function (message) {
+          if (external.exist(message) && external.exist(message.topic)) {
+              var uuid = external.id();
+              id_to_message[uuid] = message;
 
-                  if (direct_index.topic_to_id[message.topic] === undefined) {
-                      direct_index.topic_to_id[message.topic] = [];
-                  }
-                  direct_index.topic_to_id[message.topic].push(uuid);
-
-                  if (msngr.utils.exist(message.category)) {
-                      if (direct_index.topic_cat_to_id[message.topic] === undefined) {
-                          direct_index.topic_cat_to_id[message.topic] = { };
-                      }
-
-                      if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
-                          direct_index.topic_cat_to_id[message.topic][message.category] = [];
-                      }
-
-                      direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
-                  }
-
-                  if (msngr.utils.exist(message.dataType)) {
-                      if (direct_index.topic_type_to_id[message.topic] === undefined) {
-                          direct_index.topic_type_to_id[message.topic] = { };
-                      }
-
-                      if (direct_index.topic_type_to_id[message.topic][message.dataType] === undefined) {
-                          direct_index.topic_type_to_id[message.topic][message.dataType] = [];
-                      }
-
-                      direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
-                  }
-
-                  if (msngr.utils.exist(message.category) && msngr.utils.exist(message.dataType)) {
-                      if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
-                          direct_index.topic_cat_type_to_id[message.topic] = { };
-                      }
-
-                      if (direct_index.topic_cat_type_to_id[message.topic][message.category] === undefined) {
-                          direct_index.topic_cat_type_to_id[message.topic][message.category] = { };
-                      }
-
-                      if (direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] === undefined) {
-                          direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] = [];
-                      }
-
-                      direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType].push(uuid);
-                  }
-
-                  index_count++;
-
-                  return uuid;
+              if (direct_index.topic_to_id[message.topic] === undefined) {
+                  direct_index.topic_to_id[message.topic] = [];
               }
-              return undefined;
-          },
-          delete: function (uuid) {
-              if (msngr.utils.exist(uuid) && msngr.utils.exist(id_to_message[uuid])) {
-                  var message = id_to_message[uuid];
+              direct_index.topic_to_id[message.topic].push(uuid);
 
-                  if (msngr.utils.exist(message.topic)) {
-                      deleteValueFromArray(direct_index.topic_to_id[message.topic], uuid);
-
-                      if (msngr.utils.exist(message.category)) {
-                          deleteValueFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
-                      }
-
-                      if (msngr.utils.exist(message.dataType)) {
-                          deleteValueFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
-                      }
-
-                      if (msngr.utils.exist(message.category) && msngr.utils.exist(message.dataType)) {
-                          deleteValueFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
-                      }
+              if (external.exist(message.category)) {
+                  if (direct_index.topic_cat_to_id[message.topic] === undefined) {
+                      direct_index.topic_cat_to_id[message.topic] = { };
                   }
 
-                  delete id_to_message[uuid];
-                  index_count--;
+                  if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
+                      direct_index.topic_cat_to_id[message.topic][message.category] = [];
+                  }
 
-                  return true;
+                  direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
               }
-              return false;
-          },
-          query: function (message) {
-              if (msngr.utils.exist(message)) {
-                  if (msngr.utils.exist(message.topic)) {
-                      // Topic Only Results
-                      if (!msngr.utils.exist(message.category) && !msngr.utils.exist(message.dataType)) {
-                          return direct_index.topic_to_id[message.topic] || [];
-                      }
 
-                      // Topic + Category Results
-                      if (msngr.utils.exist(message.category) && !msngr.utils.exist(message.dataType)) {
-                          return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
-                      }
+              if (external.exist(message.dataType)) {
+                  if (direct_index.topic_type_to_id[message.topic] === undefined) {
+                      direct_index.topic_type_to_id[message.topic] = { };
+                  }
 
-                      // Topic + Data Type Results
-                      if (msngr.utils.exist(message.dataType) && !msngr.utils.exist(message.category)) {
-                          return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
-                      }
+                  if (direct_index.topic_type_to_id[message.topic][message.dataType] === undefined) {
+                      direct_index.topic_type_to_id[message.topic][message.dataType] = [];
+                  }
 
-                      // Topic + Category + Data Type Results
-                      if (msngr.utils.exist(message.category) && msngr.utils.exist(message.dataType)) {
-                          return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
-                      }
+                  direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
+              }
+
+              if (external.exist(message.category) && external.exist(message.dataType)) {
+                  if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
+                      direct_index.topic_cat_type_to_id[message.topic] = { };
+                  }
+
+                  if (direct_index.topic_cat_type_to_id[message.topic][message.category] === undefined) {
+                      direct_index.topic_cat_type_to_id[message.topic][message.category] = { };
+                  }
+
+                  if (direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] === undefined) {
+                      direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] = [];
+                  }
+
+                  direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType].push(uuid);
+              }
+
+              index_count++;
+
+              return uuid;
+          }
+          return undefined;
+      },
+      delete: function (uuid) {
+          if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
+              var message = id_to_message[uuid];
+
+              if (external.exist(message.topic)) {
+                  deleteValueFromArray(direct_index.topic_to_id[message.topic], uuid);
+
+                  if (external.exist(message.category)) {
+                      deleteValueFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
+                  }
+
+                  if (external.exist(message.dataType)) {
+                      deleteValueFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
+                  }
+
+                  if (external.exist(message.category) && external.exist(message.dataType)) {
+                      deleteValueFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
                   }
               }
 
-              return [];
-          },
-          clear: function () {
-              // Index for id to message objects
-              id_to_message = { };
-
-              // Direct index (no partials) for message
-              direct_index = {
-                  topic_to_id: { },
-                  topic_cat_to_id: { },
-                  topic_type_to_id: { },
-                  topic_cat_type_to_id: { }
-              };
-
-              index_count = 0;
+              delete id_to_message[uuid];
+              index_count--;
 
               return true;
-          },
-          count: function () {
-              return index_count;
           }
+          return false;
+      },
+      query: function (message) {
+          if (external.exist(message)) {
+              if (external.exist(message.topic)) {
+                  // Topic Only Results
+                  if (!external.exist(message.category) && !external.exist(message.dataType)) {
+                      return direct_index.topic_to_id[message.topic] || [];
+                  }
+
+                  // Topic + Category Results
+                  if (external.exist(message.category) && !external.exist(message.dataType)) {
+                      return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
+                  }
+
+                  // Topic + Data Type Results
+                  if (external.exist(message.dataType) && !external.exist(message.category)) {
+                      return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
+                  }
+
+                  // Topic + Category + Data Type Results
+                  if (external.exist(message.category) && external.exist(message.dataType)) {
+                      return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
+                  }
+              }
+          }
+
+          return [];
+      },
+      clear: function () {
+          // Index for id to message objects
+          id_to_message = { };
+
+          // Direct index (no partials) for message
+          direct_index = {
+              topic_to_id: { },
+              topic_cat_to_id: { },
+              topic_type_to_id: { },
+              topic_cat_type_to_id: { }
+          };
+
+          index_count = 0;
+
+          return true;
+      },
+      count: function () {
+          return index_count;
       }
   };
-}()));
+
+  // This is an internal extension; do not export explicitly.
+  return { };
+}));
