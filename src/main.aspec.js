@@ -93,6 +93,14 @@ describe("./main.js", function () {
         expect(myTest()).to.equal(15);
     });
 
+    it("msngr.extend(undefined, target) - extending undefined value is simply ignored", function () {
+        var myTest = { };
+        msngr.extend(undefined, myTest);
+        
+        expect(myTest).to.exist;
+        expect(Object.keys(myTest).length).to.equal(0);
+    });
+
     it("msngr.debug - property setting exports internal object for testing and debugging", function () {
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;

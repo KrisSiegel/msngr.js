@@ -1,14 +1,6 @@
 msngr.extend((function (external, internal) {
     "use strict";
 
-    // Throw statements
-    var InvalidParameters = function (str) {
-        return {
-            severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
-        };
-    };
-
     var delegates = { };
     var delegateCount = 0;
 
@@ -93,7 +85,7 @@ msngr.extend((function (external, internal) {
     return {
         msg: function (topic, category, dataType) {
             if (!external.exist(topic)) {
-                throw InvalidParameters("topic");
+                throw internal.InvalidParametersException("topic");
             }
 
             var message;
@@ -124,7 +116,7 @@ msngr.extend((function (external, internal) {
         },
         emit: function (topic, category, dataType, payload, callback) {
             if (!external.exist(topic)) {
-                throw InvalidParameters("emit");
+                throw internal.InvalidParametersException("emit");
             }
 
             var message;
@@ -165,7 +157,7 @@ msngr.extend((function (external, internal) {
         },
         on: function (topic, category, dataType, callback) {
             if (!external.exist(topic)) {
-                throw InvalidParameters("on");
+                throw internal.InvalidParametersException("on");
             }
 
             var message;
@@ -201,11 +193,11 @@ msngr.extend((function (external, internal) {
                 return _on(message, callback);
             }
 
-            throw InvalidParameters("on");
+            throw internal.InvalidParametersException("on");
         },
         drop: function (topic, category, dataType, callback) {
             if (!external.exist(topic)) {
-                throw InvalidParameters("drop");
+                throw internal.InvalidParametersException("drop");
             }
 
             var message;
@@ -241,7 +233,7 @@ msngr.extend((function (external, internal) {
                 return _drop(message, callback);
             }
 
-            throw InvalidParameters("drop");
+            throw internal.InvalidParametersException("drop");
         },
         dropAll: function () {
             delegates = { };
