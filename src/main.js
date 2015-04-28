@@ -8,7 +8,9 @@ var msngr = msngr || (function () {
 	"use strict";
 
 	var internal = { };
-	var external = function ( input ) { };
+	var external = function (topic, category, dataType) {
+		return internal.objects.message(topic, category, dataType);
+	};
 
 	external.version = "2.0.0";
 

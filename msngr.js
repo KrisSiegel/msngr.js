@@ -8,7 +8,9 @@ var msngr = msngr || (function () {
 	"use strict";
 
 	var internal = { };
-	var external = function ( input ) { };
+	var external = function (topic, category, dataType) {
+		return internal.objects.message(topic, category, dataType);
+	};
 
 	external.version = "2.0.0";
 
@@ -60,8 +62,10 @@ msngr.extend((function (external, internal) {
 			if (external.isArray(args)) {
 				return args;
 			}
-
-			return Array.prototype.slice.call(args, 0);
+			if (external.isArguments(args)) {
+				return Array.prototype.slice.call(args, 0);
+			}
+			return [args];
 		}
 	};
 }));
@@ -161,6 +165,29 @@ msngr.extend((function (external, internal) {
             return external.querySelectorAllWithEq(selector)[0];
         }
     };
+}));
+
+msngr.extend((function (external, internal) {
+	"use strict";
+
+    internal.InvalidParametersException = function (str) {
+        return {
+            name: "InvalidParametersException",
+            severity: "unrecoverable",
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+    };
+
+    internal.ReservedKeywordsException = function (keyword) {
+        return {
+            name: "ReservedKeywordsException",
+            severity: "unrecoverable",
+            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
+        };
+    };
+
+    // This is an internal extension; do not export explicitly.
+	return { };
 }));
 
 msngr.extend((function (external, internal) {
@@ -308,39 +335,201 @@ msngr.extend((function (external, internal) {
 	};
 }));
 
-/*
-    ./src/builders/message.js
-*/
 msngr.extend((function (external, internal) {
-	"use strict";
+    "use strict";
 
-	return {
-		builders: {
-			msg: function () {
-				return (function () {
-					var message = { };
-					var props = ["topic", "category", "dataType", "payload"].concat(msngr.getAvailableActions());
+    internal.objects = internal.objects || { };
+    internal.objects.executer = function (methods, payload, context) {
 
-					var obj = {
-						build: function () {
-							return message;
-						}
-					};
+        if (external.isFunction(methods)) {
+            methods = [methods];
+        }
 
-					for (var i = 0; i < props.length; ++i) {
-						(function (key) {
-							obj[key] = function (input) {
-								message[key] = input;
-								return obj;
-							};
-						}(props[i]));
-					}
+        if (!external.exist(methods) || !external.isArray(methods)) {
+            throw internal.InvalidParametersException("executor");
+        }
 
-					return obj;
-				}());
-			}
-		}
-	};
+        var exec = function (method, pay, ctx, done) {
+            setTimeout(function () {
+                var async = false;
+                var async = function () {
+                    async = true;
+                    return function (result) {
+                        done.apply(ctx, [result]);
+                    };
+                }
+                var syncResult = method.apply(ctx || this, [pay, async]);
+                if (async !== true) {
+                    done.apply(ctx, [syncResult]);
+                }
+            }, 0);
+        };
+
+        return {
+            execute: function (done) {
+                if (methods.length === 0 && external.exist(done)) {
+                    return done.apply(context, [[]]);
+                }
+                return exec(methods[0], payload, context, done);
+            },
+            parallel: function (done) {
+                var results = [];
+                var executed = 0;
+
+                if (methods.length === 0 && external.exist(done)) {
+                    return done.apply(context, [[]]);
+                }
+
+                for (var i = 0; i < methods.length; ++i) {
+                    (function (m, p, c) {
+                        exec(m, p, c, function (result) {
+                            if (external.exist(result)) {
+                                results.push(result);
+                            }
+
+                            ++executed;
+
+                            if (executed === methods.length && external.exist(done)) {
+                                done.apply(context, [results]);
+                            }
+                        });
+                    }(methods[i], payload, context));
+                }
+            }
+        };
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return { };
+}));
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    internal.objects = internal.objects || { };
+
+    var handlers = { };
+    var handlerCount = 0;
+
+    Object.defineProperty(external, "handlerCount", {
+        get: function () {
+            return handlerCount;
+        }
+    });
+
+    internal.reset = function () {
+        handlers = { };
+        handlerCount = 0;
+        internal.store.clear();
+    };
+
+    internal.objects.message = function (topic, category, dataType) {
+        var msg = undefined;
+        if (!external.exist(topic)) {
+            throw internal.InvalidParametersException("msngr");
+        }
+
+        if (!external.isObject(topic) && !external.isString(topic)) {
+            throw internal.InvalidParametersException("msngr");
+        }
+
+        if (external.isEmptyString(topic)) {
+            throw internal.InvalidParametersException("msngr");
+        }
+
+        if (external.isObject(topic)) {
+            msg = topic;
+        } else {
+            msg = { };
+            msg.topic = topic;
+
+            if (!external.isEmptyString(category)) {
+                msg.category = category;
+            }
+
+            if (!external.isEmptyString(dataType)) {
+                msg.dataType = dataType;
+            }
+        }
+
+        var msgObj =  {
+            emit: function (payload, callback) {
+                var uuids = internal.store.query(msg);
+                if (uuids.length > 0) {
+                    var methods = [];
+                    for (var i = 0; i < uuids.length; ++i) {
+                        var obj = handlers[uuids[i]];
+                        methods.push(obj.handler);
+                    }
+                    var execs = internal.objects.executer(methods, payload, (msg.context || this));
+
+                    execs.parallel(callback);
+                }
+
+                return msgObj;
+            },
+            persist: function (payload) {
+
+            },
+            on: function (handler) {
+                var uuid = internal.store.index(msg);
+                handlers[uuid] = {
+                    handler: handler,
+                    context: (msg.context || this)
+                };
+                handlerCount++;
+
+                return msgObj;
+            },
+            bind: function (element, event) {
+
+            },
+            drop: function (handler) {
+                var uuids = internal.store.query(msg);
+                if (uuids.length > 0) {
+                    for (var i = 0; i < uuids.length; ++i) {
+                        var uuid = uuids[i];
+                        if (handlers[uuid].handler === handler) {
+                            delete handlers[uuid];
+                            handlerCount--;
+
+                            internal.store.delete(uuid);
+                        }
+                    }
+                }
+
+                return msgObj;
+            },
+            unbind: function (element, event) {
+
+            },
+            dropAll: function () {
+                var uuids = internal.store.query(msg);
+                if (uuids.length > 0) {
+                    for (var i = 0; i < uuids.length; ++i) {
+                        var uuid = uuids[i];
+                        delete handlers[uuid];
+                        handlerCount--;
+
+                        internal.store.delete(uuid);
+                    }
+                }
+
+                return msgObj;
+            }
+        };
+
+        Object.defineProperty(msgObj, "message", {
+    		get: function () {
+    			return msg;
+    		}
+    	});
+
+        return msgObj;
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return { };
 }));
 
 msngr.extend((function (external, internal) {
@@ -604,283 +793,8 @@ msngr.extend((function (external, internal) {
     };
 }));
 
-msngr.extend((function (external, internal) {
+/*msngr.extend((function (external, internal) {
     "use strict";
-
-    // Throw statements
-    var InvalidParameters = function (str) {
-        return {
-            severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
-        };
-    };
-
-    var delegates = { };
-    var delegateCount = 0;
-
-    var executeSync = function (method, context, params, message) {
-        (function (m, c, p, msg) {
-            var cont = true;
-            var wrap = {
-                preventDefault: function () {
-                    cont = false;
-                },
-                payload: p[0],
-                done: function () {
-                    if (cont === true) {
-                        m.apply(c, [wrap.payload]);
-                    }
-                }
-            };
-            msngr.act(msg, wrap);
-        }(method, context, params, message));
-    };
-
-    var execute = function (method, context, params, message) {
-        (function (m, c, p, msg) {
-            setTimeout(function () {
-                executeSync(m, c, p, msg);
-            }, 0);
-        }(method, context, params, message));
-    };
-
-    var _emit = function (message, payload, callback) {
-        var uuids = internal.store.query(message);
-        if (uuids.length > 0) {
-            for (var i = 0; i < uuids.length; ++i) {
-                var del = delegates[uuids[i]];
-                var params = [];
-                if (external.exist(payload || message.payload)) {
-                    params.push(payload || message.payload);
-                }
-                execute(del.callback, del.context, params, message);
-            }
-        }
-
-        return msngr;
-    };
-
-    var _on = function (message, callback) {
-        var uuid = internal.store.index(message);
-        delegates[uuid] = {
-            callback: callback,
-            context: (message.context || this),
-            onedMessage: message
-        };
-        delegateCount++;
-
-        return msngr;
-    };
-
-    var _drop = function (message, func) {
-        var uuids = internal.store.query(message);
-        if (uuids.length > 0) {
-            for (var i = 0; i < uuids.length; ++i) {
-                var uuid = uuids[i];
-                if (external.exist(func)) {
-                    if (delegates[uuid].callback === func) {
-                        delete delegates[uuid];
-                        delegateCount--;
-
-                        internal.store.delete(uuid);
-                    }
-                } else {
-                    delete delegates[uuid];
-                    delegateCount--;
-
-                    internal.store.delete(uuid);
-                }
-            }
-        }
-
-        return msngr;
-    };
-
-    return {
-        msg: function (topic, category, dataType) {
-            if (!external.exist(topic)) {
-                throw InvalidParameters("topic");
-            }
-
-            var message;
-            if (external.isObject(topic)) {
-                message = topic;
-            } else {
-                message = {
-                    topic: topic,
-                    category: category,
-                    dataType: dataType
-                };
-            }
-
-            return {
-                emit: function (payload) {
-
-                },
-                on: function (callback) {
-
-                },
-                drop: function (callback) {
-
-                },
-                dropAll: function () {
-
-                }
-            };
-        },
-        emit: function (topic, category, dataType, payload, callback) {
-            if (!external.exist(topic)) {
-                throw InvalidParameters("emit");
-            }
-
-            var message;
-            if (external.isObject(topic)) {
-                message = topic;
-                if (!external.exist(payload) && external.exist(category)) {
-                    payload = category;
-                }
-                if (!external.exist(callback) && external.exist(dataType) && external.isFunction(dataType)) {
-                    callback = dataType;
-                }
-                return _emit(message, payload, callback);
-            }
-
-            message = { };
-            var args = external.argumentsToArray(arguments);
-
-            message.topic = args.shift();
-
-            if (!external.exist(payload)) {
-                if (args.length > 0 && external.isObject(args[0])) {
-                    payload = args.shift();
-
-                    return _emit(message, payload);
-                }
-            }
-
-            message.category = args.shift();
-
-            if (args.length > 0 && external.isObject(args[0])) {
-                payload = args.shift();
-
-                return _emit(message, payload);
-            }
-            message.dataType = args.shift();
-
-            return _emit(message, payload);
-        },
-        on: function (topic, category, dataType, callback) {
-            if (!external.exist(topic)) {
-                throw InvalidParameters("on");
-            }
-
-            var message;
-            if (external.isObject(topic)) {
-                message = topic;
-                if (!external.exist(callback) && external.exist(category)) {
-                    callback = category;
-                }
-                return _on(message, callback);
-            }
-            if (arguments.length > 1) {
-                message = { };
-                var args = external.argumentsToArray(arguments);
-
-                message.topic = args.shift();
-
-                message.category = args.shift();
-                message.dataType = args.shift();
-
-                callback = callback || args.pop();
-
-                if (external.isFunction(message.category) && !external.exist(message.dataType)) {
-                    callback = message.category;
-                    delete message.category;
-                    delete message.dataType;
-                }
-
-                if (external.isFunction(message.dataType) && external.exist(message.category)) {
-                    callback = message.dataType;
-                    delete message.dataType;
-                }
-
-                return _on(message, callback);
-            }
-
-            throw InvalidParameters("on");
-        },
-        drop: function (topic, category, dataType, callback) {
-            if (!external.exist(topic)) {
-                throw InvalidParameters("drop");
-            }
-
-            var message;
-            if (external.isObject(topic)) {
-                message = topic;
-                if (!external.exist(callback) && external.exist(category)) {
-                    callback = category;
-                }
-                return _drop(message, callback);
-            }
-            if (arguments.length > 0) {
-                message = { };
-                var args = external.argumentsToArray(arguments);
-
-                message.topic = args.shift();
-
-                message.category = args.shift();
-                message.dataType = args.shift();
-
-                callback = callback || args.pop();
-
-                if (external.isFunction(message.category) && !external.exist(message.dataType)) {
-                    callback = message.category;
-                    delete message.category;
-                    delete message.dataType;
-                }
-
-                if (external.isFunction(message.dataType) && external.exist(message.category)) {
-                    callback = message.dataType;
-                    delete message.dataType;
-                }
-
-                return _drop(message, callback);
-            }
-
-            throw InvalidParameters("drop");
-        },
-        dropAll: function () {
-            delegates = { };
-            delegateCount = 0;
-            internal.store.clear();
-
-            return msngr;
-        },
-        getMessageCount: function () {
-            return delegateCount;
-        }
-    };
-}));
-
-msngr.extend((function (external, internal) {
-    "use strict";
-
-    // Throw statements
-    var InvalidParameters = function (str) {
-        return {
-            name: "InvalidParameters",
-            severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
-        };
-    };
-
-    var ReservedKeywords = function (keyword) {
-        return {
-            name: "ReservedKeywordsException",
-            severity: "unrecoverable",
-            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
-        };
-    };
 
     var reservedProperties = ["topic", "category", "dataType", "payload"];
     var actions = { };
@@ -889,11 +803,11 @@ msngr.extend((function (external, internal) {
     return {
         action: function (property, handler) {
             if (!external.exist(property) || !external.exist(handler)) {
-                throw InvalidParameters("action");
+                throw internal.InvalidParametersException("action");
             }
 
             if (reservedProperties.indexOf(property) !== -1) {
-                throw ReservedKeywords(property);
+                throw internal.ReservedKeywordsException(property);
             }
 
             actions[property] = handler;
@@ -901,7 +815,7 @@ msngr.extend((function (external, internal) {
         },
         inaction: function (property) {
             if (!external.exist(property)) {
-                throw InvalidParameters("inaction");
+                throw internal.InvalidParametersException("inaction");
             }
 
             delete actions[property];
@@ -909,7 +823,7 @@ msngr.extend((function (external, internal) {
         },
         act: function (message, superWrap) {
             if (!external.exist(message) || !external.exist(superWrap)) {
-                throw InvalidParameters("act");
+                throw internal.InvalidParametersException("act");
             }
 
             (function (msg, sw) {
@@ -942,8 +856,9 @@ msngr.extend((function (external, internal) {
         }
     };
 }));
+*/
 
-msngr.action("dom", function (message, wrap) {
+/*msngr.action("dom", function (message, wrap) {
     "use strict";
 
     if (msngr.exist(message.dom)) {
@@ -996,6 +911,7 @@ msngr.action("dom", function (message, wrap) {
 
     return msngr;
 });
+*/
 
 /*
 	module.exports.js

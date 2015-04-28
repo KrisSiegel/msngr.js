@@ -17,7 +17,7 @@ module.exports = (function (grunt) {
 	var paths = [
 		"src/main.js",
 		"src/utils/*.js",
-		"src/builders/*.js",
+		"src/objects/*.js",
 		"src/store/*.js",
 		"src/messengers/*.js",
 		"src/actions/*.js",

@@ -6,8 +6,10 @@ msngr.extend((function (external, internal) {
 			if (external.isArray(args)) {
 				return args;
 			}
-
-			return Array.prototype.slice.call(args, 0);
+			if (external.isArguments(args)) {
+				return Array.prototype.slice.call(args, 0);
+			}
+			return [args];
 		}
 	};
 }));

@@ -1,4 +1,4 @@
-msngr.extend((function (external, internal) {
+/*msngr.extend((function (external, internal) {
     "use strict";
 
     var reservedProperties = ["topic", "category", "dataType", "payload"];
@@ -61,3 +61,4 @@ msngr.extend((function (external, internal) {
         }
     };
 }));
+*/

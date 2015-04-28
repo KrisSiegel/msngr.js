@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./actions/dom.js", function () {
+describe.skip("./actions/dom.js", function () {
     "use strict";
 
     beforeEach(function (done) {

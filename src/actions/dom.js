@@ -1,4 +1,4 @@
-msngr.action("dom", function (message, wrap) {
+/*msngr.action("dom", function (message, wrap) {
     "use strict";
 
     if (msngr.exist(message.dom)) {
@@ -51,3 +51,4 @@ msngr.action("dom", function (message, wrap) {
 
     return msngr;
 });
+*/

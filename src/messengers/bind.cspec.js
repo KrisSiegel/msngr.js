@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./messengers/bind.js", function () {
+describe.skip("./messengers/bind.js", function () {
 
     beforeEach(function (done) {
         msngr.dropAll();
