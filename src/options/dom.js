@@ -1,7 +1,7 @@
 /*
     ./options/dom.js
 
-    The primary object of msngr; handles all message sending, receiving and binding.
+    The dom option; provides value gathering from supplied selectors
 */
 msngr.extend((function (external, internal) {
     "use strict";
