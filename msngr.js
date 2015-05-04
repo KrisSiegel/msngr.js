@@ -186,6 +186,14 @@ msngr.extend((function (external, internal) {
         };
     };
 
+	internal.MangledException = function (variable, method) {
+		return {
+            name: "MangledException",
+            severity: "unrecoverable",
+            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
+        };
+	};
+
     // This is an internal extension; do not export explicitly.
 	return { };
 }));
@@ -238,6 +246,16 @@ msngr.extend((function (external, internal) {
 			}
 			lastNow = now;
 			return now;
+		},
+		removeFromArray: function (arr, value) {
+			var inx = arr.indexOf(value);
+			var endIndex = arr.length - 1;
+			if (inx !== endIndex) {
+				var temp = arr[endIndex];
+				arr[endIndex] = arr[inx];
+				arr[inx] = temp;
+			}
+			arr.pop();
 		}
 	};
 }));
@@ -358,7 +376,16 @@ msngr.extend((function (external, internal) {
                         done.apply(ctx, [result]);
                     };
                 }
-                var syncResult = method.apply(ctx || this, [pay, async]);
+
+                var params = undefined;
+                if (external.isArray(pay)) {
+                    params = pay;
+                } else {
+                    params = [pay];
+                }
+                params.push(async);
+
+                var syncResult = method.apply(ctx || this, params);
                 if (async !== true) {
                     done.apply(ctx, [syncResult]);
                 }
@@ -407,20 +434,239 @@ msngr.extend((function (external, internal) {
     "use strict";
 
     internal.objects = internal.objects || { };
+    internal.objects.memory = function () {
+
+        // Index for id to message objects
+        var id_to_message = { };
+
+        // Direct index (no partials) for message
+        var direct_index = {
+            topic_to_id: { },
+            topic_cat_to_id: { },
+            topic_type_to_id: { },
+            topic_cat_type_to_id: { }
+        };
+
+        // Message index count
+        var index_count = 0;
+
+        var mem = {
+            index: function (message) {
+                if (external.exist(message) && external.exist(message.topic)) {
+                    var uuid = external.id();
+                    id_to_message[uuid] = message;
+
+                    if (direct_index.topic_to_id[message.topic] === undefined) {
+                        direct_index.topic_to_id[message.topic] = [];
+                    }
+                    direct_index.topic_to_id[message.topic].push(uuid);
+
+                    if (external.exist(message.category)) {
+                        if (direct_index.topic_cat_to_id[message.topic] === undefined) {
+                            direct_index.topic_cat_to_id[message.topic] = { };
+                        }
+
+                        if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
+                            direct_index.topic_cat_to_id[message.topic][message.category] = [];
+                        }
+
+                        direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
+                    }
+
+                    if (external.exist(message.dataType)) {
+                        if (direct_index.topic_type_to_id[message.topic] === undefined) {
+                            direct_index.topic_type_to_id[message.topic] = { };
+                        }
+
+                        if (direct_index.topic_type_to_id[message.topic][message.dataType] === undefined) {
+                            direct_index.topic_type_to_id[message.topic][message.dataType] = [];
+                        }
+
+                        direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
+                    }
+
+                    if (external.exist(message.category) && external.exist(message.dataType)) {
+                        if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
+                            direct_index.topic_cat_type_to_id[message.topic] = { };
+                        }
+
+                        if (direct_index.topic_cat_type_to_id[message.topic][message.category] === undefined) {
+                            direct_index.topic_cat_type_to_id[message.topic][message.category] = { };
+                        }
+
+                        if (direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] === undefined) {
+                            direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] = [];
+                        }
+
+                        direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType].push(uuid);
+                    }
+
+                    index_count++;
+
+                    return uuid;
+                }
+                return undefined;
+            },
+            delete: function (uuid) {
+                if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
+                    var message = id_to_message[uuid];
+
+                    if (external.exist(message.topic)) {
+                        external.removeFromArray(direct_index.topic_to_id[message.topic], uuid);
+
+                        if (external.exist(message.category)) {
+                            external.removeFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
+                        }
+
+                        if (external.exist(message.dataType)) {
+                            external.removeFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
+                        }
+
+                        if (external.exist(message.category) && external.exist(message.dataType)) {
+                            external.removeFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
+                        }
+                    }
+
+                    delete id_to_message[uuid];
+                    index_count--;
+
+                    return true;
+                }
+                return false;
+            },
+            query: function (message) {
+                if (external.exist(message)) {
+                    if (external.exist(message.topic)) {
+                        // Topic Only Results
+                        if (!external.exist(message.category) && !external.exist(message.dataType)) {
+                            return direct_index.topic_to_id[message.topic] || [];
+                        }
+
+                        // Topic + Category Results
+                        if (external.exist(message.category) && !external.exist(message.dataType)) {
+                            return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
+                        }
+
+                        // Topic + Data Type Results
+                        if (external.exist(message.dataType) && !external.exist(message.category)) {
+                            return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
+                        }
+
+                        // Topic + Category + Data Type Results
+                        if (external.exist(message.category) && external.exist(message.dataType)) {
+                            return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
+                        }
+                    }
+                }
+
+                return [];
+            },
+            clear: function () {
+                // Index for id to message objects
+                id_to_message = { };
+
+                // Direct index (no partials) for message
+                direct_index = {
+                    topic_to_id: { },
+                    topic_cat_to_id: { },
+                    topic_type_to_id: { },
+                    topic_cat_type_to_id: { }
+                };
+
+                index_count = 0;
+
+                return true;
+            }
+        };
+
+        Object.defineProperty(mem, "count", {
+            get: function () {
+                return index_count;
+            }
+        });
+
+        return mem;
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return { };
+}));
+
+/*
+    ./objects/message.js
+
+    The primary object of msngr; handles all message sending, receiving and binding.
+*/
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    internal.objects = internal.objects || { };
+
+    var messageIndex = internal.objects.memory();
 
     var handlers = { };
     var handlerCount = 0;
 
-    Object.defineProperty(external, "handlerCount", {
+    var boundDOMPaths = { };
+    var boundCount = 0;
+
+    Object.defineProperty(internal, "handlerCount", {
         get: function () {
             return handlerCount;
         }
     });
 
+    Object.defineProperty(internal, "boundCount", {
+        get: function () {
+            return boundCount;
+        }
+    });
+
     internal.reset = function () {
         handlers = { };
+        boundDOMPaths = { };
         handlerCount = 0;
-        internal.store.clear();
+        boundCount = 0;
+        messageIndex.clear();
+    };
+
+    internal.processOpts = function (opts, message, payload, callback) {
+        payload = payload || { };
+        var optProcessors = [];
+        for (var key in opts) {
+            if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
+                optProcessors.push(internal.options[key]);
+            }
+        }
+
+        // Short circuit for no options
+        if (optProcessors.length === 0) {
+            return callback.apply(this, [payload]);
+        }
+
+        // Long circuit to do stuff (du'h)
+        var execs = internal.objects.executer(optProcessors, [message, payload, opts], this);
+
+        execs.parallel(function (results) {
+            var result = payload;
+            if (external.exist(results) && results.length > 0) {
+                for (var i = 0; i < results.length; ++i) {
+                    result = external.extend(results[i], result);
+                }
+            }
+            callback.apply(this, [result]);
+        });
+    };
+
+    internal.domListener = function (event) {
+        var node = this;
+        var path = external.getDomPath(node);
+
+        if (external.exist(boundDOMPaths[path])) {
+            if (external.exist(boundDOMPaths[path][event.type])) {
+                return internal.objects.message(boundDOMPaths[path][event.type]).emit(event);
+            }
+        }
     };
 
     internal.objects.message = function (topic, category, dataType) {
@@ -452,40 +698,87 @@ msngr.extend((function (external, internal) {
             }
         }
 
+        var options = { };
+
         var msgObj =  {
+            option: function (key, value) {
+                options[key] = value;
+
+                return msgObj;
+            },
+            options: function (obj) {
+                external.extend(obj, options);
+
+                return msgObj;
+            },
             emit: function (payload, callback) {
-                var uuids = internal.store.query(msg);
+                var uuids = messageIndex.query(msg);
                 if (uuids.length > 0) {
                     var methods = [];
+                    var toDrop = [];
                     for (var i = 0; i < uuids.length; ++i) {
                         var obj = handlers[uuids[i]];
                         methods.push(obj.handler);
-                    }
-                    var execs = internal.objects.executer(methods, payload, (msg.context || this));
 
-                    execs.parallel(callback);
+                        if (obj.once === true) {
+                            toDrop.push(obj.handler);
+                        }
+                    }
+
+                    internal.processOpts(options, msg, payload, function (result) {
+                        var execs = internal.objects.executer(methods, result, (msg.context || this));
+
+                        for (var i = 0; i < toDrop.length; ++i) {
+                            msgObj.drop(toDrop[i]);
+                        }
+
+                        execs.parallel(callback);
+
+                    });
                 }
 
                 return msgObj;
             },
-            persist: function (payload) {
-
-            },
             on: function (handler) {
-                var uuid = internal.store.index(msg);
+                var uuid = messageIndex.index(msg);
                 handlers[uuid] = {
                     handler: handler,
-                    context: (msg.context || this)
+                    context: (msg.context || this),
+                    once: false
+                };
+                handlerCount++;
+
+                return msgObj;
+            },
+            once: function (handler) {
+                var uuid = messageIndex.index(msg);
+                handlers[uuid] = {
+                    handler: handler,
+                    context: (msg.context || this),
+                    once: true
                 };
                 handlerCount++;
 
                 return msgObj;
             },
             bind: function (element, event) {
+                var node = external.findElement(element);
+                var path = external.getDomPath(node);
 
+                if (!external.exist(boundDOMPaths[path])) {
+                    boundDOMPaths[path] = { };
+                }
+
+                boundDOMPaths[path][event] = msg;
+
+                node.addEventListener(event, internal.domListener);
+
+                ++boundCount;
+
+                return msgObj;
             },
             drop: function (handler) {
-                var uuids = internal.store.query(msg);
+                var uuids = messageIndex.query(msg);
                 if (uuids.length > 0) {
                     for (var i = 0; i < uuids.length; ++i) {
                         var uuid = uuids[i];
@@ -493,7 +786,7 @@ msngr.extend((function (external, internal) {
                             delete handlers[uuid];
                             handlerCount--;
 
-                            internal.store.delete(uuid);
+                            messageIndex.delete(uuid);
                         }
                     }
                 }
@@ -501,17 +794,30 @@ msngr.extend((function (external, internal) {
                 return msgObj;
             },
             unbind: function (element, event) {
+                var node = external.findElement(element);
+                var path = external.getDomPath(node);
 
+                if (external.exist(boundDOMPaths[path])) {
+                    if (external.exist(boundDOMPaths[path][event])) {
+                        node.removeEventListener(event, internal.domListener);
+
+                        delete boundDOMPaths[path][event];
+
+                        --boundCount;
+                    }
+                }
+
+                return msgObj;
             },
             dropAll: function () {
-                var uuids = internal.store.query(msg);
+                var uuids = messageIndex.query(msg);
                 if (uuids.length > 0) {
                     for (var i = 0; i < uuids.length; ++i) {
                         var uuid = uuids[i];
                         delete handlers[uuid];
                         handlerCount--;
 
-                        internal.store.delete(uuid);
+                        messageIndex.delete(uuid);
                     }
                 }
 
@@ -532,386 +838,80 @@ msngr.extend((function (external, internal) {
     return { };
 }));
 
-msngr.extend((function (external, internal) {
-  "use strict";
+/*
+    ./options/dom.js
 
-  // Index for id to message objects
-  var id_to_message = { };
-
-  // Direct index (no partials) for message
-  var direct_index = {
-      topic_to_id: { },
-      topic_cat_to_id: { },
-      topic_type_to_id: { },
-      topic_cat_type_to_id: { }
-  };
-
-  // Message index count
-  var index_count = 0;
-
-  var deleteValueFromArray = function (arr, value) {
-      var inx = arr.indexOf(value);
-      var endIndex = arr.length - 1;
-      if (inx !== endIndex) {
-          var temp = arr[endIndex];
-          arr[endIndex] = arr[inx];
-          arr[inx] = temp;
-      }
-      arr.pop();
-  };
-
-  internal.store = {
-      index: function (message) {
-          if (external.exist(message) && external.exist(message.topic)) {
-              var uuid = external.id();
-              id_to_message[uuid] = message;
-
-              if (direct_index.topic_to_id[message.topic] === undefined) {
-                  direct_index.topic_to_id[message.topic] = [];
-              }
-              direct_index.topic_to_id[message.topic].push(uuid);
-
-              if (external.exist(message.category)) {
-                  if (direct_index.topic_cat_to_id[message.topic] === undefined) {
-                      direct_index.topic_cat_to_id[message.topic] = { };
-                  }
-
-                  if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
-                      direct_index.topic_cat_to_id[message.topic][message.category] = [];
-                  }
-
-                  direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
-              }
-
-              if (external.exist(message.dataType)) {
-                  if (direct_index.topic_type_to_id[message.topic] === undefined) {
-                      direct_index.topic_type_to_id[message.topic] = { };
-                  }
-
-                  if (direct_index.topic_type_to_id[message.topic][message.dataType] === undefined) {
-                      direct_index.topic_type_to_id[message.topic][message.dataType] = [];
-                  }
-
-                  direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
-              }
-
-              if (external.exist(message.category) && external.exist(message.dataType)) {
-                  if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
-                      direct_index.topic_cat_type_to_id[message.topic] = { };
-                  }
-
-                  if (direct_index.topic_cat_type_to_id[message.topic][message.category] === undefined) {
-                      direct_index.topic_cat_type_to_id[message.topic][message.category] = { };
-                  }
-
-                  if (direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] === undefined) {
-                      direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] = [];
-                  }
-
-                  direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType].push(uuid);
-              }
-
-              index_count++;
-
-              return uuid;
-          }
-          return undefined;
-      },
-      delete: function (uuid) {
-          if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
-              var message = id_to_message[uuid];
-
-              if (external.exist(message.topic)) {
-                  deleteValueFromArray(direct_index.topic_to_id[message.topic], uuid);
-
-                  if (external.exist(message.category)) {
-                      deleteValueFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
-                  }
-
-                  if (external.exist(message.dataType)) {
-                      deleteValueFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
-                  }
-
-                  if (external.exist(message.category) && external.exist(message.dataType)) {
-                      deleteValueFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
-                  }
-              }
-
-              delete id_to_message[uuid];
-              index_count--;
-
-              return true;
-          }
-          return false;
-      },
-      query: function (message) {
-          if (external.exist(message)) {
-              if (external.exist(message.topic)) {
-                  // Topic Only Results
-                  if (!external.exist(message.category) && !external.exist(message.dataType)) {
-                      return direct_index.topic_to_id[message.topic] || [];
-                  }
-
-                  // Topic + Category Results
-                  if (external.exist(message.category) && !external.exist(message.dataType)) {
-                      return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
-                  }
-
-                  // Topic + Data Type Results
-                  if (external.exist(message.dataType) && !external.exist(message.category)) {
-                      return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
-                  }
-
-                  // Topic + Category + Data Type Results
-                  if (external.exist(message.category) && external.exist(message.dataType)) {
-                      return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
-                  }
-              }
-          }
-
-          return [];
-      },
-      clear: function () {
-          // Index for id to message objects
-          id_to_message = { };
-
-          // Direct index (no partials) for message
-          direct_index = {
-              topic_to_id: { },
-              topic_cat_to_id: { },
-              topic_type_to_id: { },
-              topic_cat_type_to_id: { }
-          };
-
-          index_count = 0;
-
-          return true;
-      },
-      count: function () {
-          return index_count;
-      }
-  };
-
-  // This is an internal extension; do not export explicitly.
-  return { };
-}));
-
+    The primary object of msngr; handles all message sending, receiving and binding.
+*/
 msngr.extend((function (external, internal) {
     "use strict";
 
-    // Throw statements
-    var InvalidParametersException = function (str) {
-        return {
-            severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
-        };
-    };
+    internal.options = internal.options || { };
 
-    var UnexpectedException = function (str) {
-        return {
-            severity: "unrecoverable",
-            message: ("An unexpected exception occured in the {method} method".replace("{method}", str))
-        };
-    };
+    internal.options.dom = function (message, payload, options, async) {
+        // Normalize all of the inputs
+        options = options || { };
+        options = options.dom || { };
+        var doc = options.doc || options.document || document;
 
-    var registerdPaths = { };
-    var registerdEvents = 0;
+        var selectors = undefined;
+        if (external.isObject(options) && external.exist(options.selectors) && external.isString(options.selectors)) {
+            selectors = [options.selectors];
+        } else if (external.isString(options)) {
+            selectors = [options];
+        } else if (external.isArray(options)) {
+            selectors = options;
+        }
 
-    var listener = function (event) {
-        var node = this;
-        var path = external.getDomPath(node);
+        if (!external.exist(doc) || !external.exist(selectors) || selectors.length === 0) {
+            return undefined;
+        }
 
-        if (external.exist(registerdPaths[path])) {
-            if (external.exist(registerdPaths[path][event.type])) {
-                return msngr.emit(registerdPaths[path][event.type], event);
+        // Process all selectors and put them into a single array
+        var elements = [];
+        var selLength = selectors.length;
+        for (var i = 0; i < selLength; ++i) {
+            var found = external.findElements(selectors[i], doc);
+            if (found.length > 0) {
+                elements = elements.concat(Array.prototype.slice.call(found));
             }
         }
 
-        // How did we get here? Must be a memory leak or something. Ugh
-        return msngr;
-    };
+        // Iterate through found elements and aggregate the results
+        var resultMap = undefined;
+        var elmLength = elements.length;
+        var unnamedTags = 0;
+        for (var i = 0; i < elmLength; ++i) {
+            var key = undefined, value = undefined;
+            var elm = elements[i];
 
-    return {
-        bind: function (element, event, topic, category, dataType) {
-            if (!external.exist(element) || !external.exist(event) || !external.exist(topic)) {
-                throw InvalidParametersException("bind");
-            }
-            if (external.isObject(topic) && !external.exist(topic.topic)) {
-                throw InvalidParametersException("bind");
-            }
+            var nameAttr = elm.getAttribute("name");
+            var idAttr = elm.id;
+            var tagName = elm.tagName.toLowerCase();
+            var val = elm.value;
 
-            var node = external.findElement(element);
-            var path = external.getDomPath(node);
-
-            if (!external.exist(registerdPaths[path])) {
-                registerdPaths[path] = { };
-            }
-
-            var message = undefined;
-            if (external.isObject(topic)) {
-                message = topic;
+            if (external.exist(nameAttr) && !external.isEmptyString(nameAttr)) {
+                key = nameAttr;
+            } else if (external.exist(idAttr) && !external.isEmptyString(idAttr)) {
+                key = idAttr;
             } else {
-                message = { };
-                message.topic = topic;
-
-                if (external.exist(category)) {
-                    message.category = category;
-                }
-
-                if (external.exist(dataType)) {
-                    message.dataType = dataType;
-                }
+                key = (tagName + unnamedTags);
+                unnamedTags++;
             }
 
-            registerdPaths[path][event] = message;
-
-            node.addEventListener(event, listener);
-
-            registerdEvents++;
-
-            return msngr;
-        },
-        unbind: function (element, event) {
-            var node = external.findElement(element);
-            var path = external.getDomPath(node);
-
-            if (external.exist(registerdPaths[path])) {
-                if (external.exist(registerdPaths[path][event])) {
-                    node.removeEventListener(event, listener);
-
-                    delete registerdPaths[path][event];
-
-                    registerdEvents--;
-                }
+            if (resultMap === undefined) {
+                resultMap = { };
             }
-
-            return msngr;
-        },
-        getBindCount: function () {
-            return registerdEvents;
+            resultMap[key] = val;
         }
+
+        return resultMap;
+
     };
+
+    // This is an internal extension; do not export explicitly.
+    return { };
 }));
-
-/*msngr.extend((function (external, internal) {
-    "use strict";
-
-    var reservedProperties = ["topic", "category", "dataType", "payload"];
-    var actions = { };
-    var actionsCount = 0;
-
-    return {
-        action: function (property, handler) {
-            if (!external.exist(property) || !external.exist(handler)) {
-                throw internal.InvalidParametersException("action");
-            }
-
-            if (reservedProperties.indexOf(property) !== -1) {
-                throw internal.ReservedKeywordsException(property);
-            }
-
-            actions[property] = handler;
-            actionsCount++;
-        },
-        inaction: function (property) {
-            if (!external.exist(property)) {
-                throw internal.InvalidParametersException("inaction");
-            }
-
-            delete actions[property];
-            actionsCount--;
-        },
-        act: function (message, superWrap) {
-            if (!external.exist(message) || !external.exist(superWrap)) {
-                throw internal.InvalidParametersException("act");
-            }
-
-            (function (msg, sw) {
-                if (actionsCount > 0) {
-                    var wrap = {
-                        preventDefault: function () {
-                            sw.preventDefault();
-                        },
-                        payload: sw.payload
-                    };
-                    for (var key in msg) {
-                        if (msg.hasOwnProperty(key)) {
-                            if (reservedProperties.indexOf(key) === -1) {
-                                if (actions[key] !== undefined) {
-                                    actions[key].apply(this, [msg, wrap]);
-                                }
-                            }
-                        }
-                    }
-                    sw.payload = wrap.payload;
-                }
-                return sw.done();
-            }(message, superWrap));
-        },
-        getActionCount: function () {
-            return actionsCount;
-        },
-        getAvailableActions: function () {
-            return Object.keys(actions);
-        }
-    };
-}));
-*/
-
-/*msngr.action("dom", function (message, wrap) {
-    "use strict";
-
-    if (msngr.exist(message.dom)) {
-        var norm = {
-            gather: undefined,
-            doc: undefined
-        };
-        if (!msngr.isObject(message.dom)) {
-            if (msngr.isArray(message.dom)) {
-                norm.gather = message.dom;
-            } else if (msngr.isString(message.dom)) {
-                norm.gather = [message.dom];
-            }
-        } else {
-            if (msngr.exist(message.dom.gather)) {
-                norm.gather = (msngr.isArray(message.dom.gather) ? message.dom.gather : [message.dom.gather]);
-            }
-            if (msngr.exist(message.dom.root || message.dom.doc)) {
-                norm.doc = message.dom.root || message.dom.doc;
-            }
-        }
-
-        if (msngr.exist(norm.gather) && norm.gather.length > 0) {
-            if (!msngr.isObject(wrap.payload)) {
-                wrap.payload = { };
-            }
-
-            for (var i = 0; i < norm.gather.length; ++i) {
-                var elms = msngr.findElements(norm.gather[i], message.dom.root);
-                if (msngr.exist(elms) && elms.length > 0) {
-                    for (var j = 0; j < elms.length; ++j) {
-                        var elm = elms[j];
-
-                        var prop;
-                        if (msngr.exist(elm.getAttribute("name")) && !msngr.isEmptyString(elm.getAttribute("name"))) {
-                            prop = elm.getAttribute("name");
-                        } else if (msngr.exist(elm.id) && !msngr.isEmptyString(elm.id)) {
-                            prop = elm.getAttribute("id");
-                            console.log(elm.id);
-                        } else {
-                            prop = elm.tagName.toLowerCase() + j;
-                        }
-
-                        wrap.payload[prop] = elm.value;
-                    }
-                }
-            }
-        }
-    }
-
-    return msngr;
-});
-*/
 
 /*
 	module.exports.js

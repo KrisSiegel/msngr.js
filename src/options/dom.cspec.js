@@ -10,15 +10,22 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe.skip("./actions/dom.js", function () {
+describe("./options/dom.js", function () {
     "use strict";
 
-    beforeEach(function (done) {
-        msngr.dropAll();
-        done();
+    before(function () {
+        msngr.debug = true;
     });
 
-    it("dom action - gathers multiple values with a selector that matches multiple elements with no IDs or names", function (done) {
+    beforeEach(function () {
+        msngr.internal.reset();
+    });
+
+    after(function () {
+        msngr.debug = false;
+    });
+
+    it("dom option - gathers multiple values with a selector that matches multiple elements with no IDs or names", function (done) {
         var input1 = document.createElement("input");
         input1.value = "Kris";
 
@@ -28,7 +35,7 @@ describe.skip("./actions/dom.js", function () {
         document.body.appendChild(input1);
         document.body.appendChild(input2);
 
-        msngr.on("TestTopic", function (payload) {
+        msngr("TestTopic").on(function (payload) {
             expect(payload).to.exist;
             expect(payload["input0"]).to.exist;
             expect(payload["input0"]).to.equal("Kris");
@@ -41,7 +48,7 @@ describe.skip("./actions/dom.js", function () {
             done();
         });
 
-        msngr.emit({ topic: "TestTopic", dom: ["input"] });
+        msngr("TestTopic").option("dom", ["input"]).emit();
     });
 
     it("dom action - gathers multiple values with a selector that matches multiple elements", function (done) {
@@ -56,7 +63,7 @@ describe.skip("./actions/dom.js", function () {
         document.body.appendChild(input1);
         document.body.appendChild(input2);
 
-        msngr.on("TestTopic", function (payload) {
+        msngr("TestTopic").on(function (payload) {
             expect(payload).to.exist;
             expect(payload["Name"]).to.exist;
             expect(payload["Name"]).to.equal("Kris");
@@ -69,7 +76,7 @@ describe.skip("./actions/dom.js", function () {
             done();
         });
 
-        msngr.emit({ topic: "TestTopic", dom: ["input"] });
+        msngr("TestTopic").option("dom", ["input"]).emit();
     });
 
     it("dom action - gathers multiple values with multiple selectors that each match an element 1:1", function (done) {
@@ -84,7 +91,7 @@ describe.skip("./actions/dom.js", function () {
         document.body.appendChild(input1);
         document.body.appendChild(input2);
 
-        msngr.on("TestTopic", function (payload) {
+        msngr("TestTopic").on(function (payload) {
             expect(payload).to.exist;
             expect(payload["Name"]).to.exist;
             expect(payload["Name"]).to.equal("Kris");
@@ -97,7 +104,7 @@ describe.skip("./actions/dom.js", function () {
             done();
         });
 
-        msngr.emit({ topic: "TestTopic", dom: ["input[name=Name]", "input[name=Email]"] });
+        msngr("TestTopic").option("dom", ["input[name=Name]", "input[name=Email]"]).emit();
     });
 
     it("dom action - gathers multiple values with multiple IDs that each match an element 1:1", function (done) {
@@ -114,7 +121,7 @@ describe.skip("./actions/dom.js", function () {
         document.body.appendChild(input1);
         document.body.appendChild(input2);
 
-        msngr.on("TestTopic", function (payload) {
+        msngr("TestTopic").on(function (payload) {
             expect(payload).to.exist;
             expect(payload["Name"]).to.exist;
             expect(payload["Name"]).to.equal("Kris");
@@ -127,6 +134,6 @@ describe.skip("./actions/dom.js", function () {
             done();
         });
 
-        msngr.emit({ topic: "TestTopic", dom: ["#Name", "#Email"] });
+        msngr("TestTopic").option("dom", ["#Name", "#Email"]).emit();
     });
 });

@@ -46,6 +46,16 @@ msngr.extend((function (external, internal) {
 			}
 			lastNow = now;
 			return now;
+		},
+		removeFromArray: function (arr, value) {
+			var inx = arr.indexOf(value);
+			var endIndex = arr.length - 1;
+			if (inx !== endIndex) {
+				var temp = arr[endIndex];
+				arr[endIndex] = arr[inx];
+				arr[inx] = temp;
+			}
+			arr.pop();
 		}
 	};
 }));

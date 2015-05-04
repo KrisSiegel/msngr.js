@@ -17,6 +17,14 @@ msngr.extend((function (external, internal) {
         };
     };
 
+	internal.MangledException = function (variable, method) {
+		return {
+            name: "MangledException",
+            severity: "unrecoverable",
+            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
+        };
+	};
+
     // This is an internal extension; do not export explicitly.
 	return { };
 }));

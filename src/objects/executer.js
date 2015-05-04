@@ -21,7 +21,16 @@ msngr.extend((function (external, internal) {
                         done.apply(ctx, [result]);
                     };
                 }
-                var syncResult = method.apply(ctx || this, [pay, async]);
+
+                var params = undefined;
+                if (external.isArray(pay)) {
+                    params = pay;
+                } else {
+                    params = [pay];
+                }
+                params.push(async);
+
+                var syncResult = method.apply(ctx || this, params);
                 if (async !== true) {
                     done.apply(ctx, [syncResult]);
                 }

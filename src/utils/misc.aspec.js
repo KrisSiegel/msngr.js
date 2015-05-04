@@ -71,4 +71,19 @@ describe("./utils/misc.js", function () {
 
         expect(t).to.exist;
     });
+
+    it("msngr.removeFromArray - removes a value from an array", function () {
+        var arr = ["something", "another", "test", "weee"];
+
+        expect(arr[1]).to.equal("another");
+        expect(arr.length).to.equal(4);
+
+        msngr.removeFromArray(arr, "another");
+        expect(arr[1]).to.equal("weee");
+        expect(arr.length).to.equal(3);
+
+        msngr.removeFromArray(arr, "test");
+        expect(arr[1]).to.equal("weee");
+        expect(arr.length).to.equal(2);
+    });
 });
