@@ -841,7 +841,7 @@ msngr.extend((function (external, internal) {
 /*
     ./options/dom.js
 
-    The primary object of msngr; handles all message sending, receiving and binding.
+    The dom option; provides value gathering from supplied selectors
 */
 msngr.extend((function (external, internal) {
     "use strict";
@@ -875,6 +875,11 @@ msngr.extend((function (external, internal) {
             if (found.length > 0) {
                 elements = elements.concat(Array.prototype.slice.call(found));
             }
+        }
+
+        // Short circuit because no elements
+        if (elements.length === 0) {
+            return undefined;
         }
 
         // Iterate through found elements and aggregate the results

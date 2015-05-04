@@ -37,6 +37,11 @@ msngr.extend((function (external, internal) {
             }
         }
 
+        // Short circuit because no elements
+        if (elements.length === 0) {
+            return undefined;
+        }
+
         // Iterate through found elements and aggregate the results
         var resultMap = undefined;
         var elmLength = elements.length;
