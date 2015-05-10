@@ -21,7 +21,7 @@ describe("./objects/memory.js", function () {
         msngr.debug = false;
     });
 
-    it("memory.index(message) - indexes a message with only a topic", function () {
+    it("msngr.internal.store.index(message) - indexes a message with only a topic", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
@@ -34,7 +34,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
     });
 
-    it("memory.index(message) - indexes a message with a topic and category", function () {
+    it("msngr.internal.store.index(message) - indexes a message with a topic and category", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
@@ -48,7 +48,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
     });
 
-    it("memory.index(message) - indexes a message with a topic and dataType", function () {
+    it("msngr.internal.store.index(message) - indexes a message with a topic and dataType", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
@@ -62,7 +62,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
     });
 
-    it("memory.index(message) - indexes a message with a topic, category and dataType", function () {
+    it("msngr.internal.store.index(message) - indexes a message with a topic, category and dataType", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
@@ -77,7 +77,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
     });
 
-    it("memory.index(message) - invalid message shouldn't index", function () {
+    it("msngr.internal.store.index(message) - invalid message shouldn't index", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
@@ -90,7 +90,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(0);
     });
 
-    it("memory.delete(uuid) - deletes a valid uuid", function () {
+    it("msngr.internal.store.delete(uuid) - deletes a valid uuid", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
@@ -108,7 +108,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(0);
     });
 
-    it("memory.delete(uuid) - doesn't delete an invalid uuid", function () {
+    it("msngr.internal.store.delete(uuid) - doesn't delete an invalid uuid", function () {
         var memory = msngr.internal.objects.memory();
 
         var result = memory.delete("sldfjslkfjlwrjlskdfjs");
@@ -117,7 +117,7 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(0);
     });
 
-    it("memory.query(message) - Correctly gets one result for a query on a topic", function () {
+    it("msngr.internal.store.query(message) - Correctly gets one result for a query on a topic", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {

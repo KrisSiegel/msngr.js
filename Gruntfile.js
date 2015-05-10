@@ -122,17 +122,22 @@ module.exports = (function (grunt) {
 		};
 		var fs = require("fs");
 		var path = require("path");
-		var tests = [];
-		var dirs = fs.readdirSync("./src/");
 
-		for (var i = 0; i < dirs.length; ++i) {
-			if (fs.statSync("./src/" + dirs[i]).isDirectory()) {
-				var files = fs.readdirSync("./src/" + dirs[i]);
-				for (var j = 0; j < files.length; ++j) {
-					tests.push(path.join("./", "./src/", dirs[i], files[j]));
+		var tests = [];
+		var testPaths = ["./", "./src/", "./docs/"];
+
+		for (var k = 0; k < testPaths.length; ++k) {
+			var dirs = fs.readdirSync(testPaths[k]);
+
+			for (var i = 0; i < dirs.length; ++i) {
+				if (fs.statSync(testPaths[k] + dirs[i]).isDirectory()) {
+					var files = fs.readdirSync(testPaths[k] + dirs[i]);
+					for (var j = 0; j < files.length; ++j) {
+						tests.push(path.join("./", testPaths[k], dirs[i], files[j]));
+					}
+				} else {
+					tests.push(path.join("./", testPaths[k], dirs[i]));
 				}
-			} else {
-				tests.push(path.join("./", "./src/", dirs[i]));
 			}
 		}
 

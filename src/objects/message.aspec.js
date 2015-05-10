@@ -251,5 +251,36 @@ describe("./objects/message.js", function () {
             done();
         }, 250);
     });
-    
+
+    it("msngr().persist().on() - persist stores and re-emits data with new on registrations", function (done) {
+        var handledCount = 0;
+
+        var msg = msngr("AnotherTopic");
+        msg.persist("PayloadTwo");
+        msg.on(function (payload) {
+            ++handledCount;
+            expect(payload).to.exist;
+            expect(payload).to.equal("PayloadTwo");
+            expect(handledCount).to.equal(1);
+            done();
+        });
+        msg.cease();
+    });
+
+    it("msngr().on().persist() - registers handler then receives persisted payload", function (done) {
+        var handledCount = 0;
+
+        var msg = msngr("MyTestingTopic");
+        msg.on(function (payload) {
+            ++handledCount;
+            expect(payload).to.exist;
+            expect(payload).to.equal("MyPayload");
+            expect(handledCount).to.equal(1);
+            done();
+        });
+        msg.persist("MyPayload");
+        msg.cease();
+
+    });
+
 });

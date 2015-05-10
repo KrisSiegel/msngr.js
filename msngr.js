@@ -603,9 +603,13 @@ msngr.extend((function (external, internal) {
     internal.objects = internal.objects || { };
 
     var messageIndex = internal.objects.memory();
+    var payloadIndex = internal.objects.memory();
 
     var handlers = { };
     var handlerCount = 0;
+
+    var payloads = { };
+    var payloadCount = 0;
 
     var boundDOMPaths = { };
     var boundCount = 0;
@@ -622,12 +626,21 @@ msngr.extend((function (external, internal) {
         }
     });
 
+    Object.defineProperty(internal, "payloadCount", {
+        get: function () {
+            return payloadCount;
+        }
+    });
+
     internal.reset = function () {
         handlers = { };
         boundDOMPaths = { };
         handlerCount = 0;
         boundCount = 0;
         messageIndex.clear();
+        payloadIndex.clear();
+        payloads = { };
+        payloadCount = 0;
     };
 
     internal.processOpts = function (opts, message, payload, callback) {
@@ -664,7 +677,7 @@ msngr.extend((function (external, internal) {
 
         if (external.exist(boundDOMPaths[path])) {
             if (external.exist(boundDOMPaths[path][event.type])) {
-                return internal.objects.message(boundDOMPaths[path][event.type]).emit(event);
+                return boundDOMPaths[path][event.type].emit();
             }
         }
     };
@@ -700,41 +713,64 @@ msngr.extend((function (external, internal) {
 
         var options = { };
 
+        var explicitEmit = function (payload, uuids, callback) {
+            var uuids = uuids || messageIndex.query(msg);
+            if (uuids.length > 0) {
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < uuids.length; ++i) {
+                    var obj = handlers[uuids[i]];
+                    methods.push(obj.handler);
+
+                    if (obj.once === true) {
+                        toDrop.push(obj.handler);
+                    }
+                }
+
+                internal.processOpts(options, msg, payload, function (result) {
+                    var execs = internal.objects.executer(methods, result, (msg.context || this));
+
+                    for (var i = 0; i < toDrop.length; ++i) {
+                        msgObj.drop(toDrop[i]);
+                    }
+
+                    execs.parallel(callback);
+
+                });
+            }
+        };
+
         var msgObj =  {
             option: function (key, value) {
                 options[key] = value;
 
                 return msgObj;
             },
-            options: function (obj) {
-                external.extend(obj, options);
+            emit: function (payload, callback) {
+                explicitEmit(payload, undefined, callback);
 
                 return msgObj;
             },
-            emit: function (payload, callback) {
-                var uuids = messageIndex.query(msg);
+            persist: function (payload) {
+                var uuids = payloadIndex.query(msg);
+                var uuid;
                 if (uuids.length > 0) {
-                    var methods = [];
-                    var toDrop = [];
-                    for (var i = 0; i < uuids.length; ++i) {
-                        var obj = handlers[uuids[i]];
-                        methods.push(obj.handler);
+                    uuid = uuids[0];
+                } else {
+                    uuid = payloadIndex.index(msg);
+                }
 
-                        if (obj.once === true) {
-                            toDrop.push(obj.handler);
-                        }
-                    }
+                payloads[uuid] = payload;
+                ++payloadCount;
 
-                    internal.processOpts(options, msg, payload, function (result) {
-                        var execs = internal.objects.executer(methods, result, (msg.context || this));
+                return msgObj.emit(payload);
+            },
+            cease: function () {
+                var uuids = payloadIndex.query(msg);
 
-                        for (var i = 0; i < toDrop.length; ++i) {
-                            msgObj.drop(toDrop[i]);
-                        }
-
-                        execs.parallel(callback);
-
-                    });
+                for (var i = 0; i < uuids.length; ++i) {
+                    delete payloads[uuids[i]];
+                    --payloadCount;
                 }
 
                 return msgObj;
@@ -747,6 +783,12 @@ msngr.extend((function (external, internal) {
                     once: false
                 };
                 handlerCount++;
+
+                var payloadId = payloadIndex.query(msg);
+                var payload = payloads[payloadId];
+                if (external.exist(payload)) {
+                    explicitEmit(payload, [uuid], undefined);
+                }
 
                 return msgObj;
             },
@@ -769,7 +811,7 @@ msngr.extend((function (external, internal) {
                     boundDOMPaths[path] = { };
                 }
 
-                boundDOMPaths[path][event] = msg;
+                boundDOMPaths[path][event] = msgObj;
 
                 node.addEventListener(event, internal.domListener);
 
