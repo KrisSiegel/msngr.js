@@ -283,4 +283,21 @@ describe("./objects/message.js", function () {
 
     });
 
+    it("msngr().persist().cease().on() - registers a payload, unregisters a payload then registers a handler", function (done) {
+        var handledCount = 0;
+
+        var msg = msngr("MyTestingTopic");
+        msg.persist("MyPayload");
+        msg.cease();
+        msg.on(function (payload) {
+            ++handledCount;
+        });
+
+        setTimeout(function () {
+            expect(handledCount).to.equal(0);
+            done();
+        }, 250);
+
+    });
+
 });
