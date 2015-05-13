@@ -5,6 +5,9 @@ msngr.js is a small library to manage messages between components with the goal 
 
 What does that mean, exactly? Read on. Want to just jump right in? Check out [this jsfiddle](http://jsfiddle.net/jnjaosfz/) page with msngr.js already included with a "Hello, World!" example.
 
+### Quick note regarding upcoming 2.x release
+The 2.0 branch of msngr is feature complete and includes a very different API than the current 1.x version. This was necessary to ensure consistency and an easier to use API. Additional testing, benchmarking and documentation need to be completed before 2.0 is fully ready for release at the end of May. If you'd like a preview take a look at the [2.0.0 branch](https://github.com/KrisSiegel/msngr.js/tree/2.0.0).
+
 ## Quick Start
 Installation can occur via bower or npm (alternatively just download msngr.js or msngr.min.js).
 
