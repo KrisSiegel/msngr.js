@@ -189,6 +189,10 @@ msngr.extend((function (external, internal) {
                 return msgObj;
             },
             persist: function (payload) {
+                if (payload === undefined) {
+                    payload = null;
+                }
+
                 var uuids = payloadIndex.query(msg);
                 if (uuids.length === 0) {
                     var uuid = payloadIndex.index(msg);
@@ -228,7 +232,7 @@ msngr.extend((function (external, internal) {
                 handlerCount++;
 
                 var payload = fetchPersisted();
-                if (external.exist(payload)) {
+                if (payload !== undefined) {
                     explicitEmit(payload, [uuid], undefined);
                 }
                 counts.ons = counts.ons + 1;
@@ -245,7 +249,7 @@ msngr.extend((function (external, internal) {
                 handlerCount++;
 
                 var payload = fetchPersisted();
-                if (external.exist(payload)) {
+                if (payload !== undefined) {
                     explicitEmit(payload, [uuid], undefined);
                 }
                 counts.onces = counts.onces + 1;

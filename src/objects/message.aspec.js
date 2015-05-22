@@ -335,6 +335,29 @@ describe("./objects/message.js", function () {
         msg.persist({ ready4: true });
     });
 
+    it("msngr().persist() - passing in nothing still conducts a proper persisting of message execution in later 'on's", function (done) {
+        msngr("Server", "Ready").persist();
+
+        var calls = 0;
+
+        msngr("Server", "Ready").on(function () {
+            ++calls;
+        });
+
+        msngr("Server", "Ready").on(function () {
+            ++calls;
+        });
+
+        msngr("Server", "Ready").on(function () {
+            ++calls;
+        });
+
+        setTimeout(function () {
+            expect(calls).to.equal(3);
+            done();
+        }, 250);
+    });
+
     it("msngr().counts - when debug mode is enabled returns a counts object otherwise is undefined", function () {
         msngr.debug = true;
         var msg = msngr("test");
