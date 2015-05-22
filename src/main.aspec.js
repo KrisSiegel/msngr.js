@@ -96,7 +96,7 @@ describe("./main.js", function () {
     it("msngr.extend(undefined, target) - extending undefined value is simply ignored", function () {
         var myTest = { };
         msngr.extend(undefined, myTest);
-        
+
         expect(myTest).to.exist;
         expect(Object.keys(myTest).length).to.equal(0);
     });
@@ -104,9 +104,17 @@ describe("./main.js", function () {
     it("msngr.debug - property setting exports internal object for testing and debugging", function () {
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;
+        expect(msngr.debug).to.equal(false);
         msngr.debug = true;
         expect(msngr.internal).to.exist;
+        expect(msngr.debug).to.equal(true);
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;
+    });
+
+    it("msngr.warnings - can set the property to true or false", function () {
+        expect(msngr.warnings).to.equal(true);
+        msngr.warnings = false;
+        expect(msngr.warnings).to.equal(false);
     });
 });

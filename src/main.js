@@ -7,7 +7,10 @@
 var msngr = msngr || (function () {
 	"use strict";
 
-	var internal = { };
+	var internal = {
+		warnings: true
+	};
+
 	var external = function (topic, category, dataType) {
 		return internal.objects.message(topic, category, dataType);
 	};
@@ -48,6 +51,19 @@ var msngr = msngr || (function () {
 			} else if (value === false) {
 				delete external.internal;
 			}
+		},
+		get: function () {
+			return (external.internal !== undefined)
+		}
+	});
+
+	// This governs warning messages that some methods may spit into the console when warranted (du'h).
+	Object.defineProperty(external, "warnings", {
+		set: function (value) {
+			internal.warnings = value;
+		},
+		get: function () {
+			return internal.warnings;
 		}
 	});
 
