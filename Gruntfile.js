@@ -133,15 +133,22 @@ module.exports = (function (grunt) {
 				if (fs.statSync(testPaths[k] + dirs[i]).isDirectory()) {
 					var files = fs.readdirSync(testPaths[k] + dirs[i]);
 					for (var j = 0; j < files.length; ++j) {
-						tests.push(path.join("./", testPaths[k], dirs[i], files[j]));
+						var p = path.join("./", testPaths[k], dirs[i], files[j]);
+						if (tests.indexOf(p) === -1) {
+							tests.push(p);
+						}
 					}
 				} else {
-					tests.push(path.join("./", testPaths[k], dirs[i]));
+					var p = path.join("./", testPaths[k], dirs[i]);
+					if (tests.indexOf(p) === -1) {
+						tests.push(p);
+					}
 				}
 			}
 		}
 
 		var scriptHtml = "";
+
 		if (tests !== undefined && tests.length > 0) {
 			var file = tests.shift();
 			while (tests.length > 0) {
