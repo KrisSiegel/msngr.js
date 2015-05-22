@@ -183,6 +183,10 @@ msngr.extend((function (external, internal) {
                 return msgObj;
             },
             emit: function (payload, callback) {
+                if (external.isFunction(payload)) {
+                    callback = payload;
+                    payload = undefined;
+                }
                 explicitEmit(payload, undefined, callback);
                 counts.emits = counts.emits + 1;
 

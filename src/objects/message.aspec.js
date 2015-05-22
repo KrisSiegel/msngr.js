@@ -252,6 +252,18 @@ describe("./objects/message.js", function () {
         }, 250);
     });
 
+    it("msngr().emit(func) - if a method is passed in as first argument then that is used as callback", function (done) {
+        var msg = msngr("TestTopical");
+        var hitOn = false;
+        msg.on(function () {
+            hitOn = true;
+        });
+        msg.emit(function () {
+            expect(hitOn).to.equal(true);
+            done();
+        });
+    });
+
     it("msngr().persist().on() - persist stores and re-emits data with new on registrations", function (done) {
         var handledCount = 0;
 
