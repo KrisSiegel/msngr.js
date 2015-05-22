@@ -2,7 +2,7 @@
 So at this point you've hopefully come to the *right* side of thinking that messaging is the best pattern (**S**uperior  **A**bstraction **L**ayer comes to mind) when developing software. No? Okay well that's fine since there is no single way of writing software that is better than all others but let's talk some messaging patterns you can use with msngr.js in your server or client code.
 
 ## Separation of concerns
-Some abstraction strategies lean to the 'block boxing' approach in which messaging can be quite handy. So let's look at an example of using messaging to save a user's preferences.
+Some abstraction strategies lean to the 'black boxing' approach in which messaging can be quite handy. So let's look at an example of using messaging to save a user's preferences.
 
 ```javascript
 // BusinessLogic.js
