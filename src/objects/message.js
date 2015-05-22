@@ -119,6 +119,15 @@ msngr.extend((function (external, internal) {
 
         var options = { };
 
+        var counts = {
+            emits: 0,
+            persists: 0,
+            options: 0,
+            ons: 0,
+            onces: 0,
+            binds: 0
+        };
+
         var explicitEmit = function (payload, uuids, callback) {
             var uuids = uuids || messageIndex.query(msg);
             if (uuids.length > 0) {
@@ -146,30 +155,58 @@ msngr.extend((function (external, internal) {
             }
         };
 
+        var fetchPersisted = function () {
+            var uuids = payloadIndex.query(msg);
+
+            var fpay;
+
+            if (uuids.length === 0) {
+                return undefined;
+            }
+
+            if (uuids.length === 1) {
+                return payloads[uuids[0]];
+            }
+
+            for (var i = 0; i < uuids.length; ++i) {
+                fpay = external.extend(innerPay, fpay);
+            }
+
+            return fpay;
+        };
+
         var msgObj =  {
             option: function (key, value) {
                 options[key] = value;
+                counts.options = counts.options + 1;
 
                 return msgObj;
             },
             emit: function (payload, callback) {
                 explicitEmit(payload, undefined, callback);
+                counts.emits = counts.emits + 1;
 
                 return msgObj;
             },
             persist: function (payload) {
                 var uuids = payloadIndex.query(msg);
-                var uuid;
-                if (uuids.length > 0) {
-                    uuid = uuids[0];
+                if (uuids.length === 0) {
+                    var uuid = payloadIndex.index(msg);
+                    payloads[uuid] = payload;
+                    uuids = [uuid];
                 } else {
-                    uuid = payloadIndex.index(msg);
+                    for (var i = 0; i < uuids.length; ++i) {
+                        payloads[uuids[i]] = external.extend(payload, payloads[uuids[i]]);
+                    }
                 }
 
-                payloads[uuid] = payload;
+                var fpay = fetchPersisted();
+
                 ++payloadCount;
 
-                return msgObj.emit(payload);
+                counts.persists = counts.persists + 1;
+
+                return msgObj.emit(fpay);
             },
             cease: function () {
                 var uuids = payloadIndex.query(msg);
@@ -190,11 +227,11 @@ msngr.extend((function (external, internal) {
                 };
                 handlerCount++;
 
-                var payloadId = payloadIndex.query(msg);
-                var payload = payloads[payloadId];
+                var payload = fetchPersisted();
                 if (external.exist(payload)) {
                     explicitEmit(payload, [uuid], undefined);
                 }
+                counts.ons = counts.ons + 1;
 
                 return msgObj;
             },
@@ -206,6 +243,12 @@ msngr.extend((function (external, internal) {
                     once: true
                 };
                 handlerCount++;
+
+                var payload = fetchPersisted();
+                if (external.exist(payload)) {
+                    explicitEmit(payload, [uuid], undefined);
+                }
+                counts.onces = counts.onces + 1;
 
                 return msgObj;
             },
@@ -222,6 +265,7 @@ msngr.extend((function (external, internal) {
                 node.addEventListener(event, internal.domListener);
 
                 ++boundCount;
+                counts.binds = counts.binds + 1;
 
                 return msgObj;
             },
@@ -273,11 +317,23 @@ msngr.extend((function (external, internal) {
             }
         };
 
+        // Expose the raw message object itself via a message property.
+        // Do not allow modification.
         Object.defineProperty(msgObj, "message", {
     		get: function () {
     			return msg;
     		}
     	});
+
+        // If debug mode is enabled then let's expose the internal method hit counts.
+        // These counts are only good if a method is called and succeeds.
+        if (external.debug === true) {
+            Object.defineProperty(msgObj, "counts", {
+                get: function () {
+                    return counts;
+                }
+            });
+        }
 
         return msgObj;
     };

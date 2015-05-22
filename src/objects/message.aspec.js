@@ -283,6 +283,22 @@ describe("./objects/message.js", function () {
 
     });
 
+    it("msngr().once().persist() - registers handler then receives persisted payload", function (done) {
+        var handledCount = 0;
+
+        var msg = msngr("MyTestingTopic");
+        msg.once(function (payload) {
+            ++handledCount;
+            expect(payload).to.exist;
+            expect(payload).to.equal("MyPayload");
+            expect(handledCount).to.equal(1);
+            done();
+        });
+        msg.persist("MyPayload");
+        msg.cease();
+
+    });
+
     it("msngr().persist().cease().on() - registers a payload, unregisters a payload then registers a handler", function (done) {
         var handledCount = 0;
 
@@ -298,6 +314,38 @@ describe("./objects/message.js", function () {
             done();
         }, 250);
 
+    });
+
+    it("msngr().persist() - complex merging of persisted objects for ultimate ready status", function (done) {
+        var msg = msngr("MyCoolTopic", "MyCat");
+        var d = false;
+        msg.on(function (payload) {
+            // Check to make sure ready state is across the board
+            expect(payload).to.exist;
+            if (payload.ready1 === true && payload.ready2 === true && payload.ready3 === true && payload.ready4 === true && d === false) {
+                // All statuses have come in ready!
+                d = true;
+                done();
+            }
+        });
+
+        msg.persist({ ready1: true });
+        msg.persist({ ready2: true });
+        msg.persist({ ready3: true });
+        msg.persist({ ready4: true });
+    });
+
+    it("msngr().counts - when debug mode is enabled returns a counts object otherwise is undefined", function () {
+        msngr.debug = true;
+        var msg = msngr("test");
+        expect(msg.counts).to.exist;
+        expect(msg.counts.emits).to.equal(0);
+        msg.emit();
+        expect(msg.counts.emits).to.equal(1);
+
+        msngr.debug = false;
+        var msg2 = msngr("another");
+        expect(msg2.counts).to.not.exist;
     });
 
 });
