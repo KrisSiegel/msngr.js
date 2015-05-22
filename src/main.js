@@ -23,6 +23,16 @@ var msngr = msngr || (function () {
 			obj = obj.apply(this, [external, internal]);
 		}
 
+		if (Object.prototype.toString.call(obj) === "[object String]") {
+			if (Object.prototype.toString.call(target) === "[object String]") {
+				// Simple string concat operation
+				target = target + obj;
+			} else {
+				// Hmm what's the right move here? STRINGIFY!
+				target = JSON.stringify(target) + obj;
+			}
+		}
+
 		if (Object.prototype.toString.call(obj) === "[object Object]") {
 			for (var key in obj) {
 				if (obj.hasOwnProperty(key)) {

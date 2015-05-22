@@ -101,6 +101,14 @@ describe("./main.js", function () {
         expect(Object.keys(myTest).length).to.equal(0);
     });
 
+    it("msngr.extend(string1, string2) - Property extends a string with another string", function () {
+        var t = "something";
+        var result = msngr.extend("whatever", t);
+        expect(result).to.exist;
+        expect(msngr.getType(result)).to.equal("[object String]");
+        expect(result).to.equal("somethingwhatever");
+    });
+
     it("msngr.debug - property setting exports internal object for testing and debugging", function () {
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;
