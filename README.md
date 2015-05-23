@@ -30,6 +30,8 @@ While msngr.js isn't very large the documentation has been split up for easy rea
 
 [Extending and hacking](docs/extending and hacking.md) - Want to extend the capabilities of msngr.js? It's actually quite easy and this document covers it. Using msngr.js deep in a production system then suddenly find *something* that you need to change to avoid catastrophe? Hacking msngr.js is also covered for those times when you need *unorthodox* solutions :)
 
+[Just give me the damn API](docs/api.md) - So you just want what method(s) are exposed and the parameters required to make them go? Fine don't read my witty and informative documentation and just look at this. I won't be upset...
+
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
 Copyright © 2014-2015 Kris Siegel
