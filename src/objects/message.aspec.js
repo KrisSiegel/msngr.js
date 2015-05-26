@@ -25,7 +25,15 @@ describe("./objects/message.js", function () {
         msngr.debug = false;
     });
 
-    it("msngr - handles a message object as expected", function () {
+    it("msngr() - throws an exception for invalid input", function () {
+        expect(msngr.bind([])).to.throw();
+        expect(msngr.bind()).to.throw();
+        expect(msngr.bind("")).to.throw();
+        expect(msngr.bind(123)).to.throw();
+        expect(msngr.bind((new Date()))).to.throw();
+    });
+
+    it("msngr() - handles a message object as expected", function () {
         var m = msngr({ topic: "MyTopic", category: "MyCategory", dataType: "MyDataType" });
         expect(m).to.exist;
         expect(m.message).to.exist;
