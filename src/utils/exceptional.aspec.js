@@ -21,4 +21,28 @@ describe("./utils/exceptional.js", function () {
         msngr.debug = false;
     });
 
+    it("internal.InvalidParametersException - throws an exception", function () {
+        var myfunc = function () {
+            throw internal.InvalidParametersException("MyParameter");
+        };
+
+        expect(myfunc).to.throw();
+    });
+
+    it("internal.ReservedKeywordsException - throws an exception", function () {
+        var myfunc = function () {
+            throw internal.ReservedKeywordsException("MyKeyword");
+        };
+
+        expect(myfunc).to.throw();
+    });
+
+    it("internal.MangledException - throws an exception", function () {
+        var myfunc = function () {
+            throw internal.MangledException("MyVariable", "MyFunc");
+        };
+
+        expect(myfunc).to.throw();
+    });
+
 });
