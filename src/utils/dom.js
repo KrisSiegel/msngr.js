@@ -10,7 +10,7 @@ msngr.extend((function (external, internal) {
             return (this.getType(obj) === "[object NodeList]");
         },
         findElement: function (element, root) {
-            var elms = external.findElements(element);
+            var elms = external.findElements(element, root);
             if (elms !== undefined && elms.length > 0) {
                 return elms[0];
             }
@@ -89,8 +89,8 @@ msngr.extend((function (external, internal) {
             }
             return [result];
         },
-        querySelectorWithEq: function (selector) {
-            return external.querySelectorAllWithEq(selector)[0];
+        querySelectorWithEq: function (selector, root) {
+            return external.querySelectorAllWithEq(selector, root)[0];
         }
     };
 }));
