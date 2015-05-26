@@ -24,13 +24,13 @@ msngr("User", "Save")
 ## Would you like to know more?
 While msngr.js isn't very large the documentation has been split up for easy reading.
 
+[Full API](docs/api.md) - This is the full, exposed API that msngr makes available. This includes the methods that can be used (it does not cover internal methods or objects since those are subject to change) and examples for each.
+
 [Messaging patterns](docs/messaging patterns.md) - Explains how to use the basic messaging features of msngr.js with some typical patterns.
 
 [Binding and the DOM](docs/binding and the dom.md) - This covers binding msngr.js to elements and events, unbinding them and how to gather up values from various types of elements.
 
 [Extending and hacking](docs/extending and hacking.md) - Want to extend the capabilities of msngr.js? It's actually quite easy and this document covers it. Using msngr.js deep in a production system then suddenly find *something* that you need to change to avoid catastrophe? Hacking msngr.js is also covered for those times when you need *unorthodox* solutions :)
-
-[Just give me the damn API](docs/api.md) - So you just want what method(s) are exposed and the parameters required to make them go? Fine don't read my witty and informative documentation and just look at this. I won't be upset...
 
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 

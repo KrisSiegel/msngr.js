@@ -7,7 +7,7 @@ if (typeof expect === "undefined") {
 }
 
 if (typeof msngr === "undefined" && typeof window === "undefined") {
-    var msngr = require("../../msngr");
+    var msngr = require("./msngr");
 }
 
 describe("./README.md", function () {
