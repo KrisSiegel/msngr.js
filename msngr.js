@@ -108,7 +108,7 @@ msngr.extend((function (external, internal) {
             return (this.getType(obj) === "[object NodeList]");
         },
         findElement: function (element, root) {
-            var elms = external.findElements(element);
+            var elms = external.findElements(element, root);
             if (elms !== undefined && elms.length > 0) {
                 return elms[0];
             }
@@ -187,8 +187,8 @@ msngr.extend((function (external, internal) {
             }
             return [result];
         },
-        querySelectorWithEq: function (selector) {
-            return external.querySelectorAllWithEq(selector)[0];
+        querySelectorWithEq: function (selector, root) {
+            return external.querySelectorAllWithEq(selector, root)[0];
         }
     };
 }));
@@ -690,7 +690,9 @@ msngr.extend((function (external, internal) {
             var result = payload;
             if (external.exist(results) && results.length > 0) {
                 for (var i = 0; i < results.length; ++i) {
-                    result = external.extend(results[i], result);
+                    if (external.exist(results[i])) {
+                        result = external.extend(results[i], result);
+                    }
                 }
             }
             callback.apply(this, [result]);
@@ -964,6 +966,49 @@ msngr.extend((function (external, internal) {
         }
 
         return msgObj;
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return { };
+}));
+
+/*
+    ./options/cross-window.js
+
+    The cross-window option; provides the ability to emit and receive messages across
+    mupltiple browser tabs / windows within the same web browser.
+*/
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    var channelName = "__msngr_cross-window";
+
+    internal.options = internal.options || { };
+
+    // Let's check if localstorage is even available. If it isn't we shouldn't register
+    if (typeof localStorage === "undefined" || typeof window === "undefined") {
+        return { };
+    }
+
+    window.addEventListener("storage", function (event) {
+        if (event.key === channelName) {
+            // New message data. Respond?
+
+            internal.objects.message(event.newValue.message).emit(event.newValue.payload);
+        }
+    });
+
+    internal.options["cross-window"] = function (message, payload, options, async) {
+        // Normalize all of the inputs
+        options = options || { };
+        options = options["cross-window"] || { };
+
+        localStorage.setItem(channelName, {
+            message: message,
+            payload: payload
+        });
+
+        return undefined;
     };
 
     // This is an internal extension; do not export explicitly.

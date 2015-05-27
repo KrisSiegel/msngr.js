@@ -70,7 +70,9 @@ msngr.extend((function (external, internal) {
             var result = payload;
             if (external.exist(results) && results.length > 0) {
                 for (var i = 0; i < results.length; ++i) {
-                    result = external.extend(results[i], result);
+                    if (external.exist(results[i])) {
+                        result = external.extend(results[i], result);
+                    }
                 }
             }
             callback.apply(this, [result]);
