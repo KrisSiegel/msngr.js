@@ -131,30 +131,28 @@ msngr.extend((function (external, internal) {
         };
 
         var explicitEmit = function (payload, uuids, callback) {
-            var uuids = uuids || messageIndex.query(msg);
-            if (uuids.length > 0) {
-                var methods = [];
-                var toDrop = [];
-                for (var i = 0; i < uuids.length; ++i) {
-                    var obj = handlers[uuids[i]];
-                    methods.push(obj.handler);
+            var uuids = uuids || messageIndex.query(msg) || [];
+            var methods = [];
+            var toDrop = [];
+            for (var i = 0; i < uuids.length; ++i) {
+                var obj = handlers[uuids[i]];
+                methods.push(obj.handler);
 
-                    if (obj.once === true) {
-                        toDrop.push(obj.handler);
-                    }
+                if (obj.once === true) {
+                    toDrop.push(obj.handler);
+                }
+            }
+
+            internal.processOpts(options, msg, payload, function (result) {
+                var execs = internal.objects.executer(methods, result, (msg.context || this));
+
+                for (var i = 0; i < toDrop.length; ++i) {
+                    msgObj.drop(toDrop[i]);
                 }
 
-                internal.processOpts(options, msg, payload, function (result) {
-                    var execs = internal.objects.executer(methods, result, (msg.context || this));
+                execs.parallel(callback);
 
-                    for (var i = 0; i < toDrop.length; ++i) {
-                        msgObj.drop(toDrop[i]);
-                    }
-
-                    execs.parallel(callback);
-
-                });
-            }
+            });
         };
 
         var fetchPersisted = function () {

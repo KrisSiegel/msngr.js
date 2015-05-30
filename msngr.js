@@ -751,30 +751,28 @@ msngr.extend((function (external, internal) {
         };
 
         var explicitEmit = function (payload, uuids, callback) {
-            var uuids = uuids || messageIndex.query(msg);
-            if (uuids.length > 0) {
-                var methods = [];
-                var toDrop = [];
-                for (var i = 0; i < uuids.length; ++i) {
-                    var obj = handlers[uuids[i]];
-                    methods.push(obj.handler);
+            var uuids = uuids || messageIndex.query(msg) || [];
+            var methods = [];
+            var toDrop = [];
+            for (var i = 0; i < uuids.length; ++i) {
+                var obj = handlers[uuids[i]];
+                methods.push(obj.handler);
 
-                    if (obj.once === true) {
-                        toDrop.push(obj.handler);
-                    }
+                if (obj.once === true) {
+                    toDrop.push(obj.handler);
+                }
+            }
+
+            internal.processOpts(options, msg, payload, function (result) {
+                var execs = internal.objects.executer(methods, result, (msg.context || this));
+
+                for (var i = 0; i < toDrop.length; ++i) {
+                    msgObj.drop(toDrop[i]);
                 }
 
-                internal.processOpts(options, msg, payload, function (result) {
-                    var execs = internal.objects.executer(methods, result, (msg.context || this));
+                execs.parallel(callback);
 
-                    for (var i = 0; i < toDrop.length; ++i) {
-                        msgObj.drop(toDrop[i]);
-                    }
-
-                    execs.parallel(callback);
-
-                });
-            }
+            });
         };
 
         var fetchPersisted = function () {
@@ -992,9 +990,15 @@ msngr.extend((function (external, internal) {
 
     window.addEventListener("storage", function (event) {
         if (event.key === channelName) {
-            // New message data. Respond?
+            // New message data. Respond!
+            var obj;
+            try {
+                obj = JSON.parse(event.newValue);
+            } catch (ex) { console.log(ex); }
 
-            internal.objects.message(event.newValue.message).emit(event.newValue.payload);
+            if (obj !== undefined && external.isObject(obj)) {
+                internal.objects.message(obj.message).emit(obj.payload);
+            }
         }
     });
 
@@ -1003,10 +1007,15 @@ msngr.extend((function (external, internal) {
         options = options || { };
         options = options["cross-window"] || { };
 
-        localStorage.setItem(channelName, {
+        var obj = {
             message: message,
             payload: payload
-        });
+        };
+
+        try {
+            console.log(obj);
+            localStorage.setItem(channelName, JSON.stringify(obj));
+        } catch (ex) { console.log(ex); }
 
         return undefined;
     };

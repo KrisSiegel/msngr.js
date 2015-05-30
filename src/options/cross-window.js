@@ -18,9 +18,15 @@ msngr.extend((function (external, internal) {
 
     window.addEventListener("storage", function (event) {
         if (event.key === channelName) {
-            // New message data. Respond?
+            // New message data. Respond!
+            var obj;
+            try {
+                obj = JSON.parse(event.newValue);
+            } catch (ex) { console.log(ex); }
 
-            internal.objects.message(event.newValue.message).emit(event.newValue.payload);
+            if (obj !== undefined && external.isObject(obj)) {
+                internal.objects.message(obj.message).emit(obj.payload);
+            }
         }
     });
 
@@ -29,10 +35,15 @@ msngr.extend((function (external, internal) {
         options = options || { };
         options = options["cross-window"] || { };
 
-        localStorage.setItem(channelName, {
+        var obj = {
             message: message,
             payload: payload
-        });
+        };
+
+        try {
+            console.log(obj);
+            localStorage.setItem(channelName, JSON.stringify(obj));
+        } catch (ex) { console.log(ex); }
 
         return undefined;
     };
