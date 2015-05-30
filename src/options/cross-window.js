@@ -2,7 +2,7 @@
     ./options/cross-window.js
 
     The cross-window option; provides the ability to emit and receive messages across
-    mupltiple browser tabs / windows within the same web browser.
+    multiple browser tabs / windows within the same web browser.
 */
 msngr.extend((function (external, internal) {
     "use strict";
