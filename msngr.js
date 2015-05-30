@@ -1013,7 +1013,6 @@ msngr.extend((function (external, internal) {
         };
 
         try {
-            console.log(obj);
             localStorage.setItem(channelName, JSON.stringify(obj));
         } catch (ex) { console.log(ex); }
 
