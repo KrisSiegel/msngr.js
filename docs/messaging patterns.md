@@ -71,6 +71,3 @@ In the above example there are a several things to take note of. First the usage
 After that, using an environment configuration, you can choose to load ```MySQLBackend.js``` or ```MemoryBackend.js```. Both use the exact same messaging handlers, one works asynchronously and the other synchronously but the receiving end (the callback specified in emit) gets the data in the same way regardless.
 
 Neat, right?
-
-## Persisted merging
-Alright so we have the idea that we can separate logic and implementation, we can bring results back via ```emit()``` and we can persist messages or data via ```persist()```. But what happens if you persist multiple things under the same message? What if you persist multiple things under multiple messages then setup a handler that gets hit by multiple persists? Why we merge is what we do! So let's check out an example.
