@@ -1,5 +1,5 @@
 # Web browser niceties
-While msngr.js has plenty of generic capability that can run under node.js and a web browser it includes a few nice features that only work in web browsers.
+While msngr.js has plenty of generic capability that can run under node.js and a web browser it also includes a few nice features that only work in web browsers.
 
 ## Cross window communication
 Have you ever used a web browser where you had multiple instances of a web application open? There are many use-cases where this may happen but what do you do if a change happens in window 1 then you look at window 2? You could setup a one-off call using postMessage or make your web app revolve around the data inside of localStorage and listen to its events. But that can be annoying especially if you didn't realize your users even want this until it's too late to make such structural changes.
