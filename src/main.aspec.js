@@ -17,10 +17,6 @@ describe("./main.js", function () {
         expect(msngr).to.exist;
     });
 
-    it("msngr.extend(obj, target) - expect method to exist", function () {
-        expect(msngr.extend).to.exist;
-    });
-
     it("msngr.merge(input1, input2) - expect method to exist", function () {
         expect(msngr.merge).to.exist;
     });
@@ -168,6 +164,25 @@ describe("./main.js", function () {
         expect(merged4.val1).to.equal(1);
         expect(merged5.val1.length).to.equal(3);
         expect(merged6.val1).to.equal("hockey");
+    });
+
+    it("msngr.extend(obj, target) - expect method to exist", function () {
+        expect(msngr.extend).to.exist;
+    });
+
+    it("msngr.extend(obj, target) - extend msngr", function () {
+        msngr.extend((function (external, internal) {
+            return {
+                sayHello: function () {
+                    return "hello";
+                }
+            };
+        }));
+
+        expect(msngr.sayHello).to.exist;
+        expect(msngr.sayHello()).to.equal("hello");
+
+        delete msngr.sayHello;
     });
 
     it("msngr.debug - property setting exports internal object for testing and debugging", function () {
