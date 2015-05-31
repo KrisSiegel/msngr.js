@@ -13,12 +13,12 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/validation.js", function () {
     "use strict";
 
-    it("msngr.utils.getType(obj) - obj is a HTMLDivElement", function () {
-        expect(msngr.utils.getType(document.createElement("div"))).to.equal("[object HTMLDivElement]");
+    it("msngr.getType(obj) - obj is a HTMLDivElement", function () {
+        expect(msngr.getType(document.createElement("div"))).to.equal("[object HTMLDivElement]");
     });
 
-    it("msngr.utils.getType(obj) - obj is a HTMLInputElement", function () {
-        expect(msngr.utils.getType(document.createElement("input"))).to.equal("[object HTMLInputElement]");
+    it("msngr.getType(obj) - obj is a HTMLInputElement", function () {
+        expect(msngr.getType(document.createElement("input"))).to.equal("[object HTMLInputElement]");
     });
 
 });

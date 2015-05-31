@@ -15,14 +15,14 @@ describe("./utils/misc.js", function () {
 
     this.timeout(60000);
 
-    it("msngr.utils.id() - generate 1 id", function () {
-        expect(msngr.utils.id()).to.not.equal(undefined);
+    it("msngr.id() - generate 1 id", function () {
+        expect(msngr.id()).to.not.equal(undefined);
     });
 
-    it("msngr.utils.id() - generate 100 unique ids", function () {
+    it("msngr.id() - generate 100 unique ids", function () {
         var ids = [];
         for (var i = 0; i < 100; ++i) {
-            var d = msngr.utils.id();
+            var d = msngr.id();
             if (ids.indexOf(d) === -1) {
                 ids.push(d);
             }
@@ -31,10 +31,10 @@ describe("./utils/misc.js", function () {
         expect(ids.length).to.equal(100);
     });
 
-    it("msngr.utils.id() - generate 10000 unique ids", function () {
+    it("msngr.id() - generate 10000 unique ids", function () {
         var ids = [];
         for (var i = 0; i < 10000; ++i) {
-            var d = msngr.utils.id();
+            var d = msngr.id();
             if (ids.indexOf(d) === -1) {
                 ids.push(d);
             }
@@ -43,16 +43,16 @@ describe("./utils/misc.js", function () {
         expect(ids.length).to.equal(10000);
     });
 
-    it("msngr.utils.now() - generates a value", function () {
-        expect(msngr.utils.now()).to.exist;
+    it("msngr.now() - generates a value", function () {
+        expect(msngr.now()).to.exist;
     });
 
-    it("msngr.utils.now(true) - 5 consecutive calls have unique values", function () {
-        var t1 = msngr.utils.now(true);
-        var t2 = msngr.utils.now(true);
-        var t3 = msngr.utils.now(true);
-        var t4 = msngr.utils.now(true);
-        var t5 = msngr.utils.now(true);
+    it("msngr.now(true) - 5 consecutive calls have unique values", function () {
+        var t1 = msngr.now(true);
+        var t2 = msngr.now(true);
+        var t3 = msngr.now(true);
+        var t4 = msngr.now(true);
+        var t5 = msngr.now(true);
 
         expect(t1).to.exist;
         expect(t2).to.exist;
@@ -66,9 +66,24 @@ describe("./utils/misc.js", function () {
         expect(t5).to.not.equal(t4);
     });
 
-    it("msngr.utils.now('sdfkjsdfl') - Correctly handles invalid input", function () {
-        var t = msngr.utils.now("sdfkjsdfl");
+    it("msngr.now('sdfkjsdfl') - Correctly handles invalid input", function () {
+        var t = msngr.now("sdfkjsdfl");
 
         expect(t).to.exist;
+    });
+
+    it("msngr.removeFromArray - removes a value from an array", function () {
+        var arr = ["something", "another", "test", "weee"];
+
+        expect(arr[1]).to.equal("another");
+        expect(arr.length).to.equal(4);
+
+        msngr.removeFromArray(arr, "another");
+        expect(arr[1]).to.equal("weee");
+        expect(arr.length).to.equal(3);
+
+        msngr.removeFromArray(arr, "test");
+        expect(arr[1]).to.equal("weee");
+        expect(arr.length).to.equal(2);
     });
 });

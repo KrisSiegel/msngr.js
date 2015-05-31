@@ -17,10 +17,10 @@ module.exports = (function (grunt) {
 	var paths = [
 		"src/main.js",
 		"src/utils/*.js",
-		"src/builders/*.js",
 		"src/store/*.js",
+		"src/objects/*.js",
 		"src/messengers/*.js",
-		"src/actions/*.js",
+		"src/options/*.js",
 		"src/module.exports.js",
 		"!**/*.aspec.js",
 		"!**/*.cspec.js",
@@ -83,11 +83,11 @@ module.exports = (function (grunt) {
 		var pkg = grunt.file.readJSON('package.json');
 
 		var main = fs.readFileSync("src/main.js", { encoding: "utf8" });
-		var indexOfVersion = main.indexOf("version: ");
-		var indexOfNextComma = main.indexOf(",", indexOfVersion);
+		var indexOfVersion = main.indexOf("external.version = ");
+		var indexOfNextSemiColon = main.indexOf(";", indexOfVersion);
 		var ified = main.substring(0, indexOfVersion);
-		ified = ified + "version: \"" + pkg.version + "\"";
-		ified = ified + main.substring(indexOfNextComma, main.length);
+		ified = ified + "external.version = \"" + pkg.version + "\"";
+		ified = ified + main.substring(indexOfNextSemiColon, main.length);
 
 		fs.writeFileSync("src/main.js", ified, { encoding: "utf8" });
 	});
@@ -122,21 +122,33 @@ module.exports = (function (grunt) {
 		};
 		var fs = require("fs");
 		var path = require("path");
-		var tests = [];
-		var dirs = fs.readdirSync("./src/");
 
-		for (var i = 0; i < dirs.length; ++i) {
-			if (fs.statSync("./src/" + dirs[i]).isDirectory()) {
-				var files = fs.readdirSync("./src/" + dirs[i]);
-				for (var j = 0; j < files.length; ++j) {
-					tests.push(path.join("./", "./src/", dirs[i], files[j]));
+		var tests = [];
+		var testPaths = ["./", "./src/", "./docs/"];
+
+		for (var k = 0; k < testPaths.length; ++k) {
+			var dirs = fs.readdirSync(testPaths[k]);
+
+			for (var i = 0; i < dirs.length; ++i) {
+				if (fs.statSync(testPaths[k] + dirs[i]).isDirectory()) {
+					var files = fs.readdirSync(testPaths[k] + dirs[i]);
+					for (var j = 0; j < files.length; ++j) {
+						var p = path.join("./", testPaths[k], dirs[i], files[j]);
+						if (tests.indexOf(p) === -1) {
+							tests.push(p);
+						}
+					}
+				} else {
+					var p = path.join("./", testPaths[k], dirs[i]);
+					if (tests.indexOf(p) === -1) {
+						tests.push(p);
+					}
 				}
-			} else {
-				tests.push(path.join("./", "./src/", dirs[i]));
 			}
 		}
 
 		var scriptHtml = "";
+
 		if (tests !== undefined && tests.length > 0) {
 			var file = tests.shift();
 			while (tests.length > 0) {

@@ -13,27 +13,27 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/converters.js", function () {
     "use strict";
 
-    it("msngr.utils.argumentsToArray(args) - 0 arguments", function () {
+    it("msngr.argumentsToArray(args) - 0 arguments", function () {
         var func = function () {
-            var args = msngr.utils.argumentsToArray(arguments);
+            var args = msngr.argumentsToArray(arguments);
             expect(args.length).to.equal(0);
         }
 
         func();
     });
 
-    it("msngr.utils.argumentsToArray(args) - 3 arguments", function () {
+    it("msngr.argumentsToArray(args) - 3 arguments", function () {
         var func = function () {
-            var args = msngr.utils.argumentsToArray(arguments);
+            var args = msngr.argumentsToArray(arguments);
             expect(args.length).to.equal(3);
         }
 
         func(1, 2, 3);
     });
 
-    it("msngr.utils.argumentsToArray(args) - 15 arguments", function () {
+    it("msngr.argumentsToArray(args) - 15 arguments", function () {
         var func = function () {
-            var args = msngr.utils.argumentsToArray(arguments);
+            var args = msngr.argumentsToArray(arguments);
             expect(args.length).to.equal(15);
         }
 

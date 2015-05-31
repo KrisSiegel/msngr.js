@@ -13,549 +13,557 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/validation.js", function () {
     "use strict";
 
-    it("msngr.utils.getType(obj) - obj is a function", function () {
-        expect(msngr.utils.getType(function () {})).to.equal("[object Function]");
+    before(function () {
+        msngr.debug = true;
     });
 
-    it("msngr.utils.getType(obj) - obj is a string", function () {
-        expect(msngr.utils.getType("test")).to.equal("[object String]");
+    after(function () {
+        msngr.debug = false;
     });
 
-    it("msngr.utils.getType(obj) - obj is a number", function () {
-        expect(msngr.utils.getType(42)).to.equal("[object Number]");
+    it("msngr.getType(obj) - obj is a function", function () {
+        expect(msngr.getType(function () {})).to.equal("[object Function]");
     });
 
-    it("msngr.utils.getType(obj) - obj is an array", function () {
-        expect(msngr.utils.getType([])).to.equal("[object Array]");
+    it("msngr.getType(obj) - obj is a string", function () {
+        expect(msngr.getType("test")).to.equal("[object String]");
     });
 
-    it("msngr.utils.getType(obj) - obj is an object", function () {
-        expect(msngr.utils.getType({ })).to.equal("[object Object]");
+    it("msngr.getType(obj) - obj is a number", function () {
+        expect(msngr.getType(42)).to.equal("[object Number]");
     });
 
-    it("msngr.utils.getType(obj) - obj is undefined", function () {
-        expect(msngr.utils.getType(undefined)).to.equal("undefined");
+    it("msngr.getType(obj) - obj is an array", function () {
+        expect(msngr.getType([])).to.equal("[object Array]");
     });
 
-    it("msngr.utils.getType(obj) - obj is null", function () {
-        expect(msngr.utils.getType(null)).to.equal("null");
+    it("msngr.getType(obj) - obj is an object", function () {
+        expect(msngr.getType({ })).to.equal("[object Object]");
+    });
+
+    it("msngr.getType(obj) - obj is undefined", function () {
+        expect(msngr.getType(undefined)).to.equal("undefined");
+    });
+
+    it("msngr.getType(obj) - obj is null", function () {
+        expect(msngr.getType(null)).to.equal("null");
     });
 
     // isArguments
-    it("msngr.utils.isArguments(obj) - obj is a function", function () {
-        expect(msngr.utils.isArguments(function () {})).to.equal(false);
+    it("msngr.isArguments(obj) - obj is a function", function () {
+        expect(msngr.isArguments(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is a string with content", function () {
-        expect(msngr.utils.isArguments("test")).to.equal(false);
+    it("msngr.isArguments(obj) - obj is a string with content", function () {
+        expect(msngr.isArguments("test")).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is an empty string", function () {
-        expect(msngr.utils.isArguments("")).to.equal(false);
+    it("msngr.isArguments(obj) - obj is an empty string", function () {
+        expect(msngr.isArguments("")).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isArguments(" ")).to.equal(false);
+    it("msngr.isArguments(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.isArguments(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is undefined", function () {
-        expect(msngr.utils.isArguments(undefined)).to.equal(false);
+    it("msngr.isArguments(obj) - obj is undefined", function () {
+        expect(msngr.isArguments(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is null", function () {
-        expect(msngr.utils.isArguments(null)).to.equal(false);
+    it("msngr.isArguments(obj) - obj is null", function () {
+        expect(msngr.isArguments(null)).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is an object", function () {
-        expect(msngr.utils.isArguments({})).to.equal(false);
+    it("msngr.isArguments(obj) - obj is an object", function () {
+        expect(msngr.isArguments({})).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is a number", function () {
-        expect(msngr.utils.isArguments(7)).to.equal(false);
+    it("msngr.isArguments(obj) - obj is a number", function () {
+        expect(msngr.isArguments(7)).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is an array", function () {
-        expect(msngr.utils.isArguments([])).to.equal(false);
+    it("msngr.isArguments(obj) - obj is an array", function () {
+        expect(msngr.isArguments([])).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is a Date", function () {
-        expect(msngr.utils.isArguments(new Date())).to.equal(false);
+    it("msngr.isArguments(obj) - obj is a Date", function () {
+        expect(msngr.isArguments(new Date())).to.equal(false);
     });
 
-    it("msngr.utils.isArguments(obj) - obj is an Arguments object", function () {
+    it("msngr.isArguments(obj) - obj is an Arguments object", function () {
         var tFunc = function () {
-            expect(msngr.utils.isArguments(arguments)).to.equal(true);
+            expect(msngr.isArguments(arguments)).to.equal(true);
         }
 
         tFunc("something", 15, "weee");
     });
 
     // isNullOrUndefined(obj)
-    it("msngr.utils.isNullOrUndefined(obj) - obj is a function", function () {
-        expect(msngr.utils.isNullOrUndefined(function () {})).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is a function", function () {
+        expect(msngr.isNullOrUndefined(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is a string with content", function () {
-        expect(msngr.utils.isNullOrUndefined("test")).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is a string with content", function () {
+        expect(msngr.isNullOrUndefined("test")).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is an empty string", function () {
-        expect(msngr.utils.isNullOrUndefined("")).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is an empty string", function () {
+        expect(msngr.isNullOrUndefined("")).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isNullOrUndefined(" ")).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.isNullOrUndefined(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is undefined", function () {
-        expect(msngr.utils.isNullOrUndefined(undefined)).to.equal(true);
+    it("msngr.isNullOrUndefined(obj) - obj is undefined", function () {
+        expect(msngr.isNullOrUndefined(undefined)).to.equal(true);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is null", function () {
-        expect(msngr.utils.isNullOrUndefined(null)).to.equal(true);
+    it("msngr.isNullOrUndefined(obj) - obj is null", function () {
+        expect(msngr.isNullOrUndefined(null)).to.equal(true);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is an object", function () {
-        expect(msngr.utils.isNullOrUndefined({})).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is an object", function () {
+        expect(msngr.isNullOrUndefined({})).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is a number", function () {
-        expect(msngr.utils.isNullOrUndefined(7)).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is a number", function () {
+        expect(msngr.isNullOrUndefined(7)).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is an array", function () {
-        expect(msngr.utils.isNullOrUndefined([])).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is an array", function () {
+        expect(msngr.isNullOrUndefined([])).to.equal(false);
     });
 
-    it("msngr.utils.isNullOrUndefined(obj) - obj is a Date", function () {
-        expect(msngr.utils.isNullOrUndefined(new Date())).to.equal(false);
+    it("msngr.isNullOrUndefined(obj) - obj is a Date", function () {
+        expect(msngr.isNullOrUndefined(new Date())).to.equal(false);
     });
 
     // exist(obj)
-    it("msngr.utils.exist(obj) - obj is a function", function () {
-        expect(msngr.utils.exist(function () {})).to.equal(true);
+    it("msngr.exist(obj) - obj is a function", function () {
+        expect(msngr.exist(function () {})).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is a string with content", function () {
-        expect(msngr.utils.exist("test")).to.equal(true);
+    it("msngr.exist(obj) - obj is a string with content", function () {
+        expect(msngr.exist("test")).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is an empty string", function () {
-        expect(msngr.utils.exist("")).to.equal(true);
+    it("msngr.exist(obj) - obj is an empty string", function () {
+        expect(msngr.exist("")).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.exist(" ")).to.equal(true);
+    it("msngr.exist(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.exist(" ")).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is undefined", function () {
-        expect(msngr.utils.exist(undefined)).to.equal(false);
+    it("msngr.exist(obj) - obj is undefined", function () {
+        expect(msngr.exist(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.exist(obj) - obj is null", function () {
-        expect(msngr.utils.exist(null)).to.equal(false);
+    it("msngr.exist(obj) - obj is null", function () {
+        expect(msngr.exist(null)).to.equal(false);
     });
 
-    it("msngr.utils.exist(obj) - obj is an object", function () {
-        expect(msngr.utils.exist({})).to.equal(true);
+    it("msngr.exist(obj) - obj is an object", function () {
+        expect(msngr.exist({})).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is a number", function () {
-        expect(msngr.utils.exist(7)).to.equal(true);
+    it("msngr.exist(obj) - obj is a number", function () {
+        expect(msngr.exist(7)).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is an array", function () {
-        expect(msngr.utils.exist([])).to.equal(true);
+    it("msngr.exist(obj) - obj is an array", function () {
+        expect(msngr.exist([])).to.equal(true);
     });
 
-    it("msngr.utils.exist(obj) - obj is a Date", function () {
-        expect(msngr.utils.exist(new Date())).to.equal(true);
+    it("msngr.exist(obj) - obj is a Date", function () {
+        expect(msngr.exist(new Date())).to.equal(true);
     });
 
     // exists()
-    it("msngr.utils.exists(...) - arguments are of various types", function () {
-        expect(msngr.utils.exists("whatever", 15, true, false, { })).to.equal(true);
+    it("msngr.exists(...) - arguments are of various types", function () {
+        expect(msngr.exists("whatever", 15, true, false, { })).to.equal(true);
     });
 
-    it("msngr.utils.exists(...) - arguments are of various types with an undefined item", function () {
-        expect(msngr.utils.exists("whatever", 15, undefined, false, { })).to.equal(false);
+    it("msngr.exists(...) - arguments are of various types with an undefined item", function () {
+        expect(msngr.exists("whatever", 15, undefined, false, { })).to.equal(false);
     });
 
-    it("msngr.utils.exists(...) - arguments are of various types with a null item", function () {
-        expect(msngr.utils.exists(null, 15, true, false, { })).to.equal(false);
+    it("msngr.exists(...) - arguments are of various types with a null item", function () {
+        expect(msngr.exists(null, 15, true, false, { })).to.equal(false);
     });
 
     // isString(str)
-    it("msngr.utils.isString(str) - obj is a function", function () {
-        expect(msngr.utils.isString(function () {})).to.equal(false);
+    it("msngr.isString(str) - obj is a function", function () {
+        expect(msngr.isString(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isString(str) - obj is a string with content", function () {
-        expect(msngr.utils.isString("test")).to.equal(true);
+    it("msngr.isString(str) - obj is a string with content", function () {
+        expect(msngr.isString("test")).to.equal(true);
     });
 
-    it("msngr.utils.isString(str) - obj is an empty string", function () {
-        expect(msngr.utils.isString("")).to.equal(true);
+    it("msngr.isString(str) - obj is an empty string", function () {
+        expect(msngr.isString("")).to.equal(true);
     });
 
-    it("msngr.utils.isString(str) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isString(" ")).to.equal(true);
+    it("msngr.isString(str) - obj is a string with only whitespace", function () {
+        expect(msngr.isString(" ")).to.equal(true);
     });
 
-    it("msngr.utils.isString(str) - obj is undefined", function () {
-        expect(msngr.utils.isString(undefined)).to.equal(false);
+    it("msngr.isString(str) - obj is undefined", function () {
+        expect(msngr.isString(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isString(str) - obj is null", function () {
-        expect(msngr.utils.isString(null)).to.equal(false);
+    it("msngr.isString(str) - obj is null", function () {
+        expect(msngr.isString(null)).to.equal(false);
     });
 
-    it("msngr.utils.isString(str) - obj is an object", function () {
-        expect(msngr.utils.isString({})).to.equal(false);
+    it("msngr.isString(str) - obj is an object", function () {
+        expect(msngr.isString({})).to.equal(false);
     });
 
-    it("msngr.utils.isString(str) - obj is a number", function () {
-        expect(msngr.utils.isString(7)).to.equal(false);
+    it("msngr.isString(str) - obj is a number", function () {
+        expect(msngr.isString(7)).to.equal(false);
     });
 
-    it("msngr.utils.isString(str) - obj is an array", function () {
-        expect(msngr.utils.isString([])).to.equal(false);
+    it("msngr.isString(str) - obj is an array", function () {
+        expect(msngr.isString([])).to.equal(false);
     });
 
-    it("msngr.utils.isString(str) - obj is a Date", function () {
-        expect(msngr.utils.isString(new Date())).to.equal(false);
+    it("msngr.isString(str) - obj is a Date", function () {
+        expect(msngr.isString(new Date())).to.equal(false);
     });
 
     // isDate(obj)
-    it("msngr.utils.isDate(obj) - obj is a function", function () {
-        expect(msngr.utils.isDate(function () {})).to.equal(false);
+    it("msngr.isDate(obj) - obj is a function", function () {
+        expect(msngr.isDate(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is a string with content", function () {
-        expect(msngr.utils.isDate("test")).to.equal(false);
+    it("msngr.isDate(obj) - obj is a string with content", function () {
+        expect(msngr.isDate("test")).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is an empty string", function () {
-        expect(msngr.utils.isDate("")).to.equal(false);
+    it("msngr.isDate(obj) - obj is an empty string", function () {
+        expect(msngr.isDate("")).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isDate(" ")).to.equal(false);
+    it("msngr.isDate(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.isDate(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is undefined", function () {
-        expect(msngr.utils.isDate(undefined)).to.equal(false);
+    it("msngr.isDate(obj) - obj is undefined", function () {
+        expect(msngr.isDate(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is null", function () {
-        expect(msngr.utils.isDate(null)).to.equal(false);
+    it("msngr.isDate(obj) - obj is null", function () {
+        expect(msngr.isDate(null)).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is an object", function () {
-        expect(msngr.utils.isDate({})).to.equal(false);
+    it("msngr.isDate(obj) - obj is an object", function () {
+        expect(msngr.isDate({})).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is a number", function () {
-        expect(msngr.utils.isDate(7)).to.equal(false);
+    it("msngr.isDate(obj) - obj is a number", function () {
+        expect(msngr.isDate(7)).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is an array", function () {
-        expect(msngr.utils.isDate([])).to.equal(false);
+    it("msngr.isDate(obj) - obj is an array", function () {
+        expect(msngr.isDate([])).to.equal(false);
     });
 
-    it("msngr.utils.isDate(obj) - obj is a Date", function () {
-        expect(msngr.utils.isDate(new Date())).to.equal(true);
+    it("msngr.isDate(obj) - obj is a Date", function () {
+        expect(msngr.isDate(new Date())).to.equal(true);
     });
 
     // isArray(obj)
-    it("msngr.utils.isArray(obj) - obj is a function", function () {
-        expect(msngr.utils.isArray(function () {})).to.equal(false);
+    it("msngr.isArray(obj) - obj is a function", function () {
+        expect(msngr.isArray(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is a string with content", function () {
-        expect(msngr.utils.isArray("test")).to.equal(false);
+    it("msngr.isArray(obj) - obj is a string with content", function () {
+        expect(msngr.isArray("test")).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is an empty string", function () {
-        expect(msngr.utils.isArray("")).to.equal(false);
+    it("msngr.isArray(obj) - obj is an empty string", function () {
+        expect(msngr.isArray("")).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isArray(" ")).to.equal(false);
+    it("msngr.isArray(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.isArray(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is undefined", function () {
-        expect(msngr.utils.isArray(undefined)).to.equal(false);
+    it("msngr.isArray(obj) - obj is undefined", function () {
+        expect(msngr.isArray(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is null", function () {
-        expect(msngr.utils.isArray(null)).to.equal(false);
+    it("msngr.isArray(obj) - obj is null", function () {
+        expect(msngr.isArray(null)).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is an object", function () {
-        expect(msngr.utils.isArray({})).to.equal(false);
+    it("msngr.isArray(obj) - obj is an object", function () {
+        expect(msngr.isArray({})).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is a number", function () {
-        expect(msngr.utils.isArray(7)).to.equal(false);
+    it("msngr.isArray(obj) - obj is a number", function () {
+        expect(msngr.isArray(7)).to.equal(false);
     });
 
-    it("msngr.utils.isArray(obj) - obj is an array", function () {
-        expect(msngr.utils.isArray([])).to.equal(true);
+    it("msngr.isArray(obj) - obj is an array", function () {
+        expect(msngr.isArray([])).to.equal(true);
     });
 
-    it("msngr.utils.isArray(obj) - obj is a Date", function () {
-        expect(msngr.utils.isArray(new Date())).to.equal(false);
+    it("msngr.isArray(obj) - obj is a Date", function () {
+        expect(msngr.isArray(new Date())).to.equal(false);
     });
 
     // isNumber(obj)
-    it("msngr.utils.isNumber(obj) - obj is a function", function () {
-        expect(msngr.utils.isNumber(function () {})).to.equal(false);
+    it("msngr.isNumber(obj) - obj is a function", function () {
+        expect(msngr.isNumber(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is a string with content", function () {
-        expect(msngr.utils.isNumber("test")).to.equal(false);
+    it("msngr.isNumber(obj) - obj is a string with content", function () {
+        expect(msngr.isNumber("test")).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is an empty string", function () {
-        expect(msngr.utils.isNumber("")).to.equal(false);
+    it("msngr.isNumber(obj) - obj is an empty string", function () {
+        expect(msngr.isNumber("")).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isNumber(" ")).to.equal(false);
+    it("msngr.isNumber(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.isNumber(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is undefined", function () {
-        expect(msngr.utils.isNumber(undefined)).to.equal(false);
+    it("msngr.isNumber(obj) - obj is undefined", function () {
+        expect(msngr.isNumber(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is null", function () {
-        expect(msngr.utils.isNumber(null)).to.equal(false);
+    it("msngr.isNumber(obj) - obj is null", function () {
+        expect(msngr.isNumber(null)).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is an object", function () {
-        expect(msngr.utils.isNumber({})).to.equal(false);
+    it("msngr.isNumber(obj) - obj is an object", function () {
+        expect(msngr.isNumber({})).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is a number", function () {
-        expect(msngr.utils.isNumber(7)).to.equal(true);
+    it("msngr.isNumber(obj) - obj is a number", function () {
+        expect(msngr.isNumber(7)).to.equal(true);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is an array", function () {
-        expect(msngr.utils.isNumber([])).to.equal(false);
+    it("msngr.isNumber(obj) - obj is an array", function () {
+        expect(msngr.isNumber([])).to.equal(false);
     });
 
-    it("msngr.utils.isNumber(obj) - obj is a Date", function () {
-        expect(msngr.utils.isNumber(new Date())).to.equal(false);
+    it("msngr.isNumber(obj) - obj is a Date", function () {
+        expect(msngr.isNumber(new Date())).to.equal(false);
     });
 
     // isObject(obj)
-    it("msngr.utils.isObject(obj) - obj is a function", function () {
-        expect(msngr.utils.isObject(function () {})).to.equal(false);
+    it("msngr.isObject(obj) - obj is a function", function () {
+        expect(msngr.isObject(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is a string with content", function () {
-        expect(msngr.utils.isObject("test")).to.equal(false);
+    it("msngr.isObject(obj) - obj is a string with content", function () {
+        expect(msngr.isObject("test")).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is an empty string", function () {
-        expect(msngr.utils.isObject("")).to.equal(false);
+    it("msngr.isObject(obj) - obj is an empty string", function () {
+        expect(msngr.isObject("")).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isObject(" ")).to.equal(false);
+    it("msngr.isObject(obj) - obj is a string with only whitespace", function () {
+        expect(msngr.isObject(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is undefined", function () {
-        expect(msngr.utils.isObject(undefined)).to.equal(false);
+    it("msngr.isObject(obj) - obj is undefined", function () {
+        expect(msngr.isObject(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is null", function () {
-        expect(msngr.utils.isObject(null)).to.equal(false);
+    it("msngr.isObject(obj) - obj is null", function () {
+        expect(msngr.isObject(null)).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is an object", function () {
-        expect(msngr.utils.isObject({})).to.equal(true);
+    it("msngr.isObject(obj) - obj is an object", function () {
+        expect(msngr.isObject({})).to.equal(true);
     });
 
-    it("msngr.utils.isObject(obj) - obj is a number", function () {
-        expect(msngr.utils.isObject(7)).to.equal(false);
+    it("msngr.isObject(obj) - obj is a number", function () {
+        expect(msngr.isObject(7)).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is an array", function () {
-        expect(msngr.utils.isObject([])).to.equal(false);
+    it("msngr.isObject(obj) - obj is an array", function () {
+        expect(msngr.isObject([])).to.equal(false);
     });
 
-    it("msngr.utils.isObject(obj) - obj is a Date", function () {
-        expect(msngr.utils.isObject(new Date())).to.equal(false);
+    it("msngr.isObject(obj) - obj is a Date", function () {
+        expect(msngr.isObject(new Date())).to.equal(false);
     });
 
     // isFunction(func)
-    it("msngr.utils.isFunction(func) - obj is a function", function () {
-        expect(msngr.utils.isFunction(function () {})).to.equal(true);
+    it("msngr.isFunction(func) - obj is a function", function () {
+        expect(msngr.isFunction(function () {})).to.equal(true);
     });
 
-    it("msngr.utils.isFunction(func) - obj is a string with content", function () {
-        expect(msngr.utils.isFunction("test")).to.equal(false);
+    it("msngr.isFunction(func) - obj is a string with content", function () {
+        expect(msngr.isFunction("test")).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is an empty string", function () {
-        expect(msngr.utils.isFunction("")).to.equal(false);
+    it("msngr.isFunction(func) - obj is an empty string", function () {
+        expect(msngr.isFunction("")).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is a string with only whitespace", function () {
-        expect(msngr.utils.isFunction(" ")).to.equal(false);
+    it("msngr.isFunction(func) - obj is a string with only whitespace", function () {
+        expect(msngr.isFunction(" ")).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is undefined", function () {
-        expect(msngr.utils.isFunction(undefined)).to.equal(false);
+    it("msngr.isFunction(func) - obj is undefined", function () {
+        expect(msngr.isFunction(undefined)).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is null", function () {
-        expect(msngr.utils.isFunction(null)).to.equal(false);
+    it("msngr.isFunction(func) - obj is null", function () {
+        expect(msngr.isFunction(null)).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is an object", function () {
-        expect(msngr.utils.isFunction({})).to.equal(false);
+    it("msngr.isFunction(func) - obj is an object", function () {
+        expect(msngr.isFunction({})).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is a number", function () {
-        expect(msngr.utils.isFunction(7)).to.equal(false);
+    it("msngr.isFunction(func) - obj is a number", function () {
+        expect(msngr.isFunction(7)).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is an array", function () {
-        expect(msngr.utils.isFunction([])).to.equal(false);
+    it("msngr.isFunction(func) - obj is an array", function () {
+        expect(msngr.isFunction([])).to.equal(false);
     });
 
-    it("msngr.utils.isFunction(func) - obj is a Date", function () {
-        expect(msngr.utils.isFunction(new Date())).to.equal(false);
+    it("msngr.isFunction(func) - obj is a Date", function () {
+        expect(msngr.isFunction(new Date())).to.equal(false);
     });
 
     // isEmptyString(str)
-    it("msngr.utils.isEmptyString(str) - str is a function", function () {
-        expect(msngr.utils.isEmptyString(function () {})).to.equal(false);
+    it("msngr.isEmptyString(str) - str is a function", function () {
+        expect(msngr.isEmptyString(function () {})).to.equal(false);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is a string with content", function () {
-        expect(msngr.utils.isEmptyString("test")).to.equal(false);
+    it("msngr.isEmptyString(str) - str is a string with content", function () {
+        expect(msngr.isEmptyString("test")).to.equal(false);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is an empty string", function () {
-        expect(msngr.utils.isEmptyString("")).to.equal(true);
+    it("msngr.isEmptyString(str) - str is an empty string", function () {
+        expect(msngr.isEmptyString("")).to.equal(true);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is a string with only whitespace", function () {
-        expect(msngr.utils.isEmptyString(" ")).to.equal(true);
+    it("msngr.isEmptyString(str) - str is a string with only whitespace", function () {
+        expect(msngr.isEmptyString(" ")).to.equal(true);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is undefined", function () {
-        expect(msngr.utils.isEmptyString(undefined)).to.equal(true);
+    it("msngr.isEmptyString(str) - str is undefined", function () {
+        expect(msngr.isEmptyString(undefined)).to.equal(true);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is null", function () {
-        expect(msngr.utils.isEmptyString(null)).to.equal(true);
+    it("msngr.isEmptyString(str) - str is null", function () {
+        expect(msngr.isEmptyString(null)).to.equal(true);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is an object", function () {
-        expect(msngr.utils.isEmptyString({})).to.equal(false);
+    it("msngr.isEmptyString(str) - str is an object", function () {
+        expect(msngr.isEmptyString({})).to.equal(false);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is a number", function () {
-        expect(msngr.utils.isEmptyString(7)).to.equal(false);
+    it("msngr.isEmptyString(str) - str is a number", function () {
+        expect(msngr.isEmptyString(7)).to.equal(false);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is an array", function () {
-        expect(msngr.utils.isEmptyString([])).to.equal(false);
+    it("msngr.isEmptyString(str) - str is an array", function () {
+        expect(msngr.isEmptyString([])).to.equal(false);
     });
 
-    it("msngr.utils.isEmptyString(str) - str is a Date", function () {
-        expect(msngr.utils.isEmptyString(new Date())).to.equal(false);
+    it("msngr.isEmptyString(str) - str is a Date", function () {
+        expect(msngr.isEmptyString(new Date())).to.equal(false);
     });
 
     // hasWildCard(str)
-    it("msngr.utils.hasWildCard(str)", function () {
-        expect(msngr.utils.hasWildCard("whatever")).to.equal(false);
-        expect(msngr.utils.hasWildCard("")).to.equal(false);
-        expect(msngr.utils.hasWildCard("what*")).to.equal(true);
+    it("msngr.hasWildCard(str)", function () {
+        expect(msngr.hasWildCard("whatever")).to.equal(false);
+        expect(msngr.hasWildCard("")).to.equal(false);
+        expect(msngr.hasWildCard("what*")).to.equal(true);
     });
 
     // reiterativeValidation(func, inputs)
-    it("msngr.utils.reiterativeValidation(func, inputs) - func is undefined", function () {
-        expect(msngr.utils.reiterativeValidation(undefined, [true, false, 15, "534"])).to.equal(false);
+    it("msngr.internal.reiterativeValidation(func, inputs) - func is undefined", function () {
+        expect(msngr.internal.reiterativeValidation(undefined, [true, false, 15, "534"])).to.equal(false);
     });
 
-    it("msngr.utils.reiterativeValidation(func, inputs) - inputs is undefined", function () {
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, undefined)).to.equal(false);
+    it("msngr.internal.reiterativeValidation(func, inputs) - inputs is undefined", function () {
+        expect(msngr.internal.reiterativeValidation(msngr.exists, undefined)).to.equal(false);
     });
 
-    it("msngr.utils.reiterativeValidation(func, inputs) - func is msngr.utils.exists and inputs is a single value", function () {
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, true)).to.equal(true);
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, undefined)).to.equal(false);
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, null)).to.equal(false);
+    it("msngr.internal.reiterativeValidation(func, inputs) - func is msngr.exists and inputs is a single value", function () {
+        expect(msngr.internal.reiterativeValidation(msngr.exists, true)).to.equal(true);
+        expect(msngr.internal.reiterativeValidation(msngr.exists, undefined)).to.equal(false);
+        expect(msngr.internal.reiterativeValidation(msngr.exists, null)).to.equal(false);
     });
 
-    it("msngr.utils.reiterativeValidation(func, inputs) - func is msngr.utils.exists and inputs are various values", function () {
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, [true, false, 15, "534"])).to.equal(true);
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, [undefined, false, 15, "534"])).to.equal(false);
-        expect(msngr.utils.reiterativeValidation(msngr.utils.exists, [true, undefined, 15, "534"])).to.equal(false);
+    it("msngr.internal.reiterativeValidation(func, inputs) - func is msngr.exists and inputs are various values", function () {
+        expect(msngr.internal.reiterativeValidation(msngr.exists, [true, false, 15, "534"])).to.equal(true);
+        expect(msngr.internal.reiterativeValidation(msngr.exists, [undefined, false, 15, "534"])).to.equal(false);
+        expect(msngr.internal.reiterativeValidation(msngr.exists, [true, undefined, 15, "534"])).to.equal(false);
     });
 
     // exists()
-    it("msngr.utils.exists()", function () {
-        expect(msngr.utils.exists({}, [], "something", 12)).to.equal(true);
-        expect(msngr.utils.exists({}, null, "something", 12)).to.equal(false);
-        expect(msngr.utils.exists({}, [], undefined, 12)).to.equal(false);
-        expect(msngr.utils.exists(null, undefined, null)).to.equal(false);
+    it("msngr.exists()", function () {
+        expect(msngr.exists({}, [], "something", 12)).to.equal(true);
+        expect(msngr.exists({}, null, "something", 12)).to.equal(false);
+        expect(msngr.exists({}, [], undefined, 12)).to.equal(false);
+        expect(msngr.exists(null, undefined, null)).to.equal(false);
     });
 
     // areStrings()
-    it("msngr.utils.areStrings()", function () {
-        expect(msngr.utils.areStrings("Whatever", "Totes!", "Chickens")).to.equal(true);
-        expect(msngr.utils.areStrings("Whatever", undefined, "Chickens")).to.equal(false);
-        expect(msngr.utils.areStrings("Whatever", null, "Chickens")).to.equal(false);
-        expect(msngr.utils.areStrings("Whatever", "Totes!", 5)).to.equal(false);
+    it("msngr.areStrings()", function () {
+        expect(msngr.areStrings("Whatever", "Totes!", "Chickens")).to.equal(true);
+        expect(msngr.areStrings("Whatever", undefined, "Chickens")).to.equal(false);
+        expect(msngr.areStrings("Whatever", null, "Chickens")).to.equal(false);
+        expect(msngr.areStrings("Whatever", "Totes!", 5)).to.equal(false);
     });
 
     // areDates()
-    it("msngr.utils.areDates()", function () {
-        expect(msngr.utils.areDates((new Date()), (new Date()))).to.equal(true);
-        expect(msngr.utils.areDates((new Date()), undefined, "Chickens")).to.equal(false);
-        expect(msngr.utils.areDates((new Date()), null, "Chickens")).to.equal(false);
-        expect(msngr.utils.areDates((new Date()), "Totes!", 5)).to.equal(false);
+    it("msngr.areDates()", function () {
+        expect(msngr.areDates((new Date()), (new Date()))).to.equal(true);
+        expect(msngr.areDates((new Date()), undefined, "Chickens")).to.equal(false);
+        expect(msngr.areDates((new Date()), null, "Chickens")).to.equal(false);
+        expect(msngr.areDates((new Date()), "Totes!", 5)).to.equal(false);
     });
 
     // areNumbers()
-    it("msngr.utils.areNumbers()", function () {
-        expect(msngr.utils.areNumbers(15, 12, 90000, -1)).to.equal(true);
-        expect(msngr.utils.areNumbers(15, undefined, 90000, -1)).to.equal(false);
-        expect(msngr.utils.areNumbers(15, 12, "whatever", -1)).to.equal(false);
+    it("msngr.areNumbers()", function () {
+        expect(msngr.areNumbers(15, 12, 90000, -1)).to.equal(true);
+        expect(msngr.areNumbers(15, undefined, 90000, -1)).to.equal(false);
+        expect(msngr.areNumbers(15, 12, "whatever", -1)).to.equal(false);
     });
 
     // areArrays()
-    it("msngr.utils.areArrays()", function () {
-        expect(msngr.utils.areArrays([], [15, 45], ["test"])).to.equal(true);
-        expect(msngr.utils.areArrays([], [15, 45], undefined)).to.equal(false);
-        expect(msngr.utils.areArrays([], 0, ["test"])).to.equal(false);
+    it("msngr.areArrays()", function () {
+        expect(msngr.areArrays([], [15, 45], ["test"])).to.equal(true);
+        expect(msngr.areArrays([], [15, 45], undefined)).to.equal(false);
+        expect(msngr.areArrays([], 0, ["test"])).to.equal(false);
     });
 
     // areObjects()
-    it("msngr.utils.areObjects()", function () {
-        expect(msngr.utils.areObjects({}, { k: true })).to.equal(true);
-        expect(msngr.utils.areObjects({}, "CHICKENS FOR SALE")).to.equal(false);
-        expect(msngr.utils.areObjects(null, { k: true })).to.equal(false);
+    it("msngr.areObjects()", function () {
+        expect(msngr.areObjects({}, { k: true })).to.equal(true);
+        expect(msngr.areObjects({}, "CHICKENS FOR SALE")).to.equal(false);
+        expect(msngr.areObjects(null, { k: true })).to.equal(false);
     });
 
     // areFunctions()
-    it("msngr.utils.areFunctions()", function () {
-        expect(msngr.utils.areFunctions(function () {}, function () {})).to.equal(true);
-        expect(msngr.utils.areFunctions("yup()", function () {})).to.equal(false);
-        expect(msngr.utils.areFunctions(function () {}, undefined)).to.equal(false);
+    it("msngr.areFunctions()", function () {
+        expect(msngr.areFunctions(function () {}, function () {})).to.equal(true);
+        expect(msngr.areFunctions("yup()", function () {})).to.equal(false);
+        expect(msngr.areFunctions(function () {}, undefined)).to.equal(false);
     });
 
     // areEmptyStrings()
-    it("msngr.utils.areEmptyStrings()", function () {
-        expect(msngr.utils.areEmptyStrings("", undefined, "  ")).to.equal(true);
-        expect(msngr.utils.areEmptyStrings("", undefined, " a ")).to.equal(false);
-        expect(msngr.utils.areEmptyStrings({ }, undefined, "  ")).to.equal(false);
+    it("msngr.areEmptyStrings()", function () {
+        expect(msngr.areEmptyStrings("", undefined, "  ")).to.equal(true);
+        expect(msngr.areEmptyStrings("", undefined, " a ")).to.equal(false);
+        expect(msngr.areEmptyStrings({ }, undefined, "  ")).to.equal(false);
     });
 });
