@@ -5,6 +5,7 @@
 msngr.js is a small library for facilitating communication between components through abstract messages within the same application be it server or client side. It also provides binding messages directly to DOM elements and even sending payloads between browser tabs / windows.
 
 The following example shows how to bind a message to a click event of a DOM element while gathering up the values in the related inputs for payload delivery.
+
 ```HTML
 <input type="text" name="Username" value="Kris" />
 <input type="password" name="Password" value="hunter2" />
@@ -20,6 +21,11 @@ msngr("User", "Save")
         console.log(payload.Password); // Prints "hunter2"
     });
 ```
+
+## Getting msngr.js
+If you want to use msngr.js on the server-side via npm simply install it via ```npm install msngr```.
+
+If you want to use it within a web browser then either install via ```bower install msngr``` or manually download msngr.js or msngr.min.js file(s) from this repository.
 
 ## Would you like to know more?
 While msngr.js isn't very large the documentation has been split up for easy reading.
