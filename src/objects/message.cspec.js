@@ -29,7 +29,6 @@ describe("./objects/message.js", function () {
         var div = document.createElement("div");
 
         msngr("MyTopic").bind(div, "testEvent").on(function (payload) {
-            expect(payload).to.exist;
             done();
         });
 
@@ -42,7 +41,6 @@ describe("./objects/message.js", function () {
         var div = document.createElement("div");
 
         msngr("MyTopic", "MyCategory").bind(div, "testEvent").on(function (payload) {
-            expect(payload).to.exist;
             done();
         });
 
@@ -55,7 +53,6 @@ describe("./objects/message.js", function () {
         var div = document.createElement("div");
 
         msngr("MyTopic", "MyCategory", "MyDataType").bind(div, "testEvent").on(function (payload) {
-            expect(payload).to.exist;
             done();
         });
 

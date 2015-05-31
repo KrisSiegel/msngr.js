@@ -107,6 +107,34 @@ describe("./objects/message.js", function () {
         expect(m3.message.dataType).to.not.equal(m4.message.dataType);
     });
 
+    it("msngr().option() - handles invalid input correctly", function () {
+        expect(msngr("TestTopic").option.bind({})).to.throw;
+        expect(msngr("TestTopic").option.bind(7)).to.throw;
+        expect(msngr("TestTopic").option.bind()).to.throw;
+    });
+
+    it("msngr().option() - custom option processor works as expected", function (done) {
+        msngr.internal.options["testsync"] = function (message, payload, options, async) {
+            return "synced!";
+        };
+
+        var msg = msngr("MyTopic").option("testsync").on(function (payload) {
+            expect(payload).to.exist;
+            expect(payload).to.equal("synced!");
+
+            msngr.internal.options["testasync"] = function (message, payload, options, async) {
+                var d = async();
+                d({ words: "asynced!" });
+            };
+
+            var msg2 = msngr("AnotherTopic").option("testasync").on(function (payload2) {
+                expect(payload2).to.exist;
+                expect(payload2.words).to.equal("asynced!");
+                done();
+            }).emit();
+        }).emit();
+    });
+
     it("msngr().emit() / on() - Successfully emits and handles a topic only message", function (done) {
         var msg = msngr("MyTopic");
         msg.on(function (payload) {

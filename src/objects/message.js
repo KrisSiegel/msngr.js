@@ -50,7 +50,6 @@ msngr.extend((function (external, internal) {
     };
 
     internal.processOpts = function (opts, message, payload, callback) {
-        payload = payload || { };
         var optProcessors = [];
         for (var key in opts) {
             if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
@@ -71,7 +70,7 @@ msngr.extend((function (external, internal) {
             if (external.exist(results) && results.length > 0) {
                 for (var i = 0; i < results.length; ++i) {
                     if (external.exist(results[i])) {
-                        result = external.extend(results[i], result);
+                        result = external.merge(results[i], result);
                     }
                 }
             }
@@ -177,6 +176,10 @@ msngr.extend((function (external, internal) {
 
         var msgObj =  {
             option: function (key, value) {
+                if (!external.exist(key) || !external.isString(key)) {
+                    throw internal.InvalidParametersException("option");
+                }
+
                 options[key] = value;
                 counts.options = counts.options + 1;
 
