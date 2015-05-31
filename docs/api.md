@@ -232,6 +232,34 @@ var elms = msngr.querySelectorAllWithEq("div:eq(1) > input");
 ## Miscellaneous utilities
 There are multiple utility methods included in msngr. Some are used internally and some are exposed for external use by others.
 
+### ```msngr.extend(obj, target)```
+Extends either the msngr object or a specified target object.
+
+```obj (required)``` - The object used to extend a target. If it's a method it is executed and passed in the external and interface interfaces of msngr.
+
+```target (optional)``` - The target of the extend. If not specified it is assumed you are extending the msngr object.
+
+```javascript
+msngr.extend({
+    sayHello: function () {
+        return "Hello!";
+    }
+});
+
+console.log(msngr.sayHello());
+```
+
+### ```msngr.merge(input1, input2, ..., inputN)```
+Merges an n number of inputs together. Combines objects with other objects (the merging overwrites in order should conflict arrise), functions with objects, strings and strings and arrays.
+
+```inputn (required)``` - Specify as many parameters as necessary for merging.
+
+```javascript
+var merged = msngr.merge({ val1: "test" }, { val2: "whatever!" }, { val2: "no!" });
+console.log(merged.val1); // Prints "test"
+console.log(merged.val2); // Prints "no!"
+```
+
 ### ```msngr.exist(obj)```
 Returns false if obj is undefined or null otherwise true.
 
