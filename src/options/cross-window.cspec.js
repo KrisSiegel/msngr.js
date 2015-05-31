@@ -13,6 +13,8 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./options/cross-window.js", function () {
     "use strict";
 
+    this.timeout(60000);
+
     before(function () {
         msngr.debug = true;
     });
@@ -25,28 +27,25 @@ describe("./options/cross-window.js", function () {
         msngr.debug = false;
     });
 
-    it("msngr().option('cross-window') - sends a message between different tabs or windows", function (done) {
+    it("msngr().option('cross-window') - sends a 100 messages between different tabs or windows", function (done) {
         var crossWindowVerifierPath = (window.specRunner.indexOf(".min.html") === -1) ? "crossWindowVerifier.html" : "crossWindowVerifier.min.html";
-        var test1 = false;
-        var test2 = false;
-        var test3 = false;
+        var testCounts = 0;
+        var observedTests = { };
 
         var iframe = document.createElement("iframe");
         var msg = msngr("CrossWindow", "Message");
         msg.on(function (payload) {
-            if (payload === "VerificationCrossTest1") {
-                test1 = true;
+            expect(payload).to.exist;
+            expect(payload.data.meaningOfLife).to.equal(42);
+            expect(payload.data.OPDelivers).to.equal(false);
+            expect(payload.data.text).to.equal("something");
+
+            if (observedTests[payload.id] === undefined) {
+                testCounts++;
+                observedTests[payload.id] = payload;
             }
 
-            if (payload === "VerificationCrossTest2") {
-                test2 = true;
-            }
-
-            if (payload === "VerificationCrossTest3") {
-                test3 = true;
-            }
-
-            if (test1 && test2 && test3) {
+            if (testCounts === 100) {
                 document.querySelector("body").removeChild(iframe);
                 done();
             }

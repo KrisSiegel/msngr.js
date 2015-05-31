@@ -6,9 +6,24 @@
     <script type="text/javascript">
         var msg = msngr("CrossWindow", "Message");
         msg.option("cross-window");
-        msg.emit("VerificationCrossTest1");
-        msg.emit("VerificationCrossTest2");
-        msg.emit("VerificationCrossTest3");
+
+        // Let's do this craziness to ensure they are sent in crazy orders
+        // but still received and operated on as expected.
+        for (var i = 0; i < 100; ++i) {
+            (function (m, index) {
+                var rand = Math.floor(Math.random() * (25 - 0 + 1)) + 0;
+                setTimeout(function () {
+                    m.emit({
+                        id: index,
+                        data: {
+                            meaningOfLife: 42,
+                            OPDelivers: false,
+                            text: "something"
+                        }
+                    });
+                }, rand);
+            }(msg, i));
+        }
     </script>
   </head>
   <body>

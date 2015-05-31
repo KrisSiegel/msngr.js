@@ -7,16 +7,19 @@
 var msngr = msngr || (function () {
 	"use strict";
 
+	// Defaults for some internal functions
 	var internal = {
 		warnings: true
 	};
 
+	// The main method for msngr uses the message object
 	var external = function (topic, category, dataType) {
 		return internal.objects.message(topic, category, dataType);
 	};
 
 	external.version = "2.0.0";
 
+	// Merge two inputs into one
 	var twoMerge = function (input1, input2) {
 		if (input1 === undefined || input1 === null) {
 			return input2;
