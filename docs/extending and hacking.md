@@ -53,7 +53,7 @@ So what happens when your option returns a value? This value is taken and merged
 ## Okay so what about 'hacking'?
 So if you look at the ways of extending msngr.js you will notice that you can access the internal interface really easily. This lets you do *anything* to msngr.js.
 
-So let's say you want have the memory indexer that msngr uses to index messages and you want to replace it. You could change code and submit a pull request but let's say you find an issue you need to fix NOW and you're in an environment where msngr is already approved and you can't change its code. What do you do!?
+So let's say you want to change the memory indexer that msngr uses to index messages by replacing it. You could change code and submit a pull request but let's say you find an issue you need to fix NOW and you're in an environment where msngr is already approved and you can't change its code. What do you do!?
 
 It's actually kinda easy :)
 
