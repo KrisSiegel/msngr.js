@@ -50,7 +50,12 @@ var msngr = msngr || (function () {
 						}
 						result[key] = external.merge(input1[key], input2[key]);
 					} else if (Object.prototype.toString.call(input1[key]) === "[object Array]" && Object.prototype.toString.call(input2[key]) === "[object Array]") {
-						result[key] = (input1[key] || []).concat(input2[key]);
+						result[key] = (input1[key] || []);
+						for (var i = 0; i < input2[key].length; ++i) {
+							if (result[key].indexOf(input2[key][i]) === -1) {
+								result[key].push(input2[key][i]);
+							}
+						}
 					} else {
 						result[key] = input2[key];
 					}
@@ -65,7 +70,12 @@ var msngr = msngr || (function () {
 		}
 
 		if (type1 === "[object Array]" && type2 === "[object Array]") {
-			result = input1.concat(input2);
+			result = input1;
+			for (var i = 0; i < input2.length; ++i) {
+				if (result.indexOf(input2[i]) === -1) {
+					result.push(input2[i]);
+				}
+			}
 			return result;
 		}
 

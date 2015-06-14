@@ -21,9 +21,9 @@ describe("./main.js", function () {
         expect(msngr.merge).to.exist;
     });
 
-    it("msngr.merge(input1, input2) - merges arrays from input1 and input2", function () {
-        var obj1 = { test: [1, 2] };
-        var obj2 = { test: [3, 4] };
+    it("msngr.merge(input1, input2) - merges arrays from input1 and input2 without duplicates", function () {
+        var obj1 = { test: [1, 2, 3] };
+        var obj2 = { test: [2, 3, 4] };
 
         var merged = msngr.merge(obj1, obj2);
 
