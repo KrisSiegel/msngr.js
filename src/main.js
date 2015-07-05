@@ -9,6 +9,7 @@ var msngr = msngr || (function () {
 
 	// Defaults for some internal functions
 	var internal = {
+		globalOptions: { },
 		warnings: true
 	};
 
@@ -17,7 +18,7 @@ var msngr = msngr || (function () {
 		return internal.objects.message(topic, category, dataType);
 	};
 
-	external.version = "2.0.1";
+	external.version = "2.1.0";
 
 	// Merge two inputs into one
 	var twoMerge = function (input1, input2) {
@@ -128,6 +129,15 @@ var msngr = msngr || (function () {
 		}
 
 		return result;
+	};
+
+	// An external options interface for global options settings
+	external.options = function (key, value) {
+		if (!external.exist(key)) {
+            throw internal.InvalidParametersException("key");
+        }
+
+		internal.globalOptions[key] = value;
 	};
 
 	// Create a debug property to allow explicit exposure to the internal object structure.

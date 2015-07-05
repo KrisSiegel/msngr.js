@@ -201,4 +201,35 @@ describe("./main.js", function () {
         msngr.warnings = false;
         expect(msngr.warnings).to.equal(false);
     });
+
+    it("msngr.options(key, value) - allows saving of global options", function () {
+        msngr.debug = true;
+        msngr.options("myoptions", true);
+        msngr.options("anotheroption", { something: true });
+
+        expect(msngr.internal.globalOptions["myoptions"]).to.equal(true);
+        expect(msngr.internal.globalOptions["anotheroption"].something).to.equal(true);
+
+        delete msngr.internal.options["myoptions"];
+        delete msngr.internal.globalOptions["myoptions"];
+        delete msngr.internal.options["anotheroption"];
+        delete msngr.internal.globalOptions["anotheroption"];
+        msngr.debug = false;
+    });
+
+    it("msngr.options(key, value) - global options are copied and sent to any options", function (done) {
+        msngr.debug = true;
+
+        msngr.options("my-opts", { chicken: "tasty" });
+
+        msngr.internal.options["my-opts"] = function (message, payload, options, async) {
+            expect(options["my-opts"].chicken).to.equal("tasty");
+            delete msngr.internal.options["my-opts"];
+            delete msngr.internal.globalOptions["my-opts"];
+            msngr.debug = false;
+            done();
+        };
+
+        msngr("MyTopic").emit("test");
+    });
 });

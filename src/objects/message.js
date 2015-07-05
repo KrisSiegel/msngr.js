@@ -118,7 +118,8 @@ msngr.extend((function (external, internal) {
             }
         }
 
-        var options = { };
+        // Copy global options
+        var options = external.merge({ }, internal.globalOptions);
 
         var counts = {
             emits: 0,

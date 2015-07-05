@@ -232,6 +232,13 @@ var elms = msngr.querySelectorAllWithEq("div:eq(1) > input");
 ## Miscellaneous utilities
 There are multiple utility methods included in msngr. Some are used internally and some are exposed for external use by others.
 
+### ```msngr.options(key, value)```
+Sets a global set of options that apply to all messages created after globals have been set.
+
+```key (required)``` - The key pertaining to the option desired to be globally configured.
+
+```value (optional)``` - The optional configuration values that come along with globally setting options.
+
 ### ```msngr.extend(obj, target)```
 Extends either the msngr object or a specified target object.
 
