@@ -9,6 +9,7 @@ var msngr = msngr || (function () {
 
 	// Defaults for some internal functions
 	var internal = {
+		globalOptions: { },
 		warnings: true
 	};
 
@@ -128,6 +129,19 @@ var msngr = msngr || (function () {
 		}
 
 		return result;
+	};
+
+	// An external options interface for global options settings
+	external.options = function (key, value) {
+		if (!external.exist(key)) {
+            throw internal.InvalidParametersException("key");
+        }
+
+		if (!external.exist(value)) {
+            throw internal.InvalidParametersException("value");
+        }
+
+		internal.globalOptions[key] = value;
 	};
 
 	// Create a debug property to allow explicit exposure to the internal object structure.

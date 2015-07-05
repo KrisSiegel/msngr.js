@@ -51,6 +51,36 @@ describe("./options/dom.js", function () {
         msngr("TestTopic").option("dom", ["input"]).emit();
     });
 
+    it("dom option - gathers multiple values with a selector that matches multiple elements with no IDs or names using global options", function (done) {
+        var input1 = document.createElement("input");
+        input1.value = "Kris";
+
+        var input2 = document.createElement("input");
+        input2.value = "AnEmail@Address.here";
+
+        document.body.appendChild(input1);
+        document.body.appendChild(input2);
+
+        msngr.options("dom", ["input"]);
+
+        msngr("TestTopic").on(function (payload) {
+            expect(payload).to.exist;
+            expect(payload["input0"]).to.exist;
+            expect(payload["input0"]).to.equal("Kris");
+            expect(payload["input1"]).to.exist;
+            expect(payload["input1"]).to.equal("AnEmail@Address.here");
+
+            document.body.removeChild(input1);
+            document.body.removeChild(input2);
+
+            delete msngr.internal.globalOptions["dom"];
+
+            done();
+        });
+
+        msngr("TestTopic").emit();
+    });
+
     it("dom action - gathers multiple values with a selector that matches multiple elements", function (done) {
         var input1 = document.createElement("input");
         input1.setAttribute("name", "Name");
