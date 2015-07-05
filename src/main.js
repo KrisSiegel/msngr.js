@@ -18,7 +18,7 @@ var msngr = msngr || (function () {
 		return internal.objects.message(topic, category, dataType);
 	};
 
-	external.version = "2.0.1";
+	external.version = "2.1.0";
 
 	// Merge two inputs into one
 	var twoMerge = function (input1, input2) {
@@ -135,10 +135,6 @@ var msngr = msngr || (function () {
 	external.options = function (key, value) {
 		if (!external.exist(key)) {
             throw internal.InvalidParametersException("key");
-        }
-
-		if (!external.exist(value)) {
-            throw internal.InvalidParametersException("value");
         }
 
 		internal.globalOptions[key] = value;
