@@ -89,7 +89,7 @@ msngr.extend((function (external, internal) {
         }
     };
 
-    internal.objects.message = function (topic, category, dataType) {
+    internal.objects.message = function (topic, category, subcategory) {
         var msg = undefined;
         if (!external.exist(topic)) {
             throw internal.InvalidParametersException("msngr");
@@ -113,8 +113,8 @@ msngr.extend((function (external, internal) {
                 msg.category = category;
             }
 
-            if (!external.isEmptyString(dataType)) {
-                msg.dataType = dataType;
+            if (!external.isEmptyString(subcategory)) {
+                msg.subcategory = subcategory;
             }
         }
 

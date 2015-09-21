@@ -1,19 +1,19 @@
 #msngr.js API
 This document outlines the exposed msngr.js API. It does not cover anything internal that isn't expected to be used by typical developers.
 
-## ```msngr(topic, category, dataType)```
+## ```msngr(topic, category, subcategory)```
 The main msngr method takes in 3 strings to generate a message object from which all other actions are derived.
 
 ```topic (required)``` - a string to signify the topic of the message.
 
 ```category (optional)``` - a string to signify the category of the message.
 
-```dataType (optional)``` - a string to signify the dataType of the message.
+```subcategory (optional)``` - a string to signify the subcategory of the message.
 
 ```returns``` a msngr object
 
 ```javascript
-var msg = msngr("MyTopic", "MyCategory", "MyDataType");
+var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
 ```
 
 ## msngr object

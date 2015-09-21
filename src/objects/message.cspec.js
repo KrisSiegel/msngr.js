@@ -49,10 +49,10 @@ describe("./objects/message.js", function () {
         div.dispatchEvent(testEvent);
     });
 
-    it("msngr(topic, category, dataType).bind(element, event) - Binds and sends with a topic, category and dataType", function (done) {
+    it("msngr(topic, category, subcategory).bind(element, event) - Binds and sends with a topic, category and subcategory", function (done) {
         var div = document.createElement("div");
 
-        msngr("MyTopic", "MyCategory", "MyDataType").bind(div, "testEvent").on(function (payload) {
+        msngr("MyTopic", "MyCategory", "MySubCategory").bind(div, "testEvent").on(function (payload) {
             done();
         });
 

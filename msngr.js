@@ -14,11 +14,11 @@ var msngr = msngr || (function () {
 	};
 
 	// The main method for msngr uses the message object
-	var external = function (topic, category, dataType) {
-		return internal.objects.message(topic, category, dataType);
+	var external = function (topic, category, subcategory) {
+		return internal.objects.message(topic, category, subcategory);
 	};
 
-	external.version = "2.1.1";
+	external.version = "2.2.0";
 
 	// Merge two inputs into one
 	var twoMerge = function (input1, input2) {
@@ -557,8 +557,8 @@ msngr.extend((function (external, internal) {
         var direct_index = {
             topic_to_id: { },
             topic_cat_to_id: { },
-            topic_type_to_id: { },
-            topic_cat_type_to_id: { }
+            topic_scat_to_id: { },
+            topic_cat_scat_to_id: { }
         };
 
         // Message index count
@@ -587,32 +587,32 @@ msngr.extend((function (external, internal) {
                         direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
                     }
 
-                    if (external.exist(message.dataType)) {
-                        if (direct_index.topic_type_to_id[message.topic] === undefined) {
-                            direct_index.topic_type_to_id[message.topic] = { };
+                    if (external.exist(message.subcategory)) {
+                        if (direct_index.topic_scat_to_id[message.topic] === undefined) {
+                            direct_index.topic_scat_to_id[message.topic] = { };
                         }
 
-                        if (direct_index.topic_type_to_id[message.topic][message.dataType] === undefined) {
-                            direct_index.topic_type_to_id[message.topic][message.dataType] = [];
+                        if (direct_index.topic_scat_to_id[message.topic][message.subcategory] === undefined) {
+                            direct_index.topic_scat_to_id[message.topic][message.subcategory] = [];
                         }
 
-                        direct_index.topic_type_to_id[message.topic][message.dataType].push(uuid);
+                        direct_index.topic_scat_to_id[message.topic][message.subcategory].push(uuid);
                     }
 
-                    if (external.exist(message.category) && external.exist(message.dataType)) {
-                        if (direct_index.topic_cat_type_to_id[message.topic] === undefined) {
-                            direct_index.topic_cat_type_to_id[message.topic] = { };
+                    if (external.exist(message.category) && external.exist(message.subcategory)) {
+                        if (direct_index.topic_cat_scat_to_id[message.topic] === undefined) {
+                            direct_index.topic_cat_scat_to_id[message.topic] = { };
                         }
 
-                        if (direct_index.topic_cat_type_to_id[message.topic][message.category] === undefined) {
-                            direct_index.topic_cat_type_to_id[message.topic][message.category] = { };
+                        if (direct_index.topic_cat_scat_to_id[message.topic][message.category] === undefined) {
+                            direct_index.topic_cat_scat_to_id[message.topic][message.category] = { };
                         }
 
-                        if (direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] === undefined) {
-                            direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType] = [];
+                        if (direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory] === undefined) {
+                            direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory] = [];
                         }
 
-                        direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType].push(uuid);
+                        direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory].push(uuid);
                     }
 
                     index_count++;
@@ -632,12 +632,12 @@ msngr.extend((function (external, internal) {
                             external.removeFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
                         }
 
-                        if (external.exist(message.dataType)) {
-                            external.removeFromArray(direct_index.topic_type_to_id[message.topic][message.dataType], uuid);
+                        if (external.exist(message.subcategory)) {
+                            external.removeFromArray(direct_index.topic_scat_to_id[message.topic][message.subcategory], uuid);
                         }
 
-                        if (external.exist(message.category) && external.exist(message.dataType)) {
-                            external.removeFromArray(direct_index.topic_cat_type_to_id[message.topic][message.category][message.dataType], uuid);
+                        if (external.exist(message.category) && external.exist(message.subcategory)) {
+                            external.removeFromArray(direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory], uuid);
                         }
                     }
 
@@ -652,23 +652,23 @@ msngr.extend((function (external, internal) {
                 if (external.exist(message)) {
                     if (external.exist(message.topic)) {
                         // Topic Only Results
-                        if (!external.exist(message.category) && !external.exist(message.dataType)) {
+                        if (!external.exist(message.category) && !external.exist(message.subcategory)) {
                             return direct_index.topic_to_id[message.topic] || [];
                         }
 
                         // Topic + Category Results
-                        if (external.exist(message.category) && !external.exist(message.dataType)) {
+                        if (external.exist(message.category) && !external.exist(message.subcategory)) {
                             return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
                         }
 
                         // Topic + Data Type Results
-                        if (external.exist(message.dataType) && !external.exist(message.category)) {
-                            return (direct_index.topic_type_to_id[message.topic] || { })[message.dataType] || [];
+                        if (external.exist(message.subcategory) && !external.exist(message.category)) {
+                            return (direct_index.topic_scat_to_id[message.topic] || { })[message.subcategory] || [];
                         }
 
                         // Topic + Category + Data Type Results
-                        if (external.exist(message.category) && external.exist(message.dataType)) {
-                            return ((direct_index.topic_cat_type_to_id[message.topic] || { })[message.category] || { })[message.dataType] || [];
+                        if (external.exist(message.category) && external.exist(message.subcategory)) {
+                            return ((direct_index.topic_cat_scat_to_id[message.topic] || { })[message.category] || { })[message.subcategory] || [];
                         }
                     }
                 }
@@ -683,8 +683,8 @@ msngr.extend((function (external, internal) {
                 direct_index = {
                     topic_to_id: { },
                     topic_cat_to_id: { },
-                    topic_type_to_id: { },
-                    topic_cat_type_to_id: { }
+                    topic_scat_to_id: { },
+                    topic_cat_scat_to_id: { }
                 };
 
                 index_count = 0;
@@ -797,7 +797,7 @@ msngr.extend((function (external, internal) {
         }
     };
 
-    internal.objects.message = function (topic, category, dataType) {
+    internal.objects.message = function (topic, category, subcategory) {
         var msg = undefined;
         if (!external.exist(topic)) {
             throw internal.InvalidParametersException("msngr");
@@ -821,8 +821,8 @@ msngr.extend((function (external, internal) {
                 msg.category = category;
             }
 
-            if (!external.isEmptyString(dataType)) {
-                msg.dataType = dataType;
+            if (!external.isEmptyString(subcategory)) {
+                msg.subcategory = subcategory;
             }
         }
 
@@ -1198,7 +1198,7 @@ msngr.extend((function (external, internal) {
 /*
 	module.exports.js
 
-	If we're running in a node.js / io.js context then export msngr otherwise do nothing.
+	If we're running in a node.js.
 */
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
 	module.exports = msngr;
