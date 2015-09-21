@@ -34,15 +34,15 @@ describe("./objects/message.js", function () {
     });
 
     it("msngr() - handles a message object as expected", function () {
-        var m = msngr({ topic: "MyTopic", category: "MyCategory", dataType: "MyDataType" });
+        var m = msngr({ topic: "MyTopic", category: "MyCategory", subcategory: "MySubCategory" });
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
         expect(m.message.topic).to.equal("MyTopic");
         expect(m.message.category).to.exist;
         expect(m.message.category).to.equal("MyCategory");
-        expect(m.message.dataType).to.exist;
-        expect(m.message.dataType).to.equal("MyDataType");
+        expect(m.message.subcategory).to.exist;
+        expect(m.message.subcategory).to.equal("MySubCategory");
     });
 
     it("msngr() - converts single string into message object with a topic", function () {
@@ -63,16 +63,16 @@ describe("./objects/message.js", function () {
         expect(m.message.category).to.equal("MyCategory");
     });
 
-    it("msngr() - converts three strings into message object with a topic, category and dataType", function () {
-        var m = msngr("MyTopic", "MyCategory", "MyDataType");
+    it("msngr() - converts three strings into message object with a topic, category and subcategory", function () {
+        var m = msngr("MyTopic", "MyCategory", "MySubCategory");
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
         expect(m.message.topic).to.equal("MyTopic");
         expect(m.message.category).to.exist;
         expect(m.message.category).to.equal("MyCategory");
-        expect(m.message.dataType).to.exist;
-        expect(m.message.dataType).to.equal("MyDataType");
+        expect(m.message.subcategory).to.exist;
+        expect(m.message.subcategory).to.equal("MySubCategory");
     });
 
     it("msngr.internal.handlerCount - returns the correct count of registered messages", function () {
@@ -87,7 +87,7 @@ describe("./objects/message.js", function () {
     it("msngr() - multiple copies do not share message objects", function () {
         var m1 = msngr("MyTopic1");
         var m2 = msngr("MyTopic2", "MyCategory2");
-        var m3 = msngr("MyTopic3", "MyCategory3", "MyDataType3");
+        var m3 = msngr("MyTopic3", "MyCategory3", "MySubCategory3");
         var m4 = msngr("MyTopic4", "MyCategory4");
         var m5 = msngr("MyTopic5");
 
@@ -104,7 +104,7 @@ describe("./objects/message.js", function () {
         expect(m5.message.topic).to.not.equal(m1.message.topic);
 
         expect(m2.message.category).to.not.equal(m3.message.category);
-        expect(m3.message.dataType).to.not.equal(m4.message.dataType);
+        expect(m3.message.subcategory).to.not.equal(m4.message.subcategory);
     });
 
     it("msngr().option() - handles invalid input correctly", function () {
@@ -157,8 +157,8 @@ describe("./objects/message.js", function () {
         msg.emit("AnotherPayload");
     });
 
-    it("msngr().emit() / on() - Successfully emits and handles a topic, category and dataType message", function (done) {
-        var msg = msngr("MyTopic", "MyCategory", "MyDataType");
+    it("msngr().emit() / on() - Successfully emits and handles a topic, category and subcategory message", function (done) {
+        var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
         msg.on(function (payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("WeePayloads!");
@@ -171,7 +171,7 @@ describe("./objects/message.js", function () {
     it("msngr().emit() / on() - Setup three handlers, both receive emit payload", function (done) {
         var handled = 0;
 
-        var msg = msngr("MyTopic", "MyCategory", "MyDataType");
+        var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
         msg.on(function (payload) {
             ++handled;
             expect(payload).to.exist;
@@ -215,7 +215,7 @@ describe("./objects/message.js", function () {
             expect(payload).to.equal("TwoThenOne");
         };
 
-        var msg = msngr("MyTopic", "MyCategory", "MyDataType");
+        var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
 
         msg.on(onHandler1);
         msg.on(onHandler2);
@@ -235,7 +235,7 @@ describe("./objects/message.js", function () {
     it("msngr().emit() / on() - Multiple handlers, callback on emit aggregates results", function (done) {
         var handled = 0;
 
-        var msg = msngr("MyTopic", "MyCategory", "MyDataType");
+        var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
         msg.on(function (payload) {
             ++handled;
             expect(payload).to.exist;

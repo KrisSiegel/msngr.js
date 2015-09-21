@@ -48,12 +48,12 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
     });
 
-    it("msngr.internal.store.index(message) - indexes a message with a topic and dataType", function () {
+    it("msngr.internal.store.index(message) - indexes a message with a topic and subcategory", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
             topic: "TestTopic1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         expect(memory.count).to.equal(0);
@@ -62,13 +62,13 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
     });
 
-    it("msngr.internal.store.index(message) - indexes a message with a topic, category and dataType", function () {
+    it("msngr.internal.store.index(message) - indexes a message with a topic, category and subcategory", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         expect(memory.count).to.equal(0);
@@ -96,7 +96,7 @@ describe("./objects/memory.js", function () {
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         var id = memory.index(message);
@@ -168,82 +168,82 @@ describe("./objects/memory.js", function () {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets one result for a query on a topic, category and dataType", function () {
+    it("msngr.internal.store.query(message) - Correctly gets one result for a query on a topic, category and subcategory", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         var id = memory.index(message);
         expect(id).to.exist;
 
-        var result = memory.query({ topic: "TestTopic1", category: "TestCategory1", dataType: "TestDataType1" });
+        var result = memory.query({ topic: "TestTopic1", category: "TestCategory1", subcategory: "TestSubCategory1" });
 
         expect(result).to.exist;
         expect(result.length).to.equal(1);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and dataType that doesn't exist", function () {
+    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory that doesn't exist", function () {
         var memory = msngr.internal.objects.memory();
 
-        var result = memory.query({ topic: "TestTopic1", category: "TestCategory1", dataType: "TestDataType1" });
+        var result = memory.query({ topic: "TestTopic1", category: "TestCategory1", subcategory: "TestSubCategory1" });
 
         expect(result).to.exist;
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and dataType where category doesn't exist", function () {
+    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where category doesn't exist", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         var id = memory.index(message);
         expect(id).to.exist;
 
-        var result = memory.query({ topic: "TestTopic1", category: "TestCategory2", dataType: "TestDataType1" });
+        var result = memory.query({ topic: "TestTopic1", category: "TestCategory2", subcategory: "TestSubCategory1" });
 
         expect(result).to.exist;
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and dataType where dataType doesn't exist", function () {
+    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where subcategory doesn't exist", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         var id = memory.index(message);
         expect(id).to.exist;
 
-        var result = memory.query({ topic: "TestTopic1", category: "TestCategory1", dataType: "TestDataType2" });
+        var result = memory.query({ topic: "TestTopic1", category: "TestCategory1", subcategory: "TestSubCategory2" });
 
         expect(result).to.exist;
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and dataType where topic doesn't exist", function () {
+    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where topic doesn't exist", function () {
         var memory = msngr.internal.objects.memory();
 
         var message = {
             topic: "TestTopic1",
             category: "TestCategory1",
-            dataType: "TestDataType1"
+            subcategory: "TestSubCategory1"
         };
 
         var id = memory.index(message);
         expect(id).to.exist;
 
-        var result = memory.query({ topic: "TestTopic2", category: "TestCategory1", dataType: "TestDataType1" });
+        var result = memory.query({ topic: "TestTopic2", category: "TestCategory1", subcategory: "TestSubCategory1" });
 
         expect(result).to.exist;
         expect(result.length).to.equal(0);
@@ -255,13 +255,13 @@ describe("./objects/memory.js", function () {
         var ids = [];
         ids.push(memory.index({ topic: "chicken" }));
         ids.push(memory.index({ topic: "table", category: "50" }));
-        ids.push(memory.index({ topic: "stairs", category: "10", dataType: "food" }));
-        ids.push(memory.index({ topic: "whatevea", dataType: "punk" }));
+        ids.push(memory.index({ topic: "stairs", category: "10", subcategory: "food" }));
+        ids.push(memory.index({ topic: "whatevea", subcategory: "punk" }));
 
         expect(memory.count).to.equal(4);
         expect(memory.clear()).to.equal(true);
         expect(memory.query({ topic: "chicken" }).length).to.equal(0);
-        expect(memory.query({ topic: "stairs", category: "10", dataType: "food" }).length).to.equal(0);
+        expect(memory.query({ topic: "stairs", category: "10", subcategory: "food" }).length).to.equal(0);
     });
 
     it("msngr.internal.store.count - Returns a correct count", function () {
@@ -272,11 +272,11 @@ describe("./objects/memory.js", function () {
         expect(memory.count).to.equal(1);
         memory.index({ topic: "table", category: "50" });
         expect(memory.count).to.equal(2);
-        memory.index({ topic: "stairs", category: "10", dataType: "food" });
+        memory.index({ topic: "stairs", category: "10", subcategory: "food" });
         expect(memory.count).to.equal(3);
         expect(memory.clear()).to.equal(true);
         expect(memory.count).to.equal(0);
-        memory.index({ topic: "whatevea", dataType: "punk" });
+        memory.index({ topic: "whatevea", subcategory: "punk" });
         expect(memory.count).to.equal(1);
 
     });

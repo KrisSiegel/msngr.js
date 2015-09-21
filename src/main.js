@@ -14,11 +14,11 @@ var msngr = msngr || (function () {
 	};
 
 	// The main method for msngr uses the message object
-	var external = function (topic, category, dataType) {
-		return internal.objects.message(topic, category, dataType);
+	var external = function (topic, category, subcategory) {
+		return internal.objects.message(topic, category, subcategory);
 	};
 
-	external.version = "2.1.1";
+	external.version = "2.2.0";
 
 	// Merge two inputs into one
 	var twoMerge = function (input1, input2) {

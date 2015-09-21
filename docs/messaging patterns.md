@@ -20,7 +20,7 @@ msngr("Preferences", "Save", "application/json")
     });
 ```
 
-In the example above we're saying when we receive a message with a topic of "Preferences", a category of "Save" and a dataType of "application/json" that we should act on it and "save" them (or in this case dump to console). The restful layer sends the preferences and once the on is finished executing it will execute the emit's callback letting it know it's done.
+In the example above we're saying when we receive a message with a topic of "Preferences", a category of "Save" and a subcategory of "application/json" that we should act on it and "save" them (or in this case dump to console). The restful layer sends the preferences and once the on is finished executing it will execute the emit's callback letting it know it's done.
 
 So a simple way of separating things. One can envision creating multiple versions of 'BusinessLogic.js' where one saves to a local storage mechanism (memory perhaps?), another to MySQL, etc. This allows you to swap out backends depending on environment.
 
