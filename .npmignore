@@ -1,0 +1,12 @@
+# msngr.js specific
+specRunner.html
+specRunner.min.html
+crossWindowVerifier.html
+crossWindowVerifier.min.html
+.travis.yml
+bower.json
+Gruntfile.js
+README.cspec.js
+docs
+src
+node_modules
