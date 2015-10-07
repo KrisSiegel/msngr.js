@@ -10,20 +10,24 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../msngr");
 }
 
-describe("./main.js", function () {
+describe("./main.js", function() {
     "use strict";
 
-    it("msngr - expect object to exist", function () {
+    it("msngr - expect object to exist", function() {
         expect(msngr).to.exist;
     });
 
-    it("msngr.merge(input1, input2) - expect method to exist", function () {
+    it("msngr.merge(input1, input2) - expect method to exist", function() {
         expect(msngr.merge).to.exist;
     });
 
-    it("msngr.merge(input1, input2) - merges arrays from input1 and input2 without duplicates", function () {
-        var obj1 = { test: [1, 2, 3] };
-        var obj2 = { test: [2, 3, 4] };
+    it("msngr.merge(input1, input2) - merges arrays from input1 and input2 without duplicates", function() {
+        var obj1 = {
+            test: [1, 2, 3]
+        };
+        var obj2 = {
+            test: [2, 3, 4]
+        };
 
         var merged = msngr.merge(obj1, obj2);
 
@@ -31,9 +35,13 @@ describe("./main.js", function () {
         expect(merged.test.length).to.equal(4);
     });
 
-    it("msngr.merge(input1, input2) - expect properties to merge from input1 and input2", function () {
-        var obj1 = { prop: "something" };
-        var obj2 = { some: "thing" };
+    it("msngr.merge(input1, input2) - expect properties to merge from input1 and input2", function() {
+        var obj1 = {
+            prop: "something"
+        };
+        var obj2 = {
+            some: "thing"
+        };
 
         var merged = msngr.merge(obj1, obj2);
 
@@ -42,13 +50,15 @@ describe("./main.js", function () {
         expect(merged.prop).to.equal("something");
     });
 
-    it("msngr.merge(input1, input2) - expect deeply nested methods to merge from input1 and input2", function () {
+    it("msngr.merge(input1, input2) - expect deeply nested methods to merge from input1 and input2", function() {
         var obj1 = {
             this: {
                 is: {
                     a: {
                         test: {
-                            yup: function () { return "yup!"; }
+                            yup: function() {
+                                return "yup!";
+                            }
                         }
                     }
                 }
@@ -56,7 +66,9 @@ describe("./main.js", function () {
         };
 
         var obj2 = {
-            whatever: function () { return "whatever"; }
+            whatever: function() {
+                return "whatever";
+            }
         };
 
         var merged = msngr.merge(obj1, obj2);
@@ -72,17 +84,21 @@ describe("./main.js", function () {
         expect(merged.this.is.a.test.yup()).to.equal("yup!");
     });
 
-    it("msngr.merge(input1, input2) - merges two methods together", function () {
-        var func1 = function () { return "test" };
-        var func2 = function () { return "again" };
+    it("msngr.merge(input1, input2) - merges two methods together", function() {
+        var func1 = function() {
+            return "test"
+        };
+        var func2 = function() {
+            return "again"
+        };
 
         var merged = msngr.merge(func1, func2);
         expect(merged).to.exist;
         expect(merged()).to.equal("testagain");
     });
 
-    it("msngr.merge(input1, input2) - merges a method with properties", function () {
-        var myFunc = function () {
+    it("msngr.merge(input1, input2) - merges a method with properties", function() {
+        var myFunc = function() {
             return 15;
         };
 
@@ -101,15 +117,15 @@ describe("./main.js", function () {
         expect(merged()).to.equal(15);
     });
 
-    it("msngr.merge(input1, input2) - merging undefined value is simply ignored", function () {
-        var myTest = { };
+    it("msngr.merge(input1, input2) - merging undefined value is simply ignored", function() {
+        var myTest = {};
         var merged = msngr.merge(undefined, myTest);
 
         expect(merged).to.exist;
         expect(Object.keys(merged).length).to.equal(0);
     });
 
-    it("msngr.merge(input1, input2) - Property extends a string with another string", function () {
+    it("msngr.merge(input1, input2) - Property extends a string with another string", function() {
         var t = "something";
         var merged = msngr.merge("whatever", t);
         expect(merged).to.exist;
@@ -117,9 +133,13 @@ describe("./main.js", function () {
         expect(merged).to.equal("whateversomething");
     });
 
-    it("msngr.merge(input1, input2) - Overwrites properly", function () {
-        var first = { val1: "stuff" };
-        var second = { val1: 17 };
+    it("msngr.merge(input1, input2) - Overwrites properly", function() {
+        var first = {
+            val1: "stuff"
+        };
+        var second = {
+            val1: 17
+        };
 
         var merged = msngr.merge(first, second);
         expect(merged).to.exist;
@@ -127,15 +147,31 @@ describe("./main.js", function () {
         expect(merged.val1).to.equal(17);
     });
 
-    it("msngr.merge(input1, input2, input3, input4, input5, input6, input7, input8) - Overwrites properly with multiple parameters", function () {
-        var first = { val1: "stuff" };
-        var second = { val1: 17 };
-        var third = { val1: "chicken nuggets" };
-        var fourth = { val1: function () { } };
-        var fifth = { val1: null };
-        var sixth = { val1: 1 };
-        var seventh = { val1: [0, 1, 2] };
-        var eighth = { val1: "hockey" };
+    it("msngr.merge(input1, input2, input3, input4, input5, input6, input7, input8) - Overwrites properly with multiple parameters", function() {
+        var first = {
+            val1: "stuff"
+        };
+        var second = {
+            val1: 17
+        };
+        var third = {
+            val1: "chicken nuggets"
+        };
+        var fourth = {
+            val1: function() {}
+        };
+        var fifth = {
+            val1: null
+        };
+        var sixth = {
+            val1: 1
+        };
+        var seventh = {
+            val1: [0, 1, 2]
+        };
+        var eighth = {
+            val1: "hockey"
+        };
 
         var merged1 = msngr.merge(first, second, third);
         var merged2 = msngr.merge(first, second, third, fourth);
@@ -166,14 +202,14 @@ describe("./main.js", function () {
         expect(merged6.val1).to.equal("hockey");
     });
 
-    it("msngr.extend(obj, target) - expect method to exist", function () {
+    it("msngr.extend(obj, target) - expect method to exist", function() {
         expect(msngr.extend).to.exist;
     });
 
-    it("msngr.extend(obj, target) - extend msngr", function () {
-        msngr.extend((function (external, internal) {
+    it("msngr.extend(obj, target) - extend msngr", function() {
+        msngr.extend((function(external, internal) {
             return {
-                sayHello: function () {
+                sayHello: function() {
                     return "hello";
                 }
             };
@@ -185,7 +221,7 @@ describe("./main.js", function () {
         delete msngr.sayHello;
     });
 
-    it("msngr.debug - property setting exports internal object for testing and debugging", function () {
+    it("msngr.debug - property setting exports internal object for testing and debugging", function() {
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;
         expect(msngr.debug).to.equal(false);
@@ -196,16 +232,18 @@ describe("./main.js", function () {
         expect(msngr.internal).to.not.exist;
     });
 
-    it("msngr.warnings - can set the property to true or false", function () {
+    it("msngr.warnings - can set the property to true or false", function() {
         expect(msngr.warnings).to.equal(true);
         msngr.warnings = false;
         expect(msngr.warnings).to.equal(false);
     });
 
-    it("msngr.options(key, value) - allows saving of global options", function () {
+    it("msngr.options(key, value) - allows saving of global options", function() {
         msngr.debug = true;
         msngr.options("myoptions", true);
-        msngr.options("anotheroption", { something: true });
+        msngr.options("anotheroption", {
+            something: true
+        });
 
         expect(msngr.internal.globalOptions["myoptions"]).to.equal(true);
         expect(msngr.internal.globalOptions["anotheroption"].something).to.equal(true);
@@ -217,12 +255,14 @@ describe("./main.js", function () {
         msngr.debug = false;
     });
 
-    it("msngr.options(key, value) - global options are copied and sent to any options", function (done) {
+    it("msngr.options(key, value) - global options are copied and sent to any options", function(done) {
         msngr.debug = true;
 
-        msngr.options("my-opts", { chicken: "tasty" });
+        msngr.options("my-opts", {
+            chicken: "tasty"
+        });
 
-        msngr.internal.options["my-opts"] = function (message, payload, options, async) {
+        msngr.internal.options["my-opts"] = function(message, payload, options, async) {
             expect(options["my-opts"].chicken).to.equal("tasty");
             delete msngr.internal.options["my-opts"];
             delete msngr.internal.globalOptions["my-opts"];

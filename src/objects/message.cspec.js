@@ -10,25 +10,25 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./objects/message.js", function () {
+describe("./objects/message.js", function() {
     "use strict";
 
-    before(function () {
+    before(function() {
         msngr.debug = true;
     });
 
-    beforeEach(function () {
+    beforeEach(function() {
         msngr.internal.reset();
     });
 
-    after(function () {
+    after(function() {
         msngr.debug = false;
     });
 
-    it("msngr(topic).bind(element, event) - Binds and sends with just a topic", function (done) {
+    it("msngr(topic).bind(element, event) - Binds and sends with just a topic", function(done) {
         var div = document.createElement("div");
 
-        msngr("MyTopic").bind(div, "testEvent").on(function (payload) {
+        msngr("MyTopic").bind(div, "testEvent").on(function(payload) {
             done();
         });
 
@@ -37,10 +37,10 @@ describe("./objects/message.js", function () {
         div.dispatchEvent(testEvent);
     });
 
-    it("msngr(topic, category).bind(element, event) - Binds and sends with a topic and category", function (done) {
+    it("msngr(topic, category).bind(element, event) - Binds and sends with a topic and category", function(done) {
         var div = document.createElement("div");
 
-        msngr("MyTopic", "MyCategory").bind(div, "testEvent").on(function (payload) {
+        msngr("MyTopic", "MyCategory").bind(div, "testEvent").on(function(payload) {
             done();
         });
 
@@ -49,10 +49,10 @@ describe("./objects/message.js", function () {
         div.dispatchEvent(testEvent);
     });
 
-    it("msngr(topic, category, subcategory).bind(element, event) - Binds and sends with a topic, category and subcategory", function (done) {
+    it("msngr(topic, category, subcategory).bind(element, event) - Binds and sends with a topic, category and subcategory", function(done) {
         var div = document.createElement("div");
 
-        msngr("MyTopic", "MyCategory", "MySubCategory").bind(div, "testEvent").on(function (payload) {
+        msngr("MyTopic", "MyCategory", "MySubCategory").bind(div, "testEvent").on(function(payload) {
             done();
         });
 
@@ -61,11 +61,11 @@ describe("./objects/message.js", function () {
         div.dispatchEvent(testEvent);
     });
 
-    it("msngr(topic, category).bind(element, event) - Bind then remove doesn't emit message", function (done) {
+    it("msngr(topic, category).bind(element, event) - Bind then remove doesn't emit message", function(done) {
         var div = document.createElement("div");
         var flag = false;
 
-        msngr("MyTopic", "MyCategory").bind(div, "testEvent").on(function (payload) {
+        msngr("MyTopic", "MyCategory").bind(div, "testEvent").on(function(payload) {
             flag = true;
             expect(flag).to.equal(false);
             done();
@@ -78,21 +78,21 @@ describe("./objects/message.js", function () {
 
         div.dispatchEvent(testEvent);
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(flag).to.equal(false);
             done();
         }, 250);
     });
 
-    it("msngr(topic, category).unbind(element, event) - Unbind and ensure the message originally bound does not get sent", function (done) {
+    it("msngr(topic, category).unbind(element, event) - Unbind and ensure the message originally bound does not get sent", function(done) {
         var div = document.createElement("div");
         var flag = false;
 
-        msngr("MyTopic1", "MyCategory1").bind(div, "testEvent1").on(function () {
+        msngr("MyTopic1", "MyCategory1").bind(div, "testEvent1").on(function() {
             flag = true;
         }).unbind(div, "testEvent1");
 
-        msngr("MyTopic2", "MyCategory2").bind(div, "testEvent2").on(function () {
+        msngr("MyTopic2", "MyCategory2").bind(div, "testEvent2").on(function() {
             flag = true;
         }).unbind(div, "testEvent2");
 
@@ -105,13 +105,13 @@ describe("./objects/message.js", function () {
         div.dispatchEvent(testEvent1);
         div.dispatchEvent(testEvent2);
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(flag).to.equal(false);
             done();
         }, 250);
     });
 
-    it("msngr.internal.boundCount - Accurately tracks the bind count", function () {
+    it("msngr.internal.boundCount - Accurately tracks the bind count", function() {
         var div = document.createElement("div");
 
         var start = msngr.internal.boundCount;

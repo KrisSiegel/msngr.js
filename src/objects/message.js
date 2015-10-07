@@ -3,53 +3,53 @@
 
     The primary object of msngr; handles all message sending, receiving and binding.
 */
-msngr.extend((function (external, internal) {
+msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.objects = internal.objects || { };
+    internal.objects = internal.objects || {};
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
 
-    var handlers = { };
+    var handlers = {};
     var handlerCount = 0;
 
-    var payloads = { };
+    var payloads = {};
     var payloadCount = 0;
 
-    var boundDOMPaths = { };
+    var boundDOMPaths = {};
     var boundCount = 0;
 
     Object.defineProperty(internal, "handlerCount", {
-        get: function () {
+        get: function() {
             return handlerCount;
         }
     });
 
     Object.defineProperty(internal, "boundCount", {
-        get: function () {
+        get: function() {
             return boundCount;
         }
     });
 
     Object.defineProperty(internal, "payloadCount", {
-        get: function () {
+        get: function() {
             return payloadCount;
         }
     });
 
-    internal.reset = function () {
-        handlers = { };
-        boundDOMPaths = { };
+    internal.reset = function() {
+        handlers = {};
+        boundDOMPaths = {};
         handlerCount = 0;
         boundCount = 0;
         messageIndex.clear();
         payloadIndex.clear();
-        payloads = { };
+        payloads = {};
         payloadCount = 0;
     };
 
-    internal.processOpts = function (opts, message, payload, callback) {
+    internal.processOpts = function(opts, message, payload, callback) {
         var optProcessors = [];
         for (var key in opts) {
             if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
@@ -65,7 +65,7 @@ msngr.extend((function (external, internal) {
         // Long circuit to do stuff (du'h)
         var execs = internal.objects.executer(optProcessors, [message, payload, opts], this);
 
-        execs.parallel(function (results) {
+        execs.parallel(function(results) {
             var result = payload;
             if (external.exist(results) && results.length > 0) {
                 for (var i = 0; i < results.length; ++i) {
@@ -78,7 +78,7 @@ msngr.extend((function (external, internal) {
         });
     };
 
-    internal.domListener = function (event) {
+    internal.domListener = function(event) {
         var node = this;
         var path = external.getDomPath(node);
 
@@ -89,7 +89,7 @@ msngr.extend((function (external, internal) {
         }
     };
 
-    internal.objects.message = function (topic, category, subcategory) {
+    internal.objects.message = function(topic, category, subcategory) {
         var msg = undefined;
         if (!external.exist(topic)) {
             throw internal.InvalidParametersException("msngr");
@@ -106,7 +106,7 @@ msngr.extend((function (external, internal) {
         if (external.isObject(topic)) {
             msg = topic;
         } else {
-            msg = { };
+            msg = {};
             msg.topic = topic;
 
             if (!external.isEmptyString(category)) {
@@ -119,7 +119,7 @@ msngr.extend((function (external, internal) {
         }
 
         // Copy global options
-        var options = external.merge({ }, internal.globalOptions);
+        var options = external.merge({}, internal.globalOptions);
 
         var counts = {
             emits: 0,
@@ -130,7 +130,7 @@ msngr.extend((function (external, internal) {
             binds: 0
         };
 
-        var explicitEmit = function (payload, uuids, callback) {
+        var explicitEmit = function(payload, uuids, callback) {
             var uuids = uuids || messageIndex.query(msg) || [];
             var methods = [];
             var toDrop = [];
@@ -143,7 +143,7 @@ msngr.extend((function (external, internal) {
                 }
             }
 
-            internal.processOpts(options, msg, payload, function (result) {
+            internal.processOpts(options, msg, payload, function(result) {
                 var execs = internal.objects.executer(methods, result, (msg.context || this));
 
                 for (var i = 0; i < toDrop.length; ++i) {
@@ -155,7 +155,7 @@ msngr.extend((function (external, internal) {
             });
         };
 
-        var fetchPersisted = function () {
+        var fetchPersisted = function() {
             var uuids = payloadIndex.query(msg);
 
             var fpay;
@@ -175,8 +175,8 @@ msngr.extend((function (external, internal) {
             return fpay;
         };
 
-        var msgObj =  {
-            option: function (key, value) {
+        var msgObj = {
+            option: function(key, value) {
                 if (!external.exist(key) || !external.isString(key)) {
                     throw internal.InvalidParametersException("option");
                 }
@@ -186,7 +186,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            emit: function (payload, callback) {
+            emit: function(payload, callback) {
                 if (external.isFunction(payload)) {
                     callback = payload;
                     payload = undefined;
@@ -196,7 +196,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            persist: function (payload) {
+            persist: function(payload) {
                 if (payload === undefined) {
                     payload = null;
                 }
@@ -220,7 +220,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj.emit(fpay);
             },
-            cease: function () {
+            cease: function() {
                 var uuids = payloadIndex.query(msg);
 
                 for (var i = 0; i < uuids.length; ++i) {
@@ -230,7 +230,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            on: function (handler) {
+            on: function(handler) {
                 var uuid = messageIndex.index(msg);
                 handlers[uuid] = {
                     handler: handler,
@@ -247,7 +247,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            once: function (handler) {
+            once: function(handler) {
                 var uuid = messageIndex.index(msg);
                 handlers[uuid] = {
                     handler: handler,
@@ -264,12 +264,12 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            bind: function (element, event) {
+            bind: function(element, event) {
                 var node = external.findElement(element);
                 var path = external.getDomPath(node);
 
                 if (!external.exist(boundDOMPaths[path])) {
-                    boundDOMPaths[path] = { };
+                    boundDOMPaths[path] = {};
                 }
 
                 boundDOMPaths[path][event] = msgObj;
@@ -281,7 +281,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            drop: function (handler) {
+            drop: function(handler) {
                 var uuids = messageIndex.query(msg);
                 if (uuids.length > 0) {
                     for (var i = 0; i < uuids.length; ++i) {
@@ -297,7 +297,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            unbind: function (element, event) {
+            unbind: function(element, event) {
                 var node = external.findElement(element);
                 var path = external.getDomPath(node);
 
@@ -313,7 +313,7 @@ msngr.extend((function (external, internal) {
 
                 return msgObj;
             },
-            dropAll: function () {
+            dropAll: function() {
                 var uuids = messageIndex.query(msg);
                 if (uuids.length > 0) {
                     for (var i = 0; i < uuids.length; ++i) {
@@ -332,16 +332,16 @@ msngr.extend((function (external, internal) {
         // Expose the raw message object itself via a message property.
         // Do not allow modification.
         Object.defineProperty(msgObj, "message", {
-    		get: function () {
-    			return msg;
-    		}
-    	});
+            get: function() {
+                return msg;
+            }
+        });
 
         // If debug mode is enabled then let's expose the internal method hit counts.
         // These counts are only good if a method is called and succeeds.
         if (external.debug === true) {
             Object.defineProperty(msgObj, "counts", {
-                get: function () {
+                get: function() {
                     return counts;
                 }
             });
@@ -351,5 +351,5 @@ msngr.extend((function (external, internal) {
     };
 
     // This is an internal extension; do not export explicitly.
-    return { };
+    return {};
 }));

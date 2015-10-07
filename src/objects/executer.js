@@ -1,8 +1,8 @@
-msngr.extend((function (external, internal) {
+msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.objects = internal.objects || { };
-    internal.objects.executer = function (methods, payload, context) {
+    internal.objects = internal.objects || {};
+    internal.objects.executer = function(methods, payload, context) {
 
         if (external.isFunction(methods)) {
             methods = [methods];
@@ -12,12 +12,12 @@ msngr.extend((function (external, internal) {
             throw internal.InvalidParametersException("executor");
         }
 
-        var exec = function (method, pay, ctx, done) {
-            setTimeout(function () {
+        var exec = function(method, pay, ctx, done) {
+            setTimeout(function() {
                 var async = false;
-                var async = function () {
+                var asyncFunc = function() {
                     async = true;
-                    return function (result) {
+                    return function(result) {
                         done.apply(ctx, [result]);
                     };
                 }
@@ -28,7 +28,7 @@ msngr.extend((function (external, internal) {
                 } else {
                     params = [pay];
                 }
-                params.push(async);
+                params.push(asyncFunc);
 
                 var syncResult = method.apply(ctx || this, params);
                 if (async !== true) {
@@ -38,23 +38,27 @@ msngr.extend((function (external, internal) {
         };
 
         return {
-            execute: function (done) {
+            execute: function(done) {
                 if (methods.length === 0 && external.exist(done)) {
-                    return done.apply(context, [[]]);
+                    return done.apply(context, [
+                        []
+                    ]);
                 }
                 return exec(methods[0], payload, context, done);
             },
-            parallel: function (done) {
+            parallel: function(done) {
                 var results = [];
                 var executed = 0;
 
                 if (methods.length === 0 && external.exist(done)) {
-                    return done.apply(context, [[]]);
+                    return done.apply(context, [
+                        []
+                    ]);
                 }
 
                 for (var i = 0; i < methods.length; ++i) {
-                    (function (m, p, c) {
-                        exec(m, p, c, function (result) {
+                    (function(m, p, c) {
+                        exec(m, p, c, function(result) {
                             if (external.exist(result)) {
                                 results.push(result);
                             }
@@ -72,5 +76,5 @@ msngr.extend((function (external, internal) {
     };
 
     // This is an internal extension; do not export explicitly.
-    return { };
+    return {};
 }));

@@ -10,16 +10,16 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./utils/misc.js", function () {
+describe("./utils/misc.js", function() {
     "use strict";
 
     this.timeout(60000);
 
-    it("msngr.id() - generate 1 id", function () {
+    it("msngr.id() - generate 1 id", function() {
         expect(msngr.id()).to.not.equal(undefined);
     });
 
-    it("msngr.id() - generate 100 unique ids", function () {
+    it("msngr.id() - generate 100 unique ids", function() {
         var ids = [];
         for (var i = 0; i < 100; ++i) {
             var d = msngr.id();
@@ -31,7 +31,7 @@ describe("./utils/misc.js", function () {
         expect(ids.length).to.equal(100);
     });
 
-    it("msngr.id() - generate 10000 unique ids", function () {
+    it("msngr.id() - generate 10000 unique ids", function() {
         var ids = [];
         for (var i = 0; i < 10000; ++i) {
             var d = msngr.id();
@@ -43,11 +43,11 @@ describe("./utils/misc.js", function () {
         expect(ids.length).to.equal(10000);
     });
 
-    it("msngr.now() - generates a value", function () {
+    it("msngr.now() - generates a value", function() {
         expect(msngr.now()).to.exist;
     });
 
-    it("msngr.now(true) - 5 consecutive calls have unique values", function () {
+    it("msngr.now(true) - 5 consecutive calls have unique values", function() {
         var t1 = msngr.now(true);
         var t2 = msngr.now(true);
         var t3 = msngr.now(true);
@@ -66,13 +66,13 @@ describe("./utils/misc.js", function () {
         expect(t5).to.not.equal(t4);
     });
 
-    it("msngr.now('sdfkjsdfl') - Correctly handles invalid input", function () {
+    it("msngr.now('sdfkjsdfl') - Correctly handles invalid input", function() {
         var t = msngr.now("sdfkjsdfl");
 
         expect(t).to.exist;
     });
 
-    it("msngr.removeFromArray - removes a value from an array", function () {
+    it("msngr.removeFromArray - removes a value from an array", function() {
         var arr = ["something", "another", "test", "weee"];
 
         expect(arr[1]).to.equal("another");

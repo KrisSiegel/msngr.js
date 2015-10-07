@@ -1,15 +1,15 @@
-msngr.extend((function (external, internal) {
+msngr.extend((function(external, internal) {
     "use strict";
 
     return {
-        isHtmlElement: function (obj) {
+        isHtmlElement: function(obj) {
             var t = this.getType(obj);
             return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
         },
-        isNodeList: function (obj) {
+        isNodeList: function(obj) {
             return (this.getType(obj) === "[object NodeList]");
         },
-        findElement: function (element, root) {
+        findElement: function(element, root) {
             var elms = external.findElements(element, root);
             if (elms !== undefined && elms.length > 0) {
                 return elms[0];
@@ -17,7 +17,7 @@ msngr.extend((function (external, internal) {
 
             return elms;
         },
-        findElements: function (selector, root) {
+        findElements: function(selector, root) {
             var elm;
             if (external.isHtmlElement(selector)) {
                 elm = selector;
@@ -33,7 +33,7 @@ msngr.extend((function (external, internal) {
 
             return elm;
         },
-        getDomPath: function (element) {
+        getDomPath: function(element) {
             var node = external.isHtmlElement(element) ? element : undefined;
             if (node === undefined) {
                 return undefined;
@@ -45,13 +45,13 @@ msngr.extend((function (external, internal) {
 
             return "#" + node.id;
         },
-        querySelectorAllWithEq: function (selector, root) {
+        querySelectorAllWithEq: function(selector, root) {
             if (selector === undefined) {
                 return null;
             }
             var doc = root || document;
             var queue = [];
-            var process = function (input) {
+            var process = function(input) {
                 if (input.indexOf(":eq(") === -1) {
                     return undefined;
                 }
@@ -89,7 +89,7 @@ msngr.extend((function (external, internal) {
             }
             return [result];
         },
-        querySelectorWithEq: function (selector, root) {
+        querySelectorWithEq: function(selector, root) {
             return external.querySelectorAllWithEq(selector, root)[0];
         }
     };
