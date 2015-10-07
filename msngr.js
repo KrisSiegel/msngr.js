@@ -18,7 +18,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "2.2.2";
+    external.version = "2.3.0";
 
     // Merge two inputs into one
     var twoMerge = function(input1, input2) {
@@ -1077,7 +1077,7 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    var channelName = "__msngr_cross-window";
+    var CHANNEL_NAME = "__msngr_cross-window";
 
     internal.options = internal.options || {};
 
@@ -1087,13 +1087,13 @@ msngr.extend((function(external, internal) {
     }
 
     window.addEventListener("storage", function(event) {
-        if (event.key === channelName) {
+        if (event.key === CHANNEL_NAME) {
             // New message data. Respond!
             var obj;
             try {
                 obj = JSON.parse(event.newValue);
             } catch (ex) {
-                console.log(ex);
+                throw "msngr was unable to parse the data in its storage channel"
             }
 
             if (obj !== undefined && external.isObject(obj)) {
@@ -1113,9 +1113,9 @@ msngr.extend((function(external, internal) {
         };
 
         try {
-            localStorage.setItem(channelName, JSON.stringify(obj));
+            localStorage.setItem(CHANNEL_NAME, JSON.stringify(obj));
         } catch (ex) {
-            console.log(ex);
+            throw "msngr was unable to store data in its storage channel";
         }
 
         return undefined;
@@ -1174,8 +1174,7 @@ msngr.extend((function(external, internal) {
         var elmLength = elements.length;
         var unnamedTags = 0;
         for (var i = 0; i < elmLength; ++i) {
-            var key = undefined,
-                value = undefined;
+            var key = undefined, value = undefined;
             var elm = elements[i];
 
             var nameAttr = elm.getAttribute("name");

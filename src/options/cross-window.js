@@ -7,7 +7,7 @@
 msngr.extend((function(external, internal) {
     "use strict";
 
-    var channelName = "__msngr_cross-window";
+    var CHANNEL_NAME = "__msngr_cross-window";
 
     internal.options = internal.options || {};
 
@@ -17,13 +17,13 @@ msngr.extend((function(external, internal) {
     }
 
     window.addEventListener("storage", function(event) {
-        if (event.key === channelName) {
+        if (event.key === CHANNEL_NAME) {
             // New message data. Respond!
             var obj;
             try {
                 obj = JSON.parse(event.newValue);
             } catch (ex) {
-                console.log(ex);
+                throw "msngr was unable to parse the data in its storage channel"
             }
 
             if (obj !== undefined && external.isObject(obj)) {
@@ -43,9 +43,9 @@ msngr.extend((function(external, internal) {
         };
 
         try {
-            localStorage.setItem(channelName, JSON.stringify(obj));
+            localStorage.setItem(CHANNEL_NAME, JSON.stringify(obj));
         } catch (ex) {
-            console.log(ex);
+            throw "msngr was unable to store data in its storage channel";
         }
 
         return undefined;

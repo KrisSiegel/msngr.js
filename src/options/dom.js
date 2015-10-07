@@ -47,8 +47,7 @@ msngr.extend((function(external, internal) {
         var elmLength = elements.length;
         var unnamedTags = 0;
         for (var i = 0; i < elmLength; ++i) {
-            var key = undefined,
-                value = undefined;
+            var key = undefined, value = undefined;
             var elm = elements[i];
 
             var nameAttr = elm.getAttribute("name");
