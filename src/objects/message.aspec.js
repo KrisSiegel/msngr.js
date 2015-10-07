@@ -10,22 +10,22 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./objects/message.js", function () {
+describe("./objects/message.js", function() {
     "use strict";
 
-    before(function () {
+    before(function() {
         msngr.debug = true;
     });
 
-    beforeEach(function () {
+    beforeEach(function() {
         msngr.internal.reset();
     });
 
-    after(function () {
+    after(function() {
         msngr.debug = false;
     });
 
-    it("msngr() - throws an exception for invalid input", function () {
+    it("msngr() - throws an exception for invalid input", function() {
         expect(msngr.bind([])).to.throw();
         expect(msngr.bind()).to.throw();
         expect(msngr.bind("")).to.throw();
@@ -33,8 +33,12 @@ describe("./objects/message.js", function () {
         expect(msngr.bind((new Date()))).to.throw();
     });
 
-    it("msngr() - handles a message object as expected", function () {
-        var m = msngr({ topic: "MyTopic", category: "MyCategory", subcategory: "MySubCategory" });
+    it("msngr() - handles a message object as expected", function() {
+        var m = msngr({
+            topic: "MyTopic",
+            category: "MyCategory",
+            subcategory: "MySubCategory"
+        });
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
@@ -45,7 +49,7 @@ describe("./objects/message.js", function () {
         expect(m.message.subcategory).to.equal("MySubCategory");
     });
 
-    it("msngr() - converts single string into message object with a topic", function () {
+    it("msngr() - converts single string into message object with a topic", function() {
         var m = msngr("MyTopic");
         expect(m).to.exist;
         expect(m.message).to.exist;
@@ -53,7 +57,7 @@ describe("./objects/message.js", function () {
         expect(m.message.topic).to.equal("MyTopic");
     });
 
-    it("msngr() - converts two strings into message object with a topic and category", function () {
+    it("msngr() - converts two strings into message object with a topic and category", function() {
         var m = msngr("MyTopic", "MyCategory");
         expect(m).to.exist;
         expect(m.message).to.exist;
@@ -63,7 +67,7 @@ describe("./objects/message.js", function () {
         expect(m.message.category).to.equal("MyCategory");
     });
 
-    it("msngr() - converts three strings into message object with a topic, category and subcategory", function () {
+    it("msngr() - converts three strings into message object with a topic, category and subcategory", function() {
         var m = msngr("MyTopic", "MyCategory", "MySubCategory");
         expect(m).to.exist;
         expect(m.message).to.exist;
@@ -75,16 +79,16 @@ describe("./objects/message.js", function () {
         expect(m.message.subcategory).to.equal("MySubCategory");
     });
 
-    it("msngr.internal.handlerCount - returns the correct count of registered messages", function () {
+    it("msngr.internal.handlerCount - returns the correct count of registered messages", function() {
         expect(msngr.internal.handlerCount).to.exist;
         expect(msngr.internal.handlerCount).to.equal(0);
-        msngr("MyTopic").on(function () { });
+        msngr("MyTopic").on(function() {});
         expect(msngr.internal.handlerCount).to.equal(1);
-        msngr("AnotherTopic").on(function () { });
+        msngr("AnotherTopic").on(function() {});
         expect(msngr.internal.handlerCount).to.equal(2);
     });
 
-    it("msngr() - multiple copies do not share message objects", function () {
+    it("msngr() - multiple copies do not share message objects", function() {
         var m1 = msngr("MyTopic1");
         var m2 = msngr("MyTopic2", "MyCategory2");
         var m3 = msngr("MyTopic3", "MyCategory3", "MySubCategory3");
@@ -107,27 +111,29 @@ describe("./objects/message.js", function () {
         expect(m3.message.subcategory).to.not.equal(m4.message.subcategory);
     });
 
-    it("msngr().option() - handles invalid input correctly", function () {
+    it("msngr().option() - handles invalid input correctly", function() {
         expect(msngr("TestTopic").option.bind({})).to.throw;
         expect(msngr("TestTopic").option.bind(7)).to.throw;
         expect(msngr("TestTopic").option.bind()).to.throw;
     });
 
-    it("msngr().option() - custom option processor works as expected", function (done) {
-        msngr.internal.options["testsync"] = function (message, payload, options, async) {
+    it("msngr().option() - custom option processor works as expected", function(done) {
+        msngr.internal.options["testsync"] = function(message, payload, options, async) {
             return "synced!";
         };
 
-        var msg = msngr("MyTopic").option("testsync").on(function (payload) {
+        var msg = msngr("MyTopic").option("testsync").on(function(payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("synced!");
 
-            msngr.internal.options["testasync"] = function (message, payload, options, async) {
+            msngr.internal.options["testasync"] = function(message, payload, options, async) {
                 var d = async();
-                d({ words: "asynced!" });
+                d({
+                    words: "asynced!"
+                });
             };
 
-            var msg2 = msngr("AnotherTopic").option("testasync").on(function (payload2) {
+            var msg2 = msngr("AnotherTopic").option("testasync").on(function(payload2) {
                 expect(payload2).to.exist;
                 expect(payload2.words).to.equal("asynced!");
                 done();
@@ -135,9 +141,9 @@ describe("./objects/message.js", function () {
         }).emit();
     });
 
-    it("msngr().emit() / on() - Successfully emits and handles a topic only message", function (done) {
+    it("msngr().emit() / on() - Successfully emits and handles a topic only message", function(done) {
         var msg = msngr("MyTopic");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("MyPayload");
             done();
@@ -146,9 +152,9 @@ describe("./objects/message.js", function () {
         msg.emit("MyPayload");
     });
 
-    it("msngr().emit() / on() - Successfully emits and handles a topic and category message", function (done) {
+    it("msngr().emit() / on() - Successfully emits and handles a topic and category message", function(done) {
         var msg = msngr("MyTopic", "MyCategory");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("AnotherPayload");
             done();
@@ -157,9 +163,9 @@ describe("./objects/message.js", function () {
         msg.emit("AnotherPayload");
     });
 
-    it("msngr().emit() / on() - Successfully emits and handles a topic, category and subcategory message", function (done) {
+    it("msngr().emit() / on() - Successfully emits and handles a topic, category and subcategory message", function(done) {
         var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("WeePayloads!");
             done();
@@ -168,23 +174,23 @@ describe("./objects/message.js", function () {
         msg.emit("WeePayloads!");
     });
 
-    it("msngr().emit() / on() - Setup three handlers, both receive emit payload", function (done) {
+    it("msngr().emit() / on() - Setup three handlers, both receive emit payload", function(done) {
         var handled = 0;
 
         var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handled;
             expect(payload).to.exist;
             expect(payload).to.equal("ThreeHandlers");
         });
 
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handled;
             expect(payload).to.exist;
             expect(payload).to.equal("ThreeHandlers");
         });
 
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handled;
             expect(payload).to.exist;
             expect(payload).to.equal("ThreeHandlers");
@@ -192,23 +198,23 @@ describe("./objects/message.js", function () {
 
         msg.emit("ThreeHandlers");
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(handled).to.equal(3);
             done();
         }, 250);
     });
 
-    it("msngr().emit() / on() - Setup two handlers, delete one and the other still receives", function (done) {
+    it("msngr().emit() / on() - Setup two handlers, delete one and the other still receives", function(done) {
         var handled = 0;
         var answer = undefined;
-        var onHandler1 = function (payload) {
+        var onHandler1 = function(payload) {
             ++handled;
             answer = 1;
             expect(payload).to.exist;
             expect(payload).to.equal("TwoThenOne");
         };
 
-        var onHandler2 = function (payload) {
+        var onHandler2 = function(payload) {
             ++handled;
             answer = 5;
             expect(payload).to.exist;
@@ -224,7 +230,7 @@ describe("./objects/message.js", function () {
 
         msg.emit("TwoThenOne");
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(handled).to.equal(1);
             expect(answer).to.exist;
             expect(answer).to.equal(5);
@@ -232,18 +238,18 @@ describe("./objects/message.js", function () {
         }, 250);
     });
 
-    it("msngr().emit() / on() - Multiple handlers, callback on emit aggregates results", function (done) {
+    it("msngr().emit() / on() - Multiple handlers, callback on emit aggregates results", function(done) {
         var handled = 0;
 
         var msg = msngr("MyTopic", "MyCategory", "MySubCategory");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handled;
             expect(payload).to.exist;
             expect(payload).to.equal("ThreeHandlers");
             return "testering";
         });
 
-        msg.on(function (payload, async) {
+        msg.on(function(payload, async) {
             var finished = async();
             ++handled;
             expect(payload).to.exist;
@@ -251,14 +257,14 @@ describe("./objects/message.js", function () {
             finished(42);
         });
 
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handled;
             expect(payload).to.exist;
             expect(payload).to.equal("ThreeHandlers");
             return true;
         });
 
-        msg.emit("ThreeHandlers", function (results) {
+        msg.emit("ThreeHandlers", function(results) {
             expect(handled).to.equal(3);
             expect(results).to.exist;
             expect(results.length).to.equal(3);
@@ -269,11 +275,11 @@ describe("./objects/message.js", function () {
         });
     });
 
-    it("msngr().emit() / once() - once is only called one time for handling the same message", function (done) {
+    it("msngr().emit() / once() - once is only called one time for handling the same message", function(done) {
         var handledCount = 0;
 
         var msg = msngr("MyTopicTest");
-        msg.once(function (payload) {
+        msg.once(function(payload) {
             ++handledCount;
         });
 
@@ -282,30 +288,30 @@ describe("./objects/message.js", function () {
         msg.emit();
         msg.emit();
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(handledCount).to.equal(1);
             done();
         }, 250);
     });
 
-    it("msngr().emit(func) - if a method is passed in as first argument then that is used as callback", function (done) {
+    it("msngr().emit(func) - if a method is passed in as first argument then that is used as callback", function(done) {
         var msg = msngr("TestTopical");
         var hitOn = false;
-        msg.on(function () {
+        msg.on(function() {
             hitOn = true;
         });
-        msg.emit(function () {
+        msg.emit(function() {
             expect(hitOn).to.equal(true);
             done();
         });
     });
 
-    it("msngr().persist().on() - persist stores and re-emits data with new on registrations", function (done) {
+    it("msngr().persist().on() - persist stores and re-emits data with new on registrations", function(done) {
         var handledCount = 0;
 
         var msg = msngr("AnotherTopic");
         msg.persist("PayloadTwo");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handledCount;
             expect(payload).to.exist;
             expect(payload).to.equal("PayloadTwo");
@@ -315,11 +321,11 @@ describe("./objects/message.js", function () {
         msg.cease();
     });
 
-    it("msngr().on().persist() - registers handler then receives persisted payload", function (done) {
+    it("msngr().on().persist() - registers handler then receives persisted payload", function(done) {
         var handledCount = 0;
 
         var msg = msngr("MyTestingTopic");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handledCount;
             expect(payload).to.exist;
             expect(payload).to.equal("MyPayload");
@@ -331,11 +337,11 @@ describe("./objects/message.js", function () {
 
     });
 
-    it("msngr().once().persist() - registers handler then receives persisted payload", function (done) {
+    it("msngr().once().persist() - registers handler then receives persisted payload", function(done) {
         var handledCount = 0;
 
         var msg = msngr("MyTestingTopic");
-        msg.once(function (payload) {
+        msg.once(function(payload) {
             ++handledCount;
             expect(payload).to.exist;
             expect(payload).to.equal("MyPayload");
@@ -347,27 +353,27 @@ describe("./objects/message.js", function () {
 
     });
 
-    it("msngr().persist().cease().on() - registers a payload, unregisters a payload then registers a handler", function (done) {
+    it("msngr().persist().cease().on() - registers a payload, unregisters a payload then registers a handler", function(done) {
         var handledCount = 0;
 
         var msg = msngr("MyTestingTopic");
         msg.persist("MyPayload");
         msg.cease();
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             ++handledCount;
         });
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(handledCount).to.equal(0);
             done();
         }, 250);
 
     });
 
-    it("msngr().persist() - complex merging of persisted objects for ultimate ready status", function (done) {
+    it("msngr().persist() - complex merging of persisted objects for ultimate ready status", function(done) {
         var msg = msngr("MyCoolTopic", "MyCat");
         var d = false;
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             // Check to make sure ready state is across the board
             expect(payload).to.exist;
             if (payload.ready1 === true && payload.ready2 === true && payload.ready3 === true && payload.ready4 === true && d === false) {
@@ -377,36 +383,44 @@ describe("./objects/message.js", function () {
             }
         });
 
-        msg.persist({ ready1: true });
-        msg.persist({ ready2: true });
-        msg.persist({ ready3: true });
-        msg.persist({ ready4: true });
+        msg.persist({
+            ready1: true
+        });
+        msg.persist({
+            ready2: true
+        });
+        msg.persist({
+            ready3: true
+        });
+        msg.persist({
+            ready4: true
+        });
     });
 
-    it("msngr().persist() - passing in nothing still conducts a proper persisting of message execution in later 'on's", function (done) {
+    it("msngr().persist() - passing in nothing still conducts a proper persisting of message execution in later 'on's", function(done) {
         msngr("Server", "Ready").persist();
 
         var calls = 0;
 
-        msngr("Server", "Ready").on(function () {
+        msngr("Server", "Ready").on(function() {
             ++calls;
         });
 
-        msngr("Server", "Ready").on(function () {
+        msngr("Server", "Ready").on(function() {
             ++calls;
         });
 
-        msngr("Server", "Ready").on(function () {
+        msngr("Server", "Ready").on(function() {
             ++calls;
         });
 
-        setTimeout(function () {
+        setTimeout(function() {
             expect(calls).to.equal(3);
             done();
         }, 250);
     });
 
-    it("msngr().counts - when debug mode is enabled returns a counts object otherwise is undefined", function () {
+    it("msngr().counts - when debug mode is enabled returns a counts object otherwise is undefined", function() {
         msngr.debug = true;
         var msg = msngr("test");
         expect(msg.counts).to.exist;

@@ -1,25 +1,25 @@
-msngr.extend((function (external, internal) {
+msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.objects = internal.objects || { };
-    internal.objects.memory = function () {
+    internal.objects = internal.objects || {};
+    internal.objects.memory = function() {
 
         // Index for id to message objects
-        var id_to_message = { };
+        var id_to_message = {};
 
         // Direct index (no partials) for message
         var direct_index = {
-            topic_to_id: { },
-            topic_cat_to_id: { },
-            topic_scat_to_id: { },
-            topic_cat_scat_to_id: { }
+            topic_to_id: {},
+            topic_cat_to_id: {},
+            topic_scat_to_id: {},
+            topic_cat_scat_to_id: {}
         };
 
         // Message index count
         var index_count = 0;
 
         var mem = {
-            index: function (message) {
+            index: function(message) {
                 if (external.exist(message) && external.exist(message.topic)) {
                     var uuid = external.id();
                     id_to_message[uuid] = message;
@@ -31,7 +31,7 @@ msngr.extend((function (external, internal) {
 
                     if (external.exist(message.category)) {
                         if (direct_index.topic_cat_to_id[message.topic] === undefined) {
-                            direct_index.topic_cat_to_id[message.topic] = { };
+                            direct_index.topic_cat_to_id[message.topic] = {};
                         }
 
                         if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
@@ -43,7 +43,7 @@ msngr.extend((function (external, internal) {
 
                     if (external.exist(message.subcategory)) {
                         if (direct_index.topic_scat_to_id[message.topic] === undefined) {
-                            direct_index.topic_scat_to_id[message.topic] = { };
+                            direct_index.topic_scat_to_id[message.topic] = {};
                         }
 
                         if (direct_index.topic_scat_to_id[message.topic][message.subcategory] === undefined) {
@@ -55,11 +55,11 @@ msngr.extend((function (external, internal) {
 
                     if (external.exist(message.category) && external.exist(message.subcategory)) {
                         if (direct_index.topic_cat_scat_to_id[message.topic] === undefined) {
-                            direct_index.topic_cat_scat_to_id[message.topic] = { };
+                            direct_index.topic_cat_scat_to_id[message.topic] = {};
                         }
 
                         if (direct_index.topic_cat_scat_to_id[message.topic][message.category] === undefined) {
-                            direct_index.topic_cat_scat_to_id[message.topic][message.category] = { };
+                            direct_index.topic_cat_scat_to_id[message.topic][message.category] = {};
                         }
 
                         if (direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory] === undefined) {
@@ -75,7 +75,7 @@ msngr.extend((function (external, internal) {
                 }
                 return undefined;
             },
-            delete: function (uuid) {
+            delete: function(uuid) {
                 if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
                     var message = id_to_message[uuid];
 
@@ -102,7 +102,7 @@ msngr.extend((function (external, internal) {
                 }
                 return false;
             },
-            query: function (message) {
+            query: function(message) {
                 if (external.exist(message)) {
                     if (external.exist(message.topic)) {
                         // Topic Only Results
@@ -112,33 +112,33 @@ msngr.extend((function (external, internal) {
 
                         // Topic + Category Results
                         if (external.exist(message.category) && !external.exist(message.subcategory)) {
-                            return (direct_index.topic_cat_to_id[message.topic] || { })[message.category] || [];
+                            return (direct_index.topic_cat_to_id[message.topic] || {})[message.category] || [];
                         }
 
                         // Topic + Data Type Results
                         if (external.exist(message.subcategory) && !external.exist(message.category)) {
-                            return (direct_index.topic_scat_to_id[message.topic] || { })[message.subcategory] || [];
+                            return (direct_index.topic_scat_to_id[message.topic] || {})[message.subcategory] || [];
                         }
 
                         // Topic + Category + Data Type Results
                         if (external.exist(message.category) && external.exist(message.subcategory)) {
-                            return ((direct_index.topic_cat_scat_to_id[message.topic] || { })[message.category] || { })[message.subcategory] || [];
+                            return ((direct_index.topic_cat_scat_to_id[message.topic] || {})[message.category] || {})[message.subcategory] || [];
                         }
                     }
                 }
 
                 return [];
             },
-            clear: function () {
+            clear: function() {
                 // Index for id to message objects
-                id_to_message = { };
+                id_to_message = {};
 
                 // Direct index (no partials) for message
                 direct_index = {
-                    topic_to_id: { },
-                    topic_cat_to_id: { },
-                    topic_scat_to_id: { },
-                    topic_cat_scat_to_id: { }
+                    topic_to_id: {},
+                    topic_cat_to_id: {},
+                    topic_scat_to_id: {},
+                    topic_cat_scat_to_id: {}
                 };
 
                 index_count = 0;
@@ -148,7 +148,7 @@ msngr.extend((function (external, internal) {
         };
 
         Object.defineProperty(mem, "count", {
-            get: function () {
+            get: function() {
                 return index_count;
             }
         });
@@ -157,5 +157,5 @@ msngr.extend((function (external, internal) {
     };
 
     // This is an internal extension; do not export explicitly.
-    return { };
+    return {};
 }));

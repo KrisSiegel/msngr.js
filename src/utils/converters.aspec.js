@@ -10,11 +10,11 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./utils/converters.js", function () {
+describe("./utils/converters.js", function() {
     "use strict";
 
-    it("msngr.argumentsToArray(args) - 0 arguments", function () {
-        var func = function () {
+    it("msngr.argumentsToArray(args) - 0 arguments", function() {
+        var func = function() {
             var args = msngr.argumentsToArray(arguments);
             expect(args.length).to.equal(0);
         }
@@ -22,8 +22,8 @@ describe("./utils/converters.js", function () {
         func();
     });
 
-    it("msngr.argumentsToArray(args) - 3 arguments", function () {
-        var func = function () {
+    it("msngr.argumentsToArray(args) - 3 arguments", function() {
+        var func = function() {
             var args = msngr.argumentsToArray(arguments);
             expect(args.length).to.equal(3);
         }
@@ -31,8 +31,8 @@ describe("./utils/converters.js", function () {
         func(1, 2, 3);
     });
 
-    it("msngr.argumentsToArray(args) - 15 arguments", function () {
-        var func = function () {
+    it("msngr.argumentsToArray(args) - 15 arguments", function() {
+        var func = function() {
             var args = msngr.argumentsToArray(arguments);
             expect(args.length).to.equal(15);
         }

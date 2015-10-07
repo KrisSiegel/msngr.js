@@ -3,15 +3,15 @@
 
     The dom option; provides value gathering from supplied selectors
 */
-msngr.extend((function (external, internal) {
+msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.options = internal.options || { };
+    internal.options = internal.options || {};
 
-    internal.options.dom = function (message, payload, options, async) {
+    internal.options.dom = function(message, payload, options, async) {
         // Normalize all of the inputs
-        options = options || { };
-        options = options.dom || { };
+        options = options || {};
+        options = options.dom || {};
         var doc = options.doc || options.document || document;
 
         var selectors = undefined;
@@ -65,7 +65,7 @@ msngr.extend((function (external, internal) {
             }
 
             if (resultMap === undefined) {
-                resultMap = { };
+                resultMap = {};
             }
             resultMap[key] = val;
         }
@@ -75,5 +75,5 @@ msngr.extend((function (external, internal) {
     };
 
     // This is an internal extension; do not export explicitly.
-    return { };
+    return {};
 }));

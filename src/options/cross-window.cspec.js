@@ -10,31 +10,31 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./options/cross-window.js", function () {
+describe("./options/cross-window.js", function() {
     "use strict";
 
     this.timeout(60000);
 
-    before(function () {
+    before(function() {
         msngr.debug = true;
     });
 
-    beforeEach(function () {
+    beforeEach(function() {
         msngr.internal.reset();
     });
 
-    after(function () {
+    after(function() {
         msngr.debug = false;
     });
 
-    it("msngr().option('cross-window') - sends a 100 messages between different tabs or windows", function (done) {
+    it("msngr().option('cross-window') - sends a 100 messages between different tabs or windows", function(done) {
         var crossWindowVerifierPath = (window.specRunner.indexOf(".min.html") === -1) ? "crossWindowVerifier.html" : "crossWindowVerifier.min.html";
         var testCounts = 0;
-        var observedTests = { };
+        var observedTests = {};
 
         var iframe = document.createElement("iframe");
         var msg = msngr("CrossWindow", "Message");
-        msg.on(function (payload) {
+        msg.on(function(payload) {
             expect(payload).to.exist;
             expect(payload.data.meaningOfLife).to.equal(42);
             expect(payload.data.OPDelivers).to.equal(false);

@@ -10,68 +10,68 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./utils/dom.js", function () {
+describe("./utils/dom.js", function() {
     "use strict";
 
-    it("msngr.isHtmlElement(obj) - obj is a function", function () {
-        expect(msngr.isHtmlElement(function () {})).to.equal(false);
+    it("msngr.isHtmlElement(obj) - obj is a function", function() {
+        expect(msngr.isHtmlElement(function() {})).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is a string", function () {
+    it("msngr.isHtmlElement(obj) - obj is a string", function() {
         expect(msngr.isHtmlElement("test")).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is an empty string", function () {
+    it("msngr.isHtmlElement(obj) - obj is an empty string", function() {
         expect(msngr.isHtmlElement("")).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is undefined", function () {
+    it("msngr.isHtmlElement(obj) - obj is undefined", function() {
         expect(msngr.isHtmlElement(undefined)).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is null", function () {
+    it("msngr.isHtmlElement(obj) - obj is null", function() {
         expect(msngr.isHtmlElement(null)).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is an object", function () {
+    it("msngr.isHtmlElement(obj) - obj is an object", function() {
         expect(msngr.isHtmlElement({})).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is a number", function () {
+    it("msngr.isHtmlElement(obj) - obj is a number", function() {
         expect(msngr.isHtmlElement(7)).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is an array", function () {
+    it("msngr.isHtmlElement(obj) - obj is an array", function() {
         expect(msngr.isHtmlElement([])).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is a date", function () {
+    it("msngr.isHtmlElement(obj) - obj is a date", function() {
         expect(msngr.isHtmlElement(new Date())).to.equal(false);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is a div element", function () {
+    it("msngr.isHtmlElement(obj) - obj is a div element", function() {
         expect(msngr.isHtmlElement(document.createElement("div"))).to.equal(true);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is an input element", function () {
+    it("msngr.isHtmlElement(obj) - obj is an input element", function() {
         expect(msngr.isHtmlElement(document.createElement("input"))).to.equal(true);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is a body element", function () {
+    it("msngr.isHtmlElement(obj) - obj is a body element", function() {
         expect(msngr.isHtmlElement(document.createElement("body"))).to.equal(true);
     });
 
-    it("msngr.isHtmlElement(obj) - obj is a canvas element", function () {
+    it("msngr.isHtmlElement(obj) - obj is a canvas element", function() {
         expect(msngr.isHtmlElement(document.createElement("canvas"))).to.equal(true);
     });
 
-    it("msngr.isNodeList(obj) - obj is a single div element", function () {
+    it("msngr.isNodeList(obj) - obj is a single div element", function() {
         var div = document.createElement("div");
 
         expect(msngr.isNodeList(div)).to.equal(false);
     });
 
-    it("msngr.isNodeList(obj) - obj is a nodelist", function () {
+    it("msngr.isNodeList(obj) - obj is a nodelist", function() {
         var div1 = document.createElement("div");
         var div2 = document.createElement("div");
         var div3 = document.createElement("div");
@@ -82,15 +82,15 @@ describe("./utils/dom.js", function () {
         expect(msngr.isNodeList(div1.childNodes)).to.equal(true);
     });
 
-    it("msngr.findElement(obj) - obj is an HTMLElement", function () {
+    it("msngr.findElement(obj) - obj is an HTMLElement", function() {
         expect(msngr.isHtmlElement(msngr.findElement(document.createElement("div")))).to.equal(true);
     });
 
-    it("msngr.findElement(obj) - obj is an HTMLElement with root specified", function () {
+    it("msngr.findElement(obj) - obj is an HTMLElement with root specified", function() {
         expect(msngr.isHtmlElement(msngr.findElement(document.createElement("div"), document))).to.equal(true);
     });
 
-    it("msngr.findElement(obj) - obj is an id selector (#MyID)", function () {
+    it("msngr.findElement(obj) - obj is an id selector (#MyID)", function() {
         var div = document.createElement("div");
         div.setAttribute("id", "TestID1");
         document.body.appendChild(div);
@@ -99,7 +99,7 @@ describe("./utils/dom.js", function () {
         expect(msngr.isHtmlElement(msngr.findElement("#TestID1"))).to.equal(false);
     });
 
-    it("msngr.findElement(obj) - obj is a class selector (.TestClass)", function () {
+    it("msngr.findElement(obj) - obj is a class selector (.TestClass)", function() {
         var div = document.createElement("div");
         div.setAttribute("class", "TestClass");
         document.body.appendChild(div);
@@ -108,7 +108,7 @@ describe("./utils/dom.js", function () {
         expect(msngr.isHtmlElement(msngr.findElement(".TestClass"))).to.equal(false);
     });
 
-    it("msngr.findElement(obj) - obj is a html target selector", function () {
+    it("msngr.findElement(obj) - obj is a html target selector", function() {
         var div = document.createElement("div");
         var div2 = document.createElement("div");
         var p = document.createElement("p");
@@ -122,7 +122,7 @@ describe("./utils/dom.js", function () {
         expect(msngr.isHtmlElement(msngr.findElement("div div p"))).to.equal(false);
     });
 
-    it("msngr.findElements(obj) - obj is an id selector (#MyID)", function () {
+    it("msngr.findElements(obj) - obj is an id selector (#MyID)", function() {
         var div = document.createElement("div");
         div.setAttribute("id", "TestID1");
         document.body.appendChild(div);
@@ -133,7 +133,7 @@ describe("./utils/dom.js", function () {
         expect(msngr.findElements("#TestID1").length).to.equal(0);
     });
 
-    it("msngr.findElements(obj) - obj is a class selector (.TestClass)", function () {
+    it("msngr.findElements(obj) - obj is a class selector (.TestClass)", function() {
         var div = document.createElement("div");
         div.setAttribute("class", "TestClass");
 
@@ -149,7 +149,7 @@ describe("./utils/dom.js", function () {
         expect(msngr.findElements(".TestClass").length).to.equal(0);
     });
 
-    it("msngr.findElement(obj) - obj is a html target selector", function () {
+    it("msngr.findElement(obj) - obj is a html target selector", function() {
         var div = document.createElement("div");
         var div2 = document.createElement("div");
         var p = document.createElement("p");
@@ -165,7 +165,7 @@ describe("./utils/dom.js", function () {
         expect(msngr.findElements("div div p").length).to.equal(0);
     });
 
-    it("msngr.getDomPath(element) - element is a tested HTMLElement", function () {
+    it("msngr.getDomPath(element) - element is a tested HTMLElement", function() {
         var div = document.createElement("div");
         div.style.display = "none";
 
@@ -180,7 +180,7 @@ describe("./utils/dom.js", function () {
         document.body.removeChild(div);
     });
 
-    it("msngr.querySelectorAllWithEq(selector) - selector uses eq to target specific indexes", function () {
+    it("msngr.querySelectorAllWithEq(selector) - selector uses eq to target specific indexes", function() {
         var div = document.createElement("div");
         div.style.display = "none";
 
@@ -210,7 +210,7 @@ describe("./utils/dom.js", function () {
 
     });
 
-    it("msngr.querySelectorAllWithEq(selector) - selector uses eq to target specific indexes and works with specific root", function () {
+    it("msngr.querySelectorAllWithEq(selector) - selector uses eq to target specific indexes and works with specific root", function() {
         var div = document.createElement("div");
         div.style.display = "none";
 
@@ -240,7 +240,7 @@ describe("./utils/dom.js", function () {
 
     });
 
-    it("msngr.querySelectorWithEq(selector) - selector uses eq to target specific indexes", function () {
+    it("msngr.querySelectorWithEq(selector) - selector uses eq to target specific indexes", function() {
         var div = document.createElement("div");
         div.style.display = "none";
 

@@ -1,7 +1,7 @@
-msngr.extend((function (external, internal) {
-	"use strict";
+msngr.extend((function(external, internal) {
+    "use strict";
 
-    internal.InvalidParametersException = function (str) {
+    internal.InvalidParametersException = function(str) {
         return {
             name: "InvalidParametersException",
             severity: "unrecoverable",
@@ -9,7 +9,7 @@ msngr.extend((function (external, internal) {
         };
     };
 
-    internal.ReservedKeywordsException = function (keyword) {
+    internal.ReservedKeywordsException = function(keyword) {
         return {
             name: "ReservedKeywordsException",
             severity: "unrecoverable",
@@ -17,14 +17,14 @@ msngr.extend((function (external, internal) {
         };
     };
 
-	internal.MangledException = function (variable, method) {
-		return {
+    internal.MangledException = function(variable, method) {
+        return {
             name: "MangledException",
             severity: "unrecoverable",
             message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
         };
-	};
+    };
 
     // This is an internal extension; do not export explicitly.
-	return { };
+    return {};
 }));
