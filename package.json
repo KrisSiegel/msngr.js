@@ -2,7 +2,7 @@
   "name": "msngr",
   "main": "msngr.js",
   "description": "msngr.js is a small library used to facilitate communication through messages rather than direct binding. This loose coupling allows connecting components to each other or to UI components in an abstract way on the server or the client.",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "keywords": ["message", "messaging", "subscription", "delegation", "eventing", "dom", "binding"],
   "repository": {
     "type": "git",
@@ -20,10 +20,10 @@
     "grunt-contrib-concat": "0.5.1",
     "grunt-contrib-clean": "0.6.0",
     "grunt-mocha-test": "0.12.7",
-    "mocha": "2.3.2",
+    "mocha": "2.3.3",
     "grunt-mocha-phantomjs": "2.0.0",
     "grunt-available-tasks": "0.6.0",
-    "chai": "3.2.0"
+    "chai": "3.3.0"
   },
   "scripts": {
     "test": "grunt test"
