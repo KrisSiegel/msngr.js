@@ -26,6 +26,7 @@
         "chai": "3.3.0"
     },
     "scripts": {
-        "test": "grunt test"
+        "test": "node -e \"var g = require('grunt'); g.cli.tasks = ['test']; g.cli();\"",
+        "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\""
     }
 }
