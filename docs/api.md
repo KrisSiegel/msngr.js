@@ -230,7 +230,47 @@ var elms = msngr.querySelectorAllWithEq("div:eq(1) > input");
 ```
 
 ## Miscellaneous utilities
-There are multiple utility methods included in msngr. Some are used internally and some are exposed for external use by others.
+There are multiple utility methods included in msngr most of which start out as internal only and eventually make their way to external exposure depending on whether Kris finds them useful or not :)
+
+### Executer object
+The executor object is a very simple way of specifying n number of functions that can then be executed either as is or in parallel (similar to async.parallel).
+
+```javascript
+var executorObj = msngr.executer(arrayOfFunctions, payload, context);
+```
+
+```arrayOfFunctions (required)``` - A single function or an array of functions to be handled by the executer
+
+```payload (optional)``` - An optional payload to pass into every method executed
+
+```context (optional)``` - Sets the context in which callbacks are executed with.
+
+#### ```executorObj.parallel(done)```
+Executes all methods specified and uses an async callback to provide the sync or async result from each method executed. The callback is only called once each method executes its own callback signifying that code execution has been completed.
+
+```done (optional)``` - The callback method that receives the results from the methods executed.
+
+Example:
+```javascript
+var funcs = [];
+funcs.push(function (payload, async) {
+    var done = async();
+    done(42);
+});
+funcs.push(function (payload, async) {
+    return 15;
+});
+var exec = msngr.executer(funcs, { });
+exec.parallel(function (results) {
+    console.log(results); // Prints [42, 15]
+});
+```
+
+#### ```executorObj.execute(done)```
+Executes the specified method and provides an async callback to provide the sync or async result from the method itself. *NOTE* this only executes a single function (the first function if an array of functions were specified).
+
+```done (optional)``` - The callback method that receives the results from the method executed.
+
 
 ### ```msngr.options(key, value)```
 Sets a global set of options that apply to all messages created after globals have been set.

@@ -545,7 +545,9 @@ msngr.extend((function(external, internal) {
     };
 
     // This is an internal extension; do not export explicitly.
-    return {};
+    return {
+        executer: internal.objects.executer
+    };
 }));
 
 msngr.extend((function(external, internal) {

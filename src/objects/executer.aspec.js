@@ -118,4 +118,11 @@ describe("./objects/executer.js", function() {
         });
     });
 
+    it("msngr.executer(methods, payload, context) - executer is exposed for anyone to access", function() {
+        expect(msngr.executer).to.exist;
+        expect(msngr.executer([], {}, undefined)).to.exist;
+        expect(msngr.executer([], {}, undefined).execute).to.exist;
+        expect(msngr.executer([], {}, undefined).parallel).to.exist;
+    });
+
 });
