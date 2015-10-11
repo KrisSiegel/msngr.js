@@ -56,6 +56,19 @@ msngr.extend((function(external, internal) {
                 arr[inx] = temp;
             }
             arr.pop();
+        },
+        deDupeArray: function (arr) {
+            var hash = { };
+            var result = [];
+            var arrLength = arr.length;
+            for (var i = 0; i < arrLength; ++i) {
+                if (hash[arr[i]] === undefined) {
+                    hash[arr[i]] = true;
+                    result.push(arr[i]);
+                }
+            }
+
+            return result;
         }
     };
 }));

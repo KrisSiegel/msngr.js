@@ -86,4 +86,12 @@ describe("./utils/misc.js", function() {
         expect(arr[1]).to.equal("weee");
         expect(arr.length).to.equal(2);
     });
+
+    it("msngr.deDupeArray() - removes duplicates from an array", function() {
+        var arr1 = [4,5,6,6,6,6,6,6,6,6,7];
+        expect(msngr.deDupeArray(arr1).length).to.equal(4);
+
+        var arr2 = ["yeah", "oh", "nice", "chips", "chips", "chips"];
+        expect(msngr.deDupeArray(arr2).length).to.equal(4);
+    });
 });

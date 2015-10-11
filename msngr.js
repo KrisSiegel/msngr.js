@@ -18,7 +18,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "2.3.0";
+    external.version = "2.4.0";
 
     // Merge two inputs into one
     var twoMerge = function(input1, input2) {
@@ -370,6 +370,19 @@ msngr.extend((function(external, internal) {
                 arr[inx] = temp;
             }
             arr.pop();
+        },
+        deDupeArray: function (arr) {
+            var hash = { };
+            var result = [];
+            var arrLength = arr.length;
+            for (var i = 0; i < arrLength; ++i) {
+                if (hash[arr[i]] === undefined) {
+                    hash[arr[i]] = true;
+                    result.push(arr[i]);
+                }
+            }
+
+            return result;
         }
     };
 }));
@@ -560,12 +573,7 @@ msngr.extend((function(external, internal) {
         var id_to_message = {};
 
         // Direct index (no partials) for message
-        var direct_index = {
-            topic_to_id: {},
-            topic_cat_to_id: {},
-            topic_scat_to_id: {},
-            topic_cat_scat_to_id: {}
-        };
+        var index = { };
 
         // Message index count
         var index_count = 0;
@@ -576,49 +584,37 @@ msngr.extend((function(external, internal) {
                     var uuid = external.id();
                     id_to_message[uuid] = message;
 
-                    if (direct_index.topic_to_id[message.topic] === undefined) {
-                        direct_index.topic_to_id[message.topic] = [];
-                    }
-                    direct_index.topic_to_id[message.topic].push(uuid);
-
-                    if (external.exist(message.category)) {
-                        if (direct_index.topic_cat_to_id[message.topic] === undefined) {
-                            direct_index.topic_cat_to_id[message.topic] = {};
-                        }
-
-                        if (direct_index.topic_cat_to_id[message.topic][message.category] === undefined) {
-                            direct_index.topic_cat_to_id[message.topic][message.category] = [];
-                        }
-
-                        direct_index.topic_cat_to_id[message.topic][message.category].push(uuid);
+                    if (!external.exist(index[message.topic])) {
+                        index[message.topic] = {
+                            uuids: [],
+                            category: { }
+                        };
                     }
 
-                    if (external.exist(message.subcategory)) {
-                        if (direct_index.topic_scat_to_id[message.topic] === undefined) {
-                            direct_index.topic_scat_to_id[message.topic] = {};
+                    if (!external.exist(index[message.topic].category[message.category])) {
+                        index[message.topic].category[message.category] = {
+                            uuids: [],
+                            subcategory: { }
                         }
+                    }
 
-                        if (direct_index.topic_scat_to_id[message.topic][message.subcategory] === undefined) {
-                            direct_index.topic_scat_to_id[message.topic][message.subcategory] = [];
+                    if (!external.exist(index[message.topic].category[message.category].subcategory[message.subcategory])) {
+                        index[message.topic].category[message.category].subcategory[message.subcategory] = {
+                            uuids: []
                         }
+                    }
 
-                        direct_index.topic_scat_to_id[message.topic][message.subcategory].push(uuid);
+
+                    if (!external.exist(message.category) && !external.exist(message.subcategory)) {
+                        index[message.topic].uuids.push(uuid);
+                    }
+
+                    if (external.exist(message.category) && !external.exist(message.subcategory)) {
+                        index[message.topic].category[message.category].uuids.push(uuid);
                     }
 
                     if (external.exist(message.category) && external.exist(message.subcategory)) {
-                        if (direct_index.topic_cat_scat_to_id[message.topic] === undefined) {
-                            direct_index.topic_cat_scat_to_id[message.topic] = {};
-                        }
-
-                        if (direct_index.topic_cat_scat_to_id[message.topic][message.category] === undefined) {
-                            direct_index.topic_cat_scat_to_id[message.topic][message.category] = {};
-                        }
-
-                        if (direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory] === undefined) {
-                            direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory] = [];
-                        }
-
-                        direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory].push(uuid);
+                        index[message.topic].category[message.category].subcategory[message.subcategory].uuids.push(uuid);
                     }
 
                     index_count++;
@@ -631,21 +627,9 @@ msngr.extend((function(external, internal) {
                 if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
                     var message = id_to_message[uuid];
 
-                    if (external.exist(message.topic)) {
-                        external.removeFromArray(direct_index.topic_to_id[message.topic], uuid);
-
-                        if (external.exist(message.category)) {
-                            external.removeFromArray(direct_index.topic_cat_to_id[message.topic][message.category], uuid);
-                        }
-
-                        if (external.exist(message.subcategory)) {
-                            external.removeFromArray(direct_index.topic_scat_to_id[message.topic][message.subcategory], uuid);
-                        }
-
-                        if (external.exist(message.category) && external.exist(message.subcategory)) {
-                            external.removeFromArray(direct_index.topic_cat_scat_to_id[message.topic][message.category][message.subcategory], uuid);
-                        }
-                    }
+                    external.removeFromArray(index[message.topic].uuids, uuid);
+                    external.removeFromArray(index[message.topic].category[message.category].uuids, uuid);
+                    external.removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].uuids, uuid);
 
                     delete id_to_message[uuid];
                     index_count--;
@@ -655,43 +639,25 @@ msngr.extend((function(external, internal) {
                 return false;
             },
             query: function(message) {
-                if (external.exist(message)) {
-                    if (external.exist(message.topic)) {
-                        // Topic Only Results
-                        if (!external.exist(message.category) && !external.exist(message.subcategory)) {
-                            return direct_index.topic_to_id[message.topic] || [];
-                        }
+                var result = [];
+                if (external.exist(message) && external.exist(message.topic) && external.exist(index[message.topic])) {
+                    var indexTopic = index[message.topic];
+                    var indexTopicCategory = ((indexTopic || { }).category || { })[message.category];
+                    var indexTopicCategorySubcategory = ((indexTopicCategory || { }).subcategory || { })[message.subcategory];
 
-                        // Topic + Category Results
-                        if (external.exist(message.category) && !external.exist(message.subcategory)) {
-                            return (direct_index.topic_cat_to_id[message.topic] || {})[message.category] || [];
-                        }
-
-                        // Topic + Data Type Results
-                        if (external.exist(message.subcategory) && !external.exist(message.category)) {
-                            return (direct_index.topic_scat_to_id[message.topic] || {})[message.subcategory] || [];
-                        }
-
-                        // Topic + Category + Data Type Results
-                        if (external.exist(message.category) && external.exist(message.subcategory)) {
-                            return ((direct_index.topic_cat_scat_to_id[message.topic] || {})[message.category] || {})[message.subcategory] || [];
-                        }
-                    }
+                    result = result.concat(indexTopic.uuids || []);
+                    result = result.concat((indexTopicCategory || { }).uuids || []);
+                    result = result.concat((indexTopicCategorySubcategory || { }).uuids || []);
                 }
 
-                return [];
+                return external.deDupeArray(result);
             },
             clear: function() {
                 // Index for id to message objects
                 id_to_message = {};
 
                 // Direct index (no partials) for message
-                direct_index = {
-                    topic_to_id: {},
-                    topic_cat_to_id: {},
-                    topic_scat_to_id: {},
-                    topic_cat_scat_to_id: {}
-                };
+                index = { };
 
                 index_count = 0;
 
