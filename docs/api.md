@@ -449,7 +449,17 @@ Removes a value from an array. Optimized for better performance in larger arrays
 var myArray = [5, 17, 42, 97];
 console.log(myArray); // Outputs [5, 17, 42, 97]
 msngr.removeFromArray(myArray, 42);
-console.log(myArray); // Outputs [5, 17, 97];
+console.log(myArray); // Outputs [5, 17, 97]
+```
+
+### ```msngr.deDupeArray(arr)```
+Removes duplicates from an array and returns the resulting, deduped array.
+
+```arr (required)``` - the array to dedupe.
+
+```javascript
+var myArray = [5, 17, 42, 56, 42, 56, 42, 97];
+console.log(msngr.deDupeArray(myArray)); // Outputs [5, 17, 42, 56, 97]
 ```
 
 ### ```msngr.argumentsToArray(args)```

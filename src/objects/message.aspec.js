@@ -174,6 +174,26 @@ describe("./objects/message.js", function() {
         msg.emit("WeePayloads!");
     });
 
+    it("msngr().emit() / on() - Successfully emits topic, category to a handler set to handle topic", function(done) {
+        msngr("MyTopic").on(function(payload) {
+            expect(payload).to.exist;
+            expect(payload).to.equal("WeePayloads!");
+            done();
+        });
+
+        msngr("MyTopic", "MyCategory").emit("WeePayloads!");
+    });
+
+    it("msngr().emit() / on() - Successfully emits topic, category and subcategory to a handler set to handle topic and category", function(done) {
+        msngr("MyTopic", "MyCategory").on(function(payload) {
+            expect(payload).to.exist;
+            expect(payload).to.equal("WeePayloads!");
+            done();
+        });
+
+        msngr("MyTopic", "MyCategory", "MySubcategory").emit("WeePayloads!");
+    });
+
     it("msngr().emit() / on() - Setup three handlers, both receive emit payload", function(done) {
         var handled = 0;
 
