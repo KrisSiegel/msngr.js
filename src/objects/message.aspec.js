@@ -451,6 +451,17 @@ describe("./objects/message.js", function() {
         msngr.debug = false;
         var msg2 = msngr("another");
         expect(msg2.counts).to.not.exist;
+
+        msngr.debug = true;
+    });
+
+    it("msngr().subscribers - returns a correct subscriber count", function() {
+        var msg = msngr("test", "whateves");
+        expect(msg.subscribers).to.equal(0);
+        msg.on(function() { });
+        expect(msg.subscribers).to.equal(1);
+        msg.dropAll();
+        expect(msg.subscribers).to.equal(0);
     });
 
 });

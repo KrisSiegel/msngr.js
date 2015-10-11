@@ -18,7 +18,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "2.4.0";
+    external.version = "2.4.1";
 
     // Merge two inputs into one
     var twoMerge = function(input1, input2) {
