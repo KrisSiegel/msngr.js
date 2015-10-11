@@ -337,6 +337,13 @@ msngr.extend((function(external, internal) {
             }
         });
 
+        // Setup a property to get subscribers
+        Object.defineProperty(msgObj, "subscribers", {
+            get: function() {
+                return messageIndex.query(msg).length;
+            }
+        });
+
         // If debug mode is enabled then let's expose the internal method hit counts.
         // These counts are only good if a method is called and succeeds.
         if (external.debug === true) {
