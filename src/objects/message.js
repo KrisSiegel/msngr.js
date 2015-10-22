@@ -316,7 +316,7 @@ msngr.extend((function(external, internal) {
             dropAll: function() {
                 var uuids = messageIndex.query(msg);
                 if (uuids.length > 0) {
-                    for (var i = 0; i < uuids.length; ++i) {
+                    for (var i = uuids.length; i--;) {
                         var uuid = uuids[i];
                         delete handlers[uuid];
                         handlerCount--;
