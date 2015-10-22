@@ -460,6 +460,8 @@ describe("./objects/message.js", function() {
         expect(msg.subscribers).to.equal(0);
         msg.on(function() { });
         expect(msg.subscribers).to.equal(1);
+        msg.on(function() { });
+        expect(msg.subscribers).to.equal(2);
         msg.dropAll();
         expect(msg.subscribers).to.equal(0);
     });
