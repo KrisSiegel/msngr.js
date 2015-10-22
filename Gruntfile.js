@@ -7,6 +7,7 @@ module.exports = (function(grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-mocha-phantomjs');
     grunt.loadNpmTasks('grunt-available-tasks');
+    grunt.loadNpmTasks('grunt-http-server');
 
     // Get rid of the header output nonsense from grunt (they should really fix this)
     grunt.log.header = function() {};
@@ -182,6 +183,18 @@ module.exports = (function(grunt) {
         });
     });
 
+    grunt.registerTask("test-rest-server", "Creates a test service with some dummy endpoints for testing", function() {
+        var http = require("http");
+        var server = http.createServer(function(request, response) {
+            response.writeHead(200);
+            response.end("{ test: 15 }");
+        });
+
+        server.listen("8009", "127.0.0.1", function(e) {
+            console.log("Server started");
+        });
+    });
+
     /*
     	'build' and 'test' are roll-up tasks; they have specific descriptions and execute
     	multiple tasks each to accomplish their goals. These are the only intended tasks
@@ -190,6 +203,6 @@ module.exports = (function(grunt) {
 
     grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
-    grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
+    grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "test-rest-server", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
 
 });

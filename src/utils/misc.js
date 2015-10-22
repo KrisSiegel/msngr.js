@@ -57,7 +57,7 @@ msngr.extend((function(external, internal) {
             }
             arr.pop();
         },
-        deDupeArray: function (arr) {
+        deDupeArray: function(arr) {
             var hash = { };
             var result = [];
             var arrLength = arr.length;
@@ -69,6 +69,9 @@ msngr.extend((function(external, internal) {
             }
 
             return result;
+        },
+        isBrowser: function() {
+            return (typeof XMLHttpRequest !== "undefined");
         }
     };
 }));
