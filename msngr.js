@@ -1070,11 +1070,17 @@ msngr.extend((function(external, internal) {
                                 obj = JSON.parse(xhr.response);
                             } catch (ex) {
                                 // Don't do anything; probably wasn't JSON anyway
+                                // Set obj to undefined just incase it contains something awful
+                                obj = undefined;
                             }
                         }
-                        callback.apply(undefined, [null, obj || xhr.response]);
+                        callback.apply(undefined, [null, (obj || xhr.response)]);
                     } else {
-                        callback.apply(undefined, [xhr.response, null]);
+                        var errObj = {
+                            status: xhr.status,
+                            response: xhr.response
+                        };
+                        callback.apply(undefined, [errObj, null]);
                     }
                 }
             };
@@ -1115,10 +1121,20 @@ msngr.extend((function(external, internal) {
                         obj = JSON.parse(body);
                     } catch (ex) {
                         // Don't do anything; probably wasn't JSON anyway
+                        // Set obj to undefined just incase it contains something awful
+                        obj = undefined;
                     }
                 }
-
-                callback.apply(undefined, [null, obj || body]);
+                obj = obj || body;
+                var errObj;
+                if (request.statusCode >= 400) {
+                        errObj = {
+                        status: request.statusCode,
+                        response: (obj || body)
+                    };
+                    obj = null;
+                }
+                callback.apply(undefined, [errObj, obj]);
             });
         });
 
