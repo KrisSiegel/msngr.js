@@ -1,12 +1,16 @@
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.InvalidParametersException = function(str) {
-        return {
+    internal.InvalidParametersException = function(str, reason) {
+        var m = {
             name: "InvalidParametersException",
             severity: "unrecoverable",
             message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
         };
+        if (!external.isEmptyString(reason)) {
+            m.message = m.message + " " + reason;
+        }
+        return m;
     };
 
     internal.ReservedKeywordsException = function(keyword) {
