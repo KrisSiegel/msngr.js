@@ -200,6 +200,7 @@ module.exports = (function(grunt) {
 
                 response.writeHead(200, {
                     "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,HEAD",
                     "Content-Type": "application/json"
                 });
                 response.end(JSON.stringify(result, null, 2));

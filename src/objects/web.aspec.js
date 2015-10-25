@@ -81,14 +81,46 @@ describe("./objects/web.js", function() {
         expect(msngr.web.bind("             ")).to.throw;
     });
 
-    it("msngr.web(protocol, host, port).get(opts, callback) - creates a GET request and returns data", function(done) {
+    it("msngr.web(protocol, host, port).get(opts, callback) - creates a GET request and returns 200", function(done) {
         var web = msngr.web(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
         web.get({
             path: "/"
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
-            
+            done();
+        });
+    });
+
+    it("msngr.web(protocol, host, port).post(opts, callback) - creates a POST request and returns 200", function(done) {
+        var web = msngr.web(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        web.post({
+            path: "/"
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
+            done();
+        });
+    });
+
+    it("msngr.web(protocol, host, port).put(opts, callback) - creates a PUT request and returns 200", function(done) {
+        var web = msngr.web(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        web.put({
+            path: "/"
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
+            done();
+        });
+    });
+
+    it("msngr.web(protocol, host, port).delete(opts, callback) - creates a DELETE request and returns 200", function(done) {
+        var web = msngr.web(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        web.delete({
+            path: "/"
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
             done();
         });
     });
