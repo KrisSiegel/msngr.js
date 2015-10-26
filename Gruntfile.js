@@ -38,11 +38,7 @@ module.exports = (function(grunt) {
         },
         uglify: {
             minify: {
-                options: {
-                    mangle: false,
-                    preserveComments: false,
-                    compress: {}
-                },
+                options: { },
                 files: {
                     "./msngr.min.js": paths
                 }
