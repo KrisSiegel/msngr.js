@@ -88,6 +88,22 @@ describe("./objects/web.js", function() {
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
+            expect(result.path).to.equal("/");
+            done();
+        });
+    });
+
+    it("msngr.web(protocol, host, port).get(opts, callback) - creates a GET request with a query string and returns a 200", function(done) {
+        var web = msngr.web(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        web.get({
+            path: "/search",
+            query: {
+                term: "search topic"
+            }
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
+            expect(result.path).to.equal("/search?term=search%20topic");
             done();
         });
     });
@@ -99,6 +115,26 @@ describe("./objects/web.js", function() {
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
+            expect(result.path).to.equal("/");
+            done();
+        });
+    });
+
+    it("msngr.web(protocol, host, port).post(opts, callback) - creates a POST request with data and returns a 200", function(done) {
+        var web = msngr.web(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        web.post({
+            path: "/users",
+            payload: {
+                username: "kris",
+                email: "redacted@redacted.com"
+            }
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
+            expect(result.path).to.equal("/users");
+            result.body = JSON.parse(result.body);
+            expect(result.body.username).to.equal("kris");
+            expect(result.body.email).to.equal("redacted@redacted.com");
             done();
         });
     });
@@ -110,6 +146,7 @@ describe("./objects/web.js", function() {
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
+            expect(result.path).to.equal("/");
             done();
         });
     });
@@ -121,6 +158,7 @@ describe("./objects/web.js", function() {
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
+            expect(result.path).to.equal("/");
             done();
         });
     });

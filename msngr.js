@@ -1092,8 +1092,25 @@ msngr.extend((function(external, internal) {
                 url = url + ":" + server.port + options.path;
             }
 
+            var datum;
+            if (external.exist(options.payload)) {
+                if (external.isObject(options.payload)) {
+                    try {
+                        datum = JSON.stringify(options.payload);
+                    } catch (ex) {
+                        // Really couldn't give a shit about this exception
+                    }
+                }
+
+                // undefined has no meaning in JSON but null does; so let's only
+                // and explicitly set anything if it's still undefined (so no null checks)
+                if (datum === undefined) {
+                    datum = options.payload;
+                }
+            }
+            
             xhr.open(options.method, url);
-            xhr.send();
+            xhr.send(datum);
         } catch (ex) {
             callback.apply(undefined, [ex, null]);
         }
@@ -1138,12 +1155,52 @@ msngr.extend((function(external, internal) {
             });
         });
 
+        if (external.exist(options.payload)) {
+            var datum;
+            if (external.isObject(options.payload)) {
+                try {
+                    datum = JSON.stringify(options.payload);
+                } catch (ex) {
+                    // Really couldn't give a shit about this exception
+                }
+            }
+
+            // undefined has no meaning in JSON but null does; so let's only
+            // and explicitly set anything if it's still undefined (so no null checks)
+            if (datum === undefined) {
+                datum = options.payload;
+            }
+
+            request.write(datum);
+        }
+
         request.end();
     };
 
     var request = function(server, opts, callback) {
         opts.path = opts.path || "/";
         opts.autoJson = opts.autoJson || true;
+
+        if (external.exist(opts.query)) {
+            if (external.isString(opts.query)) {
+                opts.queryString = opts.query;
+            }
+
+            if (external.isObject(opts.query)) {
+                opts.queryString = "?";
+                for (var key in opts.query) {
+                    if (opts.query.hasOwnProperty(key)) {
+                        if (opts.queryString !== "?") {
+                            opts.queryString = opts.queryString + "&";
+                        }
+                        opts.queryString = opts.queryString + encodeURIComponent(key) + "=" + encodeURIComponent(opts.query[key]);
+                    }
+                }
+            }
+        }
+
+        opts.path = opts.path + (opts.queryString || "");
+
         if (external.isBrowser()) {
             browser(server, opts, callback);
         } else {
