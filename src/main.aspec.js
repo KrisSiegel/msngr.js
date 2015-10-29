@@ -248,9 +248,9 @@ describe("./main.js", function() {
         expect(msngr.internal.globalOptions["myoptions"]).to.equal(true);
         expect(msngr.internal.globalOptions["anotheroption"].something).to.equal(true);
 
-        delete msngr.internal.options["myoptions"];
+        delete msngr.internal.option["myoptions"];
         delete msngr.internal.globalOptions["myoptions"];
-        delete msngr.internal.options["anotheroption"];
+        delete msngr.internal.option["anotheroption"];
         delete msngr.internal.globalOptions["anotheroption"];
         msngr.debug = false;
     });
@@ -262,9 +262,9 @@ describe("./main.js", function() {
             chicken: "tasty"
         });
 
-        msngr.internal.options["my-opts"] = function(message, payload, options, async) {
+        msngr.internal.option["my-opts"] = function(message, payload, options, async) {
             expect(options["my-opts"].chicken).to.equal("tasty");
-            delete msngr.internal.options["my-opts"];
+            delete msngr.internal.option["my-opts"];
             delete msngr.internal.globalOptions["my-opts"];
             msngr.debug = false;
             done();

@@ -691,6 +691,7 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
+    internal.option = internal.option || {};
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
@@ -736,9 +737,9 @@ msngr.extend((function(external, internal) {
     internal.processOpts = function(opts, message, payload, callback) {
         var optProcessors = [];
         for (var key in opts) {
-            if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
+            if (opts.hasOwnProperty(key) && external.exist(internal.option[key])) {
                 optProcessors.push({
-                    method: internal.options[key],
+                    method: internal.option[key],
                     params: [message, payload, opts]
                 });
             }
@@ -1376,7 +1377,7 @@ msngr.extend((function(external, internal) {
 
     var CHANNEL_NAME = "__msngr_cross-window";
 
-    internal.options = internal.options || {};
+    internal.option = internal.option || {};
 
     // Let's check if localstorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
@@ -1399,7 +1400,7 @@ msngr.extend((function(external, internal) {
         }
     });
 
-    internal.options["cross-window"] = function(message, payload, options, async) {
+    internal.option["cross-window"] = function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options["cross-window"] || {};
@@ -1430,9 +1431,9 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.options = internal.options || {};
+    internal.option = internal.option || {};
 
-    internal.options.dom = function(message, payload, options, async) {
+    internal.option.dom = function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options.dom || {};

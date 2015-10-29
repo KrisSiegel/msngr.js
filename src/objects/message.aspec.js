@@ -118,7 +118,7 @@ describe("./objects/message.js", function() {
     });
 
     it("msngr().option() - custom option processor works as expected", function(done) {
-        msngr.internal.options["testsync"] = function(message, payload, options, async) {
+        msngr.internal.option["testsync"] = function(message, payload, options, async) {
             return "synced!";
         };
 
@@ -126,7 +126,7 @@ describe("./objects/message.js", function() {
             expect(payload).to.exist;
             expect(payload).to.equal("synced!");
 
-            msngr.internal.options["testasync"] = function(message, payload, options, masync) {
+            msngr.internal.option["testasync"] = function(message, payload, options, masync) {
                 var d = masync();
                 d({
                     words: "asynced!"

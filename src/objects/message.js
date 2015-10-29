@@ -7,6 +7,7 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
+    internal.option = internal.option || {};
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
@@ -52,9 +53,9 @@ msngr.extend((function(external, internal) {
     internal.processOpts = function(opts, message, payload, callback) {
         var optProcessors = [];
         for (var key in opts) {
-            if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
+            if (opts.hasOwnProperty(key) && external.exist(internal.option[key])) {
                 optProcessors.push({
-                    method: internal.options[key],
+                    method: internal.option[key],
                     params: [message, payload, opts]
                 });
             }
