@@ -126,8 +126,8 @@ describe("./objects/message.js", function() {
             expect(payload).to.exist;
             expect(payload).to.equal("synced!");
 
-            msngr.internal.options["testasync"] = function(message, payload, options, async) {
-                var d = async();
+            msngr.internal.options["testasync"] = function(message, payload, options, masync) {
+                var d = masync();
                 d({
                     words: "asynced!"
                 });
@@ -269,10 +269,14 @@ describe("./objects/message.js", function() {
             return "testering";
         });
 
-        msg.on(function(payload, async) {
+        msg.on(function(payload, message, async) {
             var finished = async();
             ++handled;
             expect(payload).to.exist;
+            expect(message).to.exist;
+            expect(message.topic).to.equal("MyTopic");
+            expect(message.category).to.equal("MyCategory");
+            expect(message.subcategory).to.equal("MySubCategory");
             expect(payload).to.equal("ThreeHandlers");
             finished(42);
         });

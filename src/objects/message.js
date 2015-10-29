@@ -53,7 +53,10 @@ msngr.extend((function(external, internal) {
         var optProcessors = [];
         for (var key in opts) {
             if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
-                optProcessors.push(internal.options[key]);
+                optProcessors.push({
+                    method: internal.options[key],
+                    params: [message, payload, opts]
+                });
             }
         }
 
@@ -63,7 +66,7 @@ msngr.extend((function(external, internal) {
         }
 
         // Long circuit to do stuff (du'h)
-        var execs = internal.objects.executer(optProcessors, [message, payload, opts], this);
+        var execs = internal.objects.executer(optProcessors);
 
         execs.parallel(function(results) {
             var result = payload;
@@ -132,19 +135,23 @@ msngr.extend((function(external, internal) {
 
         var explicitEmit = function(payload, uuids, callback) {
             var uuids = uuids || messageIndex.query(msg) || [];
-            var methods = [];
-            var toDrop = [];
-            for (var i = 0; i < uuids.length; ++i) {
-                var obj = handlers[uuids[i]];
-                methods.push(obj.handler);
-
-                if (obj.once === true) {
-                    toDrop.push(obj.handler);
-                }
-            }
 
             internal.processOpts(options, msg, payload, function(result) {
-                var execs = internal.objects.executer(methods, result, (msg.context || this));
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < uuids.length; ++i) {
+                    var obj = handlers[uuids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [result, msg]
+                    });
+
+                    if (obj.once === true) {
+                        toDrop.push(obj.handler);
+                    }
+                }
+
+                var execs = internal.objects.executer(methods);
 
                 for (var i = 0; i < toDrop.length; ++i) {
                     msgObj.drop(toDrop[i]);

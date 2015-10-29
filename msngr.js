@@ -491,50 +491,43 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
-    internal.objects.executer = function(methods, payload, context) {
-
-        if (external.isFunction(methods)) {
-            methods = [methods];
-        }
+    internal.objects.executer = function(methods) {
 
         if (!external.exist(methods) || !external.isArray(methods)) {
             throw internal.InvalidParametersException("executor");
         }
 
-        var exec = function(method, pay, ctx, done) {
+        // Support passing in just methods
+        for (var i = 0; i < methods.length; ++i) {
+            if (external.isFunction(methods[i])) {
+                methods[i] = {
+                    method: methods[i]
+                };
+            }
+        }
+
+        var exec = function(method, params, ctx, done) {
             setTimeout(function() {
-                var async = false;
+                var asyncFlag = false;
                 var asyncFunc = function() {
-                    async = true;
+                    asyncFlag = true;
                     return function(result) {
                         done.apply(ctx, [result]);
                     };
                 }
 
-                var params = undefined;
-                if (external.isArray(pay)) {
-                    params = pay;
-                } else {
-                    params = [pay];
+                if (!external.isArray(params)) {
+                    params = [params];
                 }
                 params.push(asyncFunc);
-
                 var syncResult = method.apply(ctx || this, params);
-                if (async !== true) {
+                if (asyncFlag !== true) {
                     done.apply(ctx, [syncResult]);
                 }
             }, 0);
         };
 
         return {
-            execute: function(done) {
-                if (methods.length === 0 && external.exist(done)) {
-                    return done.apply(context, [
-                        []
-                    ]);
-                }
-                return exec(methods[0], payload, context, done);
-            },
             parallel: function(done) {
                 var results = [];
                 var executed = 0;
@@ -546,6 +539,10 @@ msngr.extend((function(external, internal) {
                 }
 
                 for (var i = 0; i < methods.length; ++i) {
+                    var method = methods[i].method;
+                    var params = methods[i].params;
+                    var context = methods[i].context;
+
                     (function(m, p, c) {
                         exec(m, p, c, function(result) {
                             if (external.exist(result)) {
@@ -558,7 +555,7 @@ msngr.extend((function(external, internal) {
                                 done.apply(context, [results]);
                             }
                         });
-                    }(methods[i], payload, context));
+                    }(method, params, context));
                 }
             }
         };
@@ -740,7 +737,10 @@ msngr.extend((function(external, internal) {
         var optProcessors = [];
         for (var key in opts) {
             if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
-                optProcessors.push(internal.options[key]);
+                optProcessors.push({
+                    method: internal.options[key],
+                    params: [message, payload, opts]
+                });
             }
         }
 
@@ -750,7 +750,7 @@ msngr.extend((function(external, internal) {
         }
 
         // Long circuit to do stuff (du'h)
-        var execs = internal.objects.executer(optProcessors, [message, payload, opts], this);
+        var execs = internal.objects.executer(optProcessors);
 
         execs.parallel(function(results) {
             var result = payload;
@@ -819,19 +819,23 @@ msngr.extend((function(external, internal) {
 
         var explicitEmit = function(payload, uuids, callback) {
             var uuids = uuids || messageIndex.query(msg) || [];
-            var methods = [];
-            var toDrop = [];
-            for (var i = 0; i < uuids.length; ++i) {
-                var obj = handlers[uuids[i]];
-                methods.push(obj.handler);
-
-                if (obj.once === true) {
-                    toDrop.push(obj.handler);
-                }
-            }
 
             internal.processOpts(options, msg, payload, function(result) {
-                var execs = internal.objects.executer(methods, result, (msg.context || this));
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < uuids.length; ++i) {
+                    var obj = handlers[uuids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [result, msg]
+                    });
+
+                    if (obj.once === true) {
+                        toDrop.push(obj.handler);
+                    }
+                }
+
+                var execs = internal.objects.executer(methods);
 
                 for (var i = 0; i < toDrop.length; ++i) {
                     msgObj.drop(toDrop[i]);
