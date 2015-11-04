@@ -84,19 +84,6 @@ describe("./main.js", function() {
         expect(merged.this.is.a.test.yup()).to.equal("yup!");
     });
 
-    it("msngr.merge(input1, input2) - merges two methods together", function() {
-        var func1 = function() {
-            return "test"
-        };
-        var func2 = function() {
-            return "again"
-        };
-
-        var merged = msngr.merge(func1, func2);
-        expect(merged).to.exist;
-        expect(merged()).to.equal("testagain");
-    });
-
     it("msngr.merge(input1, input2) - merges a method with properties", function() {
         var myFunc = function() {
             return 15;
@@ -118,16 +105,14 @@ describe("./main.js", function() {
     });
 
     it("msngr.merge(input1, input2) - merging undefined value is simply ignored", function() {
-        var myTest = {};
-        var merged = msngr.merge(undefined, myTest);
+        var merged = msngr.merge(undefined, {});
 
         expect(merged).to.exist;
         expect(Object.keys(merged).length).to.equal(0);
     });
 
     it("msngr.merge(input1, input2) - Property extends a string with another string", function() {
-        var t = "something";
-        var merged = msngr.merge("whatever", t);
+        var merged = msngr.merge("whatever", "something");
         expect(merged).to.exist;
         expect(msngr.getType(merged)).to.equal("[object String]");
         expect(merged).to.equal("whateversomething");
@@ -221,6 +206,42 @@ describe("./main.js", function() {
         delete msngr.sayHello;
     });
 
+    it("msngr.copy(obj) - copies an object", function() {
+        var obj = {
+            stuff: {
+                goes: {
+                    here: {
+                        value: 41,
+                        str: "some",
+                        fn: function () {},
+                        yeah: true
+                    }
+                }
+            }
+        };
+
+        var copy = msngr.copy(obj);
+
+        // Make sure the references / copy are at least good
+        expect(copy).to.exist;
+        expect(copy.stuff).to.exist;
+        expect(copy.stuff.goes).to.exist;
+        expect(copy.stuff.goes.here).to.exist;
+        expect(copy.stuff.goes.here.value).to.equal(41);
+        expect(copy.stuff.goes.here.str).to.equal("some");
+        expect(msngr.isFunction(copy.stuff.goes.here.fn)).to.equal(true);
+        expect(copy.stuff.goes.here.yeah).to.equal(true);
+
+        // Let's make sure this is a real copy and not references to the original
+        obj.stuff.goes.here.value = 999;
+        expect(obj.stuff.goes.here.value).to.equal(999);
+        expect(copy.stuff.goes.here.value).to.equal(41);
+
+        obj.stuff.goes.here.str = "whatever!";
+        expect(obj.stuff.goes.here.str).to.equal("whatever!");
+        expect(copy.stuff.goes.here.str).to.equal("some");
+    });
+
     it("msngr.debug - property setting exports internal object for testing and debugging", function() {
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;
@@ -236,40 +257,5 @@ describe("./main.js", function() {
         expect(msngr.warnings).to.equal(true);
         msngr.warnings = false;
         expect(msngr.warnings).to.equal(false);
-    });
-
-    it("msngr.options(key, value) - allows saving of global options", function() {
-        msngr.debug = true;
-        msngr.options("myoptions", true);
-        msngr.options("anotheroption", {
-            something: true
-        });
-
-        expect(msngr.internal.globalOptions["myoptions"]).to.equal(true);
-        expect(msngr.internal.globalOptions["anotheroption"].something).to.equal(true);
-
-        delete msngr.internal.option["myoptions"];
-        delete msngr.internal.globalOptions["myoptions"];
-        delete msngr.internal.option["anotheroption"];
-        delete msngr.internal.globalOptions["anotheroption"];
-        msngr.debug = false;
-    });
-
-    it("msngr.options(key, value) - global options are copied and sent to any options", function(done) {
-        msngr.debug = true;
-
-        msngr.options("my-opts", {
-            chicken: "tasty"
-        });
-
-        msngr.internal.option["my-opts"] = function(message, payload, options, async) {
-            expect(options["my-opts"].chicken).to.equal("tasty");
-            delete msngr.internal.option["my-opts"];
-            delete msngr.internal.globalOptions["my-opts"];
-            msngr.debug = false;
-            done();
-        };
-
-        msngr("MyTopic").emit("test");
     });
 });

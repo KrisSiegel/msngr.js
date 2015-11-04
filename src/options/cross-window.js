@@ -9,8 +9,6 @@ msngr.extend((function(external, internal) {
 
     var CHANNEL_NAME = "__msngr_cross-window";
 
-    internal.option = internal.option || {};
-
     // Let's check if localstorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
         return {};
@@ -32,7 +30,7 @@ msngr.extend((function(external, internal) {
         }
     });
 
-    internal.option["cross-window"] = function(message, payload, options, async) {
+    internal.option("cross-window", function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options["cross-window"] || {};
@@ -49,7 +47,7 @@ msngr.extend((function(external, internal) {
         }
 
         return undefined;
-    };
+    });
 
     // This is an internal extension; do not export explicitly.
     return {};

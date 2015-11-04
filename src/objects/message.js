@@ -7,7 +7,9 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
-    internal.option = internal.option || {};
+    internal.option = function(opt, handler) {
+        internal.option[opt] = handler;
+    };
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
@@ -122,9 +124,7 @@ msngr.extend((function(external, internal) {
             }
         }
 
-        // Copy global options
-        var options = external.merge({}, internal.globalOptions);
-
+        var options = {};
         var counts = {
             emits: 0,
             persists: 0,

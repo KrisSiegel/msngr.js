@@ -58,7 +58,7 @@ msngr.extend((function(external, internal) {
                     datum = options.payload;
                 }
             }
-            
+
             xhr.open(options.method, url);
             xhr.send(datum);
         } catch (ex) {
@@ -257,7 +257,7 @@ msngr.extend((function(external, internal) {
     };
 
     return {
-        web: function(protocol, host, port) {
+        net: function(protocol, host, port) {
             var server = figureOutServer(protocol, host, port);
 
             var webObj = {

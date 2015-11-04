@@ -9,7 +9,6 @@ var msngr = msngr || (function() {
 
     // Defaults for some internal functions
     var internal = {
-        globalOptions: {},
         warnings: true
     };
 
@@ -19,6 +18,14 @@ var msngr = msngr || (function() {
     };
 
     external.version = "3.0.0";
+
+    var getType = function(input) {
+        return Object.prototype.toString.call(input);
+    };
+
+    var extractFunction = function(input) {
+        return input.bind({});
+    };
 
     // Merge two inputs into one
     var twoMerge = function(input1, input2) {
@@ -131,13 +138,34 @@ var msngr = msngr || (function() {
         return result;
     };
 
-    // An external options interface for global options settings
-    external.options = function(key, value) {
-        if (!external.exist(key)) {
-            throw internal.InvalidParametersException("key");
+    external.copy = function(obj) {
+        if (obj === undefined || obj === null) {
+            return obj;
+        }
+        var objType = getType(obj);
+        if (["[object Object]", "[object Function]"].indexOf(objType) === -1) {
+            return obj;
         }
 
-        internal.globalOptions[key] = value;
+        var result;
+        if (getType(obj) === "[object Object]") {
+            result = {};
+        } else if (getType(obj) === "[object Function]") {
+            result = extractFunction(obj)
+        }
+
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                var keyType = getType(obj[key]);
+                if (["[object Object]", "[object Function]"].indexOf(keyType) !== -1) {
+                    result[key] = external.copy(obj[key]);
+                } else {
+                    result[key] = obj[key];
+                }
+            }
+        }
+
+        return result;
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.
@@ -691,7 +719,9 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
-    internal.option = internal.option || {};
+    internal.option = function(opt, handler) {
+        internal.option[opt] = handler;
+    };
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
@@ -806,9 +836,7 @@ msngr.extend((function(external, internal) {
             }
         }
 
-        // Copy global options
-        var options = external.merge({}, internal.globalOptions);
-
+        var options = {};
         var counts = {
             emits: 0,
             persists: 0,
@@ -1113,7 +1141,7 @@ msngr.extend((function(external, internal) {
                     datum = options.payload;
                 }
             }
-            
+
             xhr.open(options.method, url);
             xhr.send(datum);
         } catch (ex) {
@@ -1312,7 +1340,7 @@ msngr.extend((function(external, internal) {
     };
 
     return {
-        web: function(protocol, host, port) {
+        net: function(protocol, host, port) {
             var server = figureOutServer(protocol, host, port);
 
             var webObj = {
@@ -1377,8 +1405,6 @@ msngr.extend((function(external, internal) {
 
     var CHANNEL_NAME = "__msngr_cross-window";
 
-    internal.option = internal.option || {};
-
     // Let's check if localstorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
         return {};
@@ -1400,7 +1426,7 @@ msngr.extend((function(external, internal) {
         }
     });
 
-    internal.option["cross-window"] = function(message, payload, options, async) {
+    internal.option("cross-window", function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options["cross-window"] || {};
@@ -1417,7 +1443,7 @@ msngr.extend((function(external, internal) {
         }
 
         return undefined;
-    };
+    });
 
     // This is an internal extension; do not export explicitly.
     return {};
@@ -1431,9 +1457,7 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.option = internal.option || {};
-
-    internal.option.dom = function(message, payload, options, async) {
+    internal.option("dom", function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options.dom || {};
@@ -1497,7 +1521,7 @@ msngr.extend((function(external, internal) {
 
         return resultMap;
 
-    };
+    });
 
     // This is an internal extension; do not export explicitly.
     return {};
