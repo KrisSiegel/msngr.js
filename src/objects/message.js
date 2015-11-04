@@ -110,7 +110,7 @@ msngr.extend((function(external, internal) {
         }
 
         if (external.isObject(topic)) {
-            msg = topic;
+            msg = external.copy(topic);
         } else {
             msg = {};
             msg.topic = topic;
@@ -189,7 +189,7 @@ msngr.extend((function(external, internal) {
                     throw internal.InvalidParametersException("option");
                 }
 
-                options[key] = value;
+                options[key] = external.copy(value);
                 counts.options = counts.options + 1;
 
                 return msgObj;
@@ -199,7 +199,7 @@ msngr.extend((function(external, internal) {
                     callback = payload;
                     payload = undefined;
                 }
-                explicitEmit(payload, undefined, callback);
+                explicitEmit(external.copy(payload), undefined, callback);
                 counts.emits = counts.emits + 1;
 
                 return msgObj;
@@ -212,11 +212,11 @@ msngr.extend((function(external, internal) {
                 var uuids = payloadIndex.query(msg);
                 if (uuids.length === 0) {
                     var uuid = payloadIndex.index(msg);
-                    payloads[uuid] = payload;
+                    payloads[uuid] = external.copy(payload);
                     uuids = [uuid];
                 } else {
                     for (var i = 0; i < uuids.length; ++i) {
-                        payloads[uuids[i]] = external.extend(payload, payloads[uuids[i]]);
+                        payloads[uuids[i]] = external.merge(payload, payloads[uuids[i]]);
                     }
                 }
 
