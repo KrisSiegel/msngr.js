@@ -171,7 +171,7 @@ var msngr = msngr || (function() {
     };
 
     external.config = function(key, value) {
-        internal.config[key] = value;
+        internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.

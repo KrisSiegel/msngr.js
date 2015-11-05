@@ -270,4 +270,31 @@ describe("./main.js", function() {
         expect(msngr.internal.config.something_goofy.crazy).to.equal(true);
         msngr.debug = false;
     });
+
+    it("msngr.config() - configuration options should be additive", function() {
+        msngr.config("yotest", {
+            something: true,
+            another: {
+                what: "yes"
+            }
+        });
+
+        msngr.config("yotest", {
+            okay: 47
+        });
+
+        msngr.debug = true;
+        expect(msngr.internal.config.yotest).to.exist;
+        expect(msngr.internal.config.yotest.something).to.exist;
+        expect(msngr.internal.config.yotest.another).to.exist;
+        expect(msngr.internal.config.yotest.okay).to.exist;
+        expect(msngr.internal.config.yotest.okay).to.equal(47);
+
+        msngr.config("yotest", {
+            okay: 999
+        });
+
+        expect(msngr.internal.config.yotest.okay).to.equal(999);
+        expect(msngr.internal.config.yotest.another.what).to.equal("yes");
+    });
 });
