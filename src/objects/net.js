@@ -1,10 +1,16 @@
 msngr.extend((function(external, internal) {
     "use strict";
-    var DEFAULT_PROTOCOL = "http";
-    var DEFAULT_PORT = {
-        http: "80",
-        https: "443"
-    };
+
+    // Setup constants
+    external.config("net", {
+        defaults: {
+            protocol: "http",
+            port: {
+                http: "80",
+                https: "443"
+            }
+        }
+    });
 
     // This method handles requests when msngr is running within a semi-modern net browser
     var browser = function(server, options, callback) {
@@ -180,7 +186,7 @@ msngr.extend((function(external, internal) {
             } else {
                 // Must have omitted protocol.
                 server.host = protocol;
-                server.protocol = DEFAULT_PROTOCOL;
+                server.protocol = internal.config.net.defaults.protocol;
             }
 
             var lastColon = server.host.lastIndexOf(":");
@@ -190,7 +196,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = DEFAULT_PORT[server.protocol];
+                server.port = internal.config.net.defaults.port[server.protocol];
             }
 
             handled = true;
@@ -208,7 +214,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = DEFAULT_PORT[server.protocol];
+                server.port = internal.config.net.defaults.port[server.protocol];
             }
 
             handled = true;
@@ -226,7 +232,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && DEFAULT_PORT[server.protocol] === server.port) {
+        if (!invalid && handled && internal.config.net.defaults.port[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 

@@ -12,6 +12,8 @@ var msngr = msngr || (function() {
         warnings: true
     };
 
+    internal.config = { };
+
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
@@ -166,6 +168,10 @@ var msngr = msngr || (function() {
         }
 
         return result;
+    };
+
+    external.config = function(key, value) {
+        internal.config[key] = value;
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.
@@ -1083,11 +1089,17 @@ msngr.extend((function(external, internal) {
 
 msngr.extend((function(external, internal) {
     "use strict";
-    var DEFAULT_PROTOCOL = "http";
-    var DEFAULT_PORT = {
-        http: "80",
-        https: "443"
-    };
+
+    // Setup constants
+    external.config("net", {
+        defaults: {
+            protocol: "http",
+            port: {
+                http: "80",
+                https: "443"
+            }
+        }
+    });
 
     // This method handles requests when msngr is running within a semi-modern net browser
     var browser = function(server, options, callback) {
@@ -1263,7 +1275,7 @@ msngr.extend((function(external, internal) {
             } else {
                 // Must have omitted protocol.
                 server.host = protocol;
-                server.protocol = DEFAULT_PROTOCOL;
+                server.protocol = internal.config.net.defaults.protocol;
             }
 
             var lastColon = server.host.lastIndexOf(":");
@@ -1273,7 +1285,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = DEFAULT_PORT[server.protocol];
+                server.port = internal.config.net.defaults.port[server.protocol];
             }
 
             handled = true;
@@ -1291,7 +1303,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = DEFAULT_PORT[server.protocol];
+                server.port = internal.config.net.defaults.port[server.protocol];
             }
 
             handled = true;
@@ -1309,7 +1321,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && DEFAULT_PORT[server.protocol] === server.port) {
+        if (!invalid && handled && internal.config.net.defaults.port[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 
@@ -1399,7 +1411,9 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    var CHANNEL_NAME = "__msngr_cross-window";
+    external.config("cross-window", {
+        channel: "__msngr_cross-window"
+    });
 
     // Let's check if localstorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
@@ -1407,7 +1421,7 @@ msngr.extend((function(external, internal) {
     }
 
     window.addEventListener("storage", function(event) {
-        if (event.key === CHANNEL_NAME) {
+        if (event.key === internal.config["cross-window"].channel) {
             // New message data. Respond!
             var obj;
             try {
@@ -1433,7 +1447,7 @@ msngr.extend((function(external, internal) {
         };
 
         try {
-            localStorage.setItem(CHANNEL_NAME, JSON.stringify(obj));
+            localStorage.setItem(internal.config["cross-window"].channel, JSON.stringify(obj));
         } catch (ex) {
             throw "msngr was unable to store data in its storage channel";
         }

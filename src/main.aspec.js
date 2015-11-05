@@ -258,4 +258,16 @@ describe("./main.js", function() {
         msngr.warnings = false;
         expect(msngr.warnings).to.equal(false);
     });
+
+    it("msngr.config() - can set key value pairs for configuration", function() {
+        msngr.config("something_goofy", {
+            crazy: true
+        });
+
+        msngr.debug = true;
+        expect(msngr.internal.config.something_goofy).to.exist;
+        expect(msngr.internal.config.something_goofy.crazy).to.exist;
+        expect(msngr.internal.config.something_goofy.crazy).to.equal(true);
+        msngr.debug = false;
+    });
 });

@@ -12,6 +12,8 @@ var msngr = msngr || (function() {
         warnings: true
     };
 
+    internal.config = { };
+
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
@@ -166,6 +168,10 @@ var msngr = msngr || (function() {
         }
 
         return result;
+    };
+
+    external.config = function(key, value) {
+        internal.config[key] = value;
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.
