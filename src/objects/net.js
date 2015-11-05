@@ -6,7 +6,7 @@ msngr.extend((function(external, internal) {
         https: "443"
     };
 
-    // This method handles requests when msngr is running within a semi-modern web browser
+    // This method handles requests when msngr is running within a semi-modern net browser
     var browser = function(server, options, callback) {
         try {
             var xhr = new XMLHttpRequest();
@@ -159,7 +159,7 @@ msngr.extend((function(external, internal) {
     };
 
     // This method is crazy; tries to figure out what the developer sent to
-    // the web() method to allow maximum flexibility. Normalization is important here.
+    // the net() method to allow maximum flexibility. Normalization is important here.
     var figureOutServer = function(protocol, host, port) {
         var server = { protocol: undefined, host: undefined, port: undefined, canOmitPort: false };
         var handled = false;
@@ -226,11 +226,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && server.protocol === "http" && server.port === "80") {
-            server.canOmitPort = true;
-        }
-
-        if (!invalid && handled && server.protocol === "https" && server.port === "443") {
+        if (!invalid && handled && DEFAULT_PORT[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 
@@ -241,7 +237,7 @@ msngr.extend((function(external, internal) {
         }
 
         if (invalid === true) {
-            throw internal.InvalidParametersException("web", invalidReason);
+            throw internal.InvalidParametersException("net", invalidReason);
         }
 
         // Strip any supplied paths
@@ -260,7 +256,7 @@ msngr.extend((function(external, internal) {
         net: function(protocol, host, port) {
             var server = figureOutServer(protocol, host, port);
 
-            var webObj = {
+            var netObj = {
                 get: function(options, callback) {
                     var opts = external.merge(options, { });
                     opts.method = "get";
@@ -288,25 +284,25 @@ msngr.extend((function(external, internal) {
                 }
             };
 
-            Object.defineProperty(webObj, "protocol", {
+            Object.defineProperty(netObj, "protocol", {
                 get: function() {
                     return server.protocol;
                 }
             });
 
-            Object.defineProperty(webObj, "host", {
+            Object.defineProperty(netObj, "host", {
                 get: function() {
                     return server.host;
                 }
             });
 
-            Object.defineProperty(webObj, "port", {
+            Object.defineProperty(netObj, "port", {
                 get: function() {
                     return server.port;
                 }
             });
 
-            return webObj;
+            return netObj;
         }
     };
 }));

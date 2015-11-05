@@ -158,6 +158,20 @@ describe("./objects/message.js", function() {
         msg.emit(originalPayload);
     });
 
+    it("msngr().emit() / on() - Successfully emits specific message to generic handler and gets the emitted message object", function(done) {
+        msngr("HighlyTopical").on(function(payload, message) {
+            expect(payload).to.exist;
+            expect(payload).to.equal("stuff");
+            expect(message).to.exist;
+            expect(message.topic).to.equal("HighlyTopical");
+            expect(message.category).to.equal("MyCats");
+            expect(message.subcategory).to.equal("OtherCats");
+            done();
+        });
+
+        msngr("HighlyTopical", "MyCats", "OtherCats").emit("stuff");
+    });
+
     it("msngr().emit() / on() - Successfully emits and handles a topic only message", function(done) {
         var msg = msngr("MyTopic");
         msg.on(function(payload) {

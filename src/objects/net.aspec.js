@@ -17,7 +17,16 @@ describe("./objects/net.js", function() {
     var HOST_PORT = "8009";
     var server;
 
-    it("msngr.net(protocol, host, port) - returns a web object when proper input is provided", function() {
+    it("msngr.net() - throws an except when provided bad input", function() {
+        expect(msngr.net.bind(null)).to.throw;
+        expect(msngr.net.bind(undefined)).to.throw;
+        expect(msngr.net.bind(96)).to.throw;
+        expect(msngr.net.bind(new Date())).to.throw;
+        expect(msngr.net.bind("")).to.throw;
+        expect(msngr.net.bind("         ")).to.throw;
+    });
+
+    it("msngr.net(protocol, host, port) - returns a net object when proper input is provided", function() {
         var net = msngr.net(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
         expect(net).to.exist;
         expect(net.protocol).to.equal(HOST_PROTOCOL);
@@ -25,7 +34,7 @@ describe("./objects/net.js", function() {
         expect(net.port).to.equal(HOST_PORT);
     });
 
-    it("msngr.net(protocol, host) - returns a web object when only protocol and host are provided", function() {
+    it("msngr.net(protocol, host) - returns a net object when only protocol and host are provided", function() {
         var net = msngr.net(HOST_PROTOCOL, HOST_NAME);
         expect(net).to.exist;
         expect(net.protocol).to.equal(HOST_PROTOCOL);
@@ -33,7 +42,7 @@ describe("./objects/net.js", function() {
         expect(net.port).to.equal("80");
     });
 
-    it("msngr.net(host) - returns a web object when a string including protocol, host and port are provided", function() {
+    it("msngr.net(host) - returns a net object when a string including protocol, host and port are provided", function() {
         var net = msngr.net(HOST_PROTOCOL + "://" + HOST_NAME + ":" + HOST_PORT);
         expect(net).to.exist;
         expect(net.protocol).to.equal(HOST_PROTOCOL);
@@ -41,7 +50,7 @@ describe("./objects/net.js", function() {
         expect(net.port).to.equal(HOST_PORT);
     });
 
-    it("msngr.net(host) - returns a web object when a string including protocol and host are provided", function() {
+    it("msngr.net(host) - returns a net object when a string including protocol and host are provided", function() {
         var net = msngr.net(HOST_PROTOCOL + "://" + HOST_NAME);
         expect(net).to.exist;
         expect(net.protocol).to.equal(HOST_PROTOCOL);
@@ -49,7 +58,7 @@ describe("./objects/net.js", function() {
         expect(net.port).to.equal("80");
     });
 
-    it("msngr.net(host) - returns a web object when a string including protocol and host are provided and extra path is stripped", function() {
+    it("msngr.net(host) - returns a net object when a string including protocol and host are provided and extra path is stripped", function() {
         var net = msngr.net(HOST_PROTOCOL + "://" + HOST_NAME + "/crazy/stuff");
         expect(net).to.exist;
         expect(net.protocol).to.equal(HOST_PROTOCOL);
@@ -57,7 +66,7 @@ describe("./objects/net.js", function() {
         expect(net.port).to.equal("80");
     });
 
-    it("msngr.net(host) - returns a web object when a string including protocol, host and port are provided and extra path is stripped", function() {
+    it("msngr.net(host) - returns a net object when a string including protocol, host and port are provided and extra path is stripped", function() {
         var net = msngr.net(HOST_PROTOCOL + "://" + HOST_NAME + ":" + HOST_PORT + "/crazy/stuff");
         expect(net).to.exist;
         expect(net.protocol).to.equal(HOST_PROTOCOL);
@@ -65,7 +74,7 @@ describe("./objects/net.js", function() {
         expect(net.port).to.equal(HOST_PORT);
     });
 
-    it("msngr.net(host) - returns a web object when a string only including host is provided", function() {
+    it("msngr.net(host) - returns a net object when a string only including host is provided", function() {
         var net = msngr.net(HOST_NAME);
         expect(net).to.exist;
         expect(net.protocol).to.equal("http");
