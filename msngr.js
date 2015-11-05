@@ -356,7 +356,7 @@ msngr.extend((function(external, internal) {
     };
 
     var nowLegacy = function() {
-        return (new Date).getTime();
+        return Date.now();
     };
 
     var nowExec = undefined;
