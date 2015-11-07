@@ -551,7 +551,11 @@ msngr.extend((function(external, internal) {
                 }
 
                 if (!external.isArray(params)) {
-                    params = [params];
+                    if (external.exist(params)) {
+                        params = [params];
+                    } else {
+                        params = [];
+                    }
                 }
                 params.push(asyncFunc);
                 var syncResult = method.apply(ctx || this, params);

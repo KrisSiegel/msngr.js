@@ -29,7 +29,7 @@ describe("./objects/executer.js", function() {
         });
     });
 
-    it("msngr.internal.objects.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
+    it("msngr.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
         var func1 = function(payload, async) {
             expect(payload.t).to.exist;
             expect(payload.t).to.equal(false);
@@ -74,7 +74,7 @@ describe("./objects/executer.js", function() {
             };
         }
 
-        var executer = msngr.internal.objects.executer([makeObj(func1), makeObj(func2), makeObj(func3), makeObj(func4), makeObj(func5), makeObj(func6)], {
+        var executer = msngr.executer([makeObj(func1), makeObj(func2), makeObj(func3), makeObj(func4), makeObj(func5), makeObj(func6)], {
             t: false
         }, this);
         executer.parallel(function(results) {
@@ -95,6 +95,17 @@ describe("./objects/executer.js", function() {
         expect(msngr.executer).to.exist;
         expect(msngr.executer([], {}, undefined)).to.exist;
         expect(msngr.executer([], {}, undefined).parallel).to.exist;
+    });
+
+    it("msngr.executer(funcs).parallel() - With no parameters specified async is the first parameter", function(done) {
+        var executer = msngr.executer([
+            function(async) {
+                expect(async).to.exist;
+                expect(msngr.isFunction(async)).to.equal(true);
+            }
+        ]).parallel(function() {
+            done();
+        });
     });
 
 });
