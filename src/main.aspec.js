@@ -297,4 +297,17 @@ describe("./main.js", function() {
         expect(msngr.internal.config.yotest.okay).to.equal(999);
         expect(msngr.internal.config.yotest.another.what).to.equal("yes");
     });
+
+    it("msngr.config() - providing only the key should return the existing config", function() {
+        msngr.config("whatevers", {
+            stuff: true,
+            you: {
+                there: "yes"
+            }
+        });
+
+        expect(msngr.config("whatevers")).to.exist;
+        expect(msngr.config("whatevers").stuff).to.equal(true);
+        expect(msngr.config("whatevers").you.there).to.equal("yes");
+    });
 });
