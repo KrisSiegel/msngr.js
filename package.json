@@ -23,6 +23,8 @@
     "url": "http://www.KrisSiegel.com/"
   },
   "devDependencies": {
+    "async": "^1.5.0",
+    "benchmark": "1.0.0",
     "chai": "3.4.0",
     "grunt": "0.4.5",
     "grunt-available-tasks": "0.6.1",
@@ -35,6 +37,7 @@
   },
   "scripts": {
     "test": "node -e \"var g = require('grunt'); g.cli.tasks = ['test']; g.cli();\"",
-    "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\""
+    "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\"",
+    "benchmark": "node -e \"var g = require('grunt'); g.cli.tasks = ['benchmark']; g.cli();\""
   }
 }

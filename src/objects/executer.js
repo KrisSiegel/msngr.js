@@ -18,7 +18,7 @@ msngr.extend((function(external, internal) {
         }
 
         var exec = function(method, params, ctx, done) {
-            setTimeout(function() {
+            external.immediate(function() {
                 var asyncFlag = false;
                 var asyncFunc = function() {
                     asyncFlag = true;
@@ -39,7 +39,7 @@ msngr.extend((function(external, internal) {
                 if (asyncFlag !== true) {
                     done.apply(ctx, [syncResult]);
                 }
-            }, 0);
+            });
         };
 
         return {

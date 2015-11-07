@@ -24,7 +24,8 @@ module.exports = (function(grunt) {
         "src/module.exports.js",
         "!**/*.aspec.js",
         "!**/*.cspec.js",
-        "!**/*.nspec.js"
+        "!**/*.nspec.js",
+        "!**/*.bench.js"
     ];
 
     grunt.initConfig({
@@ -108,73 +109,117 @@ module.exports = (function(grunt) {
         grunt.log.subhead("Unit testing with node.js");
     });
 
+    grunt.registerTask("header:nodeBenching", function() {
+        grunt.log.subhead("Benchmarking with node.js");
+    });
+
     grunt.registerTask("header:clientTesting", function() {
         grunt.log.subhead("Client-side unit testing with phantom.js");
     });
+
+    var jsPaths = ["./", "./src/", "./docs/"];
+    var fetchJsFiles = function(filters) {
+        var fs = require("fs");
+        var path = require("path");
+        var results = [];
+
+        for (var k = 0; k < jsPaths.length; ++k) {
+            var dirs = fs.readdirSync(jsPaths[k]);
+
+            for (var i = 0; i < dirs.length; ++i) {
+                if (fs.statSync(jsPaths[k] + dirs[i]).isDirectory()) {
+                    var files = fs.readdirSync(jsPaths[k] + dirs[i]);
+                    for (var j = 0; j < files.length; ++j) {
+                        var p = path.join("./", jsPaths[k], dirs[i], files[j]);
+                        if (results.indexOf(p) === -1) {
+                            results.push(p);
+                        }
+                    }
+                } else {
+                    var p = path.join("./", jsPaths[k], dirs[i]);
+                    if (results.indexOf(p) === -1) {
+                        results.push(p);
+                    }
+                }
+            }
+        }
+
+        var filteredResults = [];
+        for (var i = 0; i < results.length; ++i) {
+            var include = false;
+            for (var k = 0; k < filters.length; ++k) {
+                if (results[i].indexOf(filters[k]) !== -1) {
+                    include = true;
+                    break;
+                }
+            }
+            if (include) {
+                filteredResults.push(results[i]);
+            }
+        }
+
+        return filteredResults;
+    };
+
+    var setRunner = function(runner, files) {
+        var fs = require("fs");
+        var makeScript = function(path) {
+            return "<script type='text/javascript' src='" + path + "'></script>";
+        };
+
+        var scriptHtml = "";
+
+        if (files !== undefined && files.length > 0) {
+            var file = files.shift();
+            while (file) {
+                scriptHtml += makeScript(file) + "\n";
+                file = files.shift();
+            }
+        }
+        var runnerFileName = "./" + runner;
+        var runnerHtml = fs.readFileSync(runnerFileName, {
+            encoding: "utf8"
+        });
+        var scriptStart = runnerHtml.indexOf("<!-- Start JS Files -->");
+        var scriptEnd = runnerHtml.indexOf("<!-- End JS Files -->");
+
+        var newHtml = runnerHtml.substring(0, scriptStart);
+        newHtml += "<!-- Start JS Files -->";
+        newHtml += scriptHtml;
+        newHtml += runnerHtml.substring(scriptEnd);
+
+        fs.writeFileSync(runnerFileName, newHtml, {
+            encoding: "utf8"
+        });
+        fs.writeFileSync(runnerFileName, newHtml, {
+            encoding: "utf8"
+        });
+    };
 
     /*
     	The setRunner task modifies the specRuner.html file, dynamically, with the
     	unit tests within the project to allow test running with phantomjs.
     */
     grunt.registerTask("setRunner", "Set the client side spec runner", function() {
-        var makeScript = function(path) {
-            return "<script type='text/javascript' src='" + path + "'></script>";
-        };
-        var fs = require("fs");
-        var path = require("path");
+        var tests = fetchJsFiles([".cspec.js", ".aspec.js"]);
+        setRunner("specRunner.html", tests.concat([]));
+        setRunner("specRunner.min.html", tests.concat([]));
+    });
 
-        var tests = [];
-        var testPaths = ["./", "./src/", "./docs/"];
-
-        for (var k = 0; k < testPaths.length; ++k) {
-            var dirs = fs.readdirSync(testPaths[k]);
-
-            for (var i = 0; i < dirs.length; ++i) {
-                if (fs.statSync(testPaths[k] + dirs[i]).isDirectory()) {
-                    var files = fs.readdirSync(testPaths[k] + dirs[i]);
-                    for (var j = 0; j < files.length; ++j) {
-                        var p = path.join("./", testPaths[k], dirs[i], files[j]);
-                        if (tests.indexOf(p) === -1) {
-                            tests.push(p);
-                        }
-                    }
-                } else {
-                    var p = path.join("./", testPaths[k], dirs[i]);
-                    if (tests.indexOf(p) === -1) {
-                        tests.push(p);
-                    }
-                }
-            }
+    grunt.registerTask("run-benchmarks", "Finds all benchmarks and executes them", function() {
+        var async = require("async");
+        var done = this.async();
+        var benchmarks = fetchJsFiles([".bench.js"]);
+        setRunner("benchRunner.html", benchmarks.concat([]));
+        setRunner("benchRunner.min.html", benchmarks.concat([]));
+        var meths = [];
+        for (var i = 0; i < benchmarks.length; ++i) {
+            meths.push(function(p) {
+                return require(p);
+            }("./" + benchmarks[i]));
         }
-
-        var scriptHtml = "";
-
-        if (tests !== undefined && tests.length > 0) {
-            var file = tests.shift();
-            while (tests.length > 0) {
-                if (file.indexOf(".cspec.js") !== -1 || file.indexOf(".aspec.js") !== -1) {
-                    scriptHtml += makeScript(file) + "\n";
-                }
-                file = tests.shift();
-            }
-        }
-
-        var runnerHtml = fs.readFileSync("./specRunner.html", {
-            encoding: "utf8"
-        });
-        var scriptStart = runnerHtml.indexOf("<!-- Start Unit Tests -->");
-        var scriptEnd = runnerHtml.indexOf("<!-- End Unit Tests -->");
-
-        var newHtml = runnerHtml.substring(0, scriptStart);
-        newHtml += "<!-- Start Unit Tests -->";
-        newHtml += scriptHtml;
-        newHtml += runnerHtml.substring(scriptEnd);
-
-        fs.writeFileSync("./specRunner.html", newHtml, {
-            encoding: "utf8"
-        });
-        fs.writeFileSync("./specRunner.min.html", newHtml, {
-            encoding: "utf8"
+        async.series(meths, function (err, results) {
+            done();
         });
     });
 
@@ -237,5 +282,7 @@ module.exports = (function(grunt) {
     grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
     grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "start-reflective-server", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
+
+    grunt.registerTask("benchmark", "Cleans, sets version, builds and runs benchmarks through node.js", ["build", "header:nodeBenching", "run-benchmarks"]);
 
 });

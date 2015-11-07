@@ -1,6 +1,24 @@
 msngr.extend((function(external, internal) {
     "use strict";
 
+    // This chunk of code is only for the browser as a setImmediate workaround
+    if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
+        external.config("immediate", {
+            channel: "__msngr_immediate"
+        });
+
+        var immediateQueue = [];
+
+        window.addEventListener("message", function(event) {
+            if (event.source === window && event.data === internal.config["immediate"].channel) {
+                event.stopPropagation();
+                if (immediateQueue.length > 0) {
+                    immediateQueue.shift()();
+                }
+            }
+        }, true);
+    }
+
     var nowPerformance = function() {
         return performance.now();
     };
@@ -16,6 +34,8 @@ msngr.extend((function(external, internal) {
     var nowExec = undefined;
     var nowExecDebugLabel = "";
     var lastNow = undefined;
+    var isBrowserCached;
+    var immediateFn;
 
     return {
         id: function() {
@@ -71,7 +91,27 @@ msngr.extend((function(external, internal) {
             return result;
         },
         isBrowser: function() {
-            return (typeof XMLHttpRequest !== "undefined");
+            if (isBrowserCached === undefined) {
+                isBrowserCached = (typeof XMLHttpRequest !== "undefined");
+            }
+            return isBrowserCached;
+        },
+        immediate: function(fn) {
+            if (immediateFn === undefined) {
+                if (typeof setImmediate !== "undefined") {
+                    immediateFn = setImmediate;
+                } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
+                    immediateFn = function(f) {
+                        immediateQueue.push(f);
+                        window.postMessage(internal.config["immediate"].channel, "*");
+                    };
+                } else {
+                    immediateFn = function(f) {
+                        setTimeout(f, 0);
+                    };
+                }
+            }
+            immediateFn(fn);
         }
     };
 }));
