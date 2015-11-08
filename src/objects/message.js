@@ -189,7 +189,7 @@ msngr.extend((function(external, internal) {
                     throw internal.InvalidParametersException("option");
                 }
 
-                options[key] = external.copy(value);
+                options[key] = value;
                 counts.options = counts.options + 1;
 
                 return msgObj;
@@ -199,7 +199,7 @@ msngr.extend((function(external, internal) {
                     callback = payload;
                     payload = undefined;
                 }
-                explicitEmit(external.copy(payload), undefined, callback);
+                explicitEmit(payload, undefined, callback);
                 counts.emits = counts.emits + 1;
 
                 return msgObj;
@@ -212,7 +212,7 @@ msngr.extend((function(external, internal) {
                 var uuids = payloadIndex.query(msg);
                 if (uuids.length === 0) {
                     var uuid = payloadIndex.index(msg);
-                    payloads[uuid] = external.copy(payload);
+                    payloads[uuid] = payload;
                     uuids = [uuid];
                 } else {
                     for (var i = 0; i < uuids.length; ++i) {

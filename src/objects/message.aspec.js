@@ -141,23 +141,6 @@ describe("./objects/message.js", function() {
         }).emit();
     });
 
-    it("msngr().emit() / on() - Successfully emits a payload that, when modifies, doesn't affect the handler's data", function(done) {
-        var msg = msngr("MyTopicalTopic");
-        var originalPayload = { tester: "yipyup", num: 7 };
-        msg.on(function(payload, message) {
-            expect(payload).to.exist;
-            expect(payload.tester).to.equal("yipyup");
-            originalPayload.stuff = 47;
-            expect(payload.stuff).to.not.exist;
-
-            originalPayload.num = 42;
-            expect(payload.num).to.equal(7);
-            done();
-        });
-
-        msg.emit(originalPayload);
-    });
-
     it("msngr().emit() / on() - Successfully emits specific message to generic handler and gets the emitted message object", function(done) {
         msngr("HighlyTopical").on(function(payload, message) {
             expect(payload).to.exist;
