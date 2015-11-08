@@ -1,5 +1,5 @@
-#msngr.js API
-This document outlines the exposed msngr.js API. It does not cover anything internal that isn't expected to be used by typical developers.
+# msngr.js API
+This document outlines the exposed msngr.js API. It does not cover anything internal that isn't expected to be used by typical developers and as such all internal APIs are not bound by semantic versioning conventions (aka even minor point updates may break your code if you rely on internal, private API calls).
 
 ## ```msngr(topic, category, subcategory)```
 The main msngr method takes in 3 strings to generate a message object from which all other actions are derived.
@@ -46,11 +46,11 @@ msg.persist("My data");
 ### ```.on(callback)```
 Registers a handler to handle all emissions of the specified message. The callback can take a result either synchronously or asynchronously to supply back to an emit callback.
 
-```callback (required)``` - registers a method to handle the previously supplied message. The value returned is then sent to the emit callback. If a return value needs to be asynchronous then the second parameter supplied to the callback can be used.
+```callback (required)``` - registers a method to handle the previously supplied message. The value returned is then sent to the emit callback. If a return value needs to be asynchronous then the third parameter supplied to the callback can be used.
 
 ```javascript
 var msg = msngr("MyTopic");
-msg.on(function (payload, async) {
+msg.on(function (payload, message, async) {
     var done = async();
     done("Somevalue");
 });
@@ -62,11 +62,11 @@ msg.emit(function (result) {
 ### ```.once(callback)```
 The same as the ```.on(callback)``` except the handler is automatically unregistered after one execution.
 
-```callback (required)``` - registers a method to handle the previously supplied message. The value returned is then sent to the emit callback. If a return value needs to be asynchronous then the second parameter supplied to the callback can be used.
+```callback (required)``` - registers a method to handle the previously supplied message. The value returned is then sent to the emit callback. If a return value needs to be asynchronous then the third parameter supplied to the callback can be used.
 
 ```javascript
 var msg = msngr("MyTopic");
-msg.once(function (payload, async) {
+msg.once(function (payload, message, async) {
     var done = async();
     done("Somevalue");
 });
@@ -151,6 +151,63 @@ var msg = msngr("MyTopic");
 msg.dropAll(); // Drops all handlers even outside of 'MyTopic'!!!
 ```
 
+## ```msngr.net(protocol, host, port)```
+Provides a way to conduct consistent network communications in both the web browser and node.js. The result of this method is a msngr net object.
+
+```protocol (required)``` - Specifies the protocol to use (currently HTTP or HTTPS). Alternatively the entire URI can be passed in.
+
+```host (optional)``` - Specified the host name. It's marked as optional as protocol, host and port can be specified as a single item in the first parameter.
+
+```port (optional)``` - Specified the port. It's marked as optional as protocol, host and port can be specified as a single item in the first parameter.
+
+## msngr net object
+The net object provides handy shortcuts for conducting your network activities. Note that this is mostly useful for plaintext or JSON transport (or other non-binary related types). This DOES NOT handle multipart forms / files and likely never will as it's meant to be a basic, consistent mode of communication.
+
+### ```.get(options, callback)```
+### ```.post(options, callback)```
+### ```.put(options, callback)```
+### ```.delete(options, callback)```
+### ```.options(options, callback)```
+Conducts an HTTP / HTTPS for the specified verb operation.
+
+``` options (required)``` - Expects an object that contains the following, optional properties (all defaults are specified in this definition below and therefore can be elided if desired):
+```javascript
+{
+    path: "/", // The path to send the request to
+    autoJson: true, // Whether or not it should attempt to JSON.parse() a response IF the content type is 'application/json'
+    query: { }, // A set of properties used to generate a query string
+    queryString: undefined, // The query object is used to generate this property; only explicitly use this to provide your own querystring
+    payload: undefined // The payload to deliver in the request body
+}
+```
+
+``` callback (required)``` - The callback to execute when a request has returned a response or has failed. It follows the typical node.js pattern of passing back two parameters: first an error parameter, which should be null when successful, and second a result parameter that should contain the result of the request.
+
+```javascript
+var net = msngr.net("http://localhost:3001");
+net.post({
+    path: "/users",
+    payload: {
+        username: "kris",
+        email: "redacted@redacted.com"
+    }
+}, function(err, result) {
+    if (err) {
+        console.log("Oh noes it failed!");
+    }
+    console.log(result);
+});
+```
+
+### ```.protocol```
+This property returns the protocol of the current net object (either parsed from a single input or explicitly provided in the parameters).
+
+### ```.host```
+This property returns the host of the current net object (either parsed from a single input or explicitly provided in the parameters).
+
+### ```.port```
+This property returns the port of the current net object (either parsed from a single input or explicitly provided in the parameters).
+
 ## Handy DOM utilities
 In implementing the binding and dom option features of msngr some handy DOM utilities had to be created. Why not expose them?
 
@@ -232,18 +289,42 @@ var elms = msngr.querySelectorAllWithEq("div:eq(1) > input");
 ## Miscellaneous utilities
 There are multiple utility methods included in msngr most of which start out as internal only and eventually make their way to external exposure depending on whether Kris finds them useful or not :)
 
+### ```msngr.immediate(fn)```
+Executes a function, asynchronously, as quickly as possible. In node.js and IE this will use ```setImmediate()```, in Chrome / Firefox / Safari / Opera it will use ```window.postMessage()``` and all other environments that do not support the former will use ```setTimeout(fn, 0);```. This method is handy as ```setImmediate()``` and the ```window.postMessage()``` hack are the fastest ways to execute a method asynchronously. ```setTimeout(fn, 0)``` is hella slow.
+
+```fn (required)``` - the function to execute asynchronously.
+
 ### Executer object
-The executor object is a very simple way of specifying n number of functions that can then be executed either as is or in parallel (similar to async.parallel).
+The executor object is a very simple way of specifying n number of functions that can then be executed in parallel (similar to async.parallel).
 
 ```javascript
-var executorObj = msngr.executer(arrayOfFunctions, payload, context);
+var funcs1 = [
+    function() {
+        return 1 + 1;
+    }
+];
+var executerObj1 = msngr.executer(funcs1);
+
+// Alternatively
+var funcs2 = [
+    {
+        method: function() {
+            return 1 + 1;
+        },
+        params: [1, 2, 3, 4]
+    }
+];
+var executerObj2 = msngr.executer(funcs2);
 ```
 
-```arrayOfFunctions (required)``` - A single function or an array of functions to be handled by the executer
-
-```payload (optional)``` - An optional payload to pass into every method executed
-
-```context (optional)``` - Sets the context in which callbacks are executed with.
+```paramater 1 (required)``` - The parameter should be an array of either functions or of objects in the following format:
+```javascript
+{
+    method: function() {},
+    params: [],
+    context: this
+}
+```
 
 #### ```executorObj.parallel(done)```
 Executes all methods specified and uses an async callback to provide the sync or async result from each method executed. The callback is only called once each method executes its own callback signifying that code execution has been completed.
@@ -253,31 +334,18 @@ Executes all methods specified and uses an async callback to provide the sync or
 Example:
 ```javascript
 var funcs = [];
-funcs.push(function (payload, async) {
+funcs.push(function (async) {
     var done = async();
     done(42);
 });
-funcs.push(function (payload, async) {
+funcs.push(function (async) {
     return 15;
 });
-var exec = msngr.executer(funcs, { });
+var exec = msngr.executer(funcs);
 exec.parallel(function (results) {
     console.log(results); // Prints [42, 15]
 });
 ```
-
-#### ```executorObj.execute(done)```
-Executes the specified method and provides an async callback to provide the sync or async result from the method itself. *NOTE* this only executes a single function (the first function if an array of functions were specified).
-
-```done (optional)``` - The callback method that receives the results from the method executed.
-
-
-### ```msngr.options(key, value)```
-Sets a global set of options that apply to all messages created after globals have been set.
-
-```key (required)``` - The key pertaining to the option desired to be globally configured.
-
-```value (optional)``` - The optional configuration values that come along with globally setting options.
 
 ### ```msngr.extend(obj, target)```
 Extends either the msngr object or a specified target object.
@@ -297,7 +365,7 @@ console.log(msngr.sayHello());
 ```
 
 ### ```msngr.merge(input1, input2, ..., inputN)```
-Merges an n number of inputs together. Combines objects with other objects (the merging overwrites in order should conflict arrise), functions with objects, strings and strings and arrays.
+Merges an n number of inputs together. Combines objects with other objects (the merging overwrites in order should conflict arrise), functions with objects, strings and strings and arrays. **NOTE** this will merge references together; it does not produce deep copies for objects.
 
 ```inputn (required)``` - Specify as many parameters as necessary for merging.
 
@@ -305,6 +373,31 @@ Merges an n number of inputs together. Combines objects with other objects (the 
 var merged = msngr.merge({ val1: "test" }, { val2: "whatever!" }, { val2: "no!" });
 console.log(merged.val1); // Prints "test"
 console.log(merged.val2); // Prints "no!"
+```
+
+### ```msngr.copy(object)```
+Performs a deep copy on the supplied object. Any non-native JavaScript object is simply returned as a reference (coping those, accurately, without knowledge of the object is difficult to get right and is rarely something you'd want copied anyway).
+
+### ```msngr.config(key, object)```
+Provides a handy way to store a configuration that never completely overwrites but, instead, merges with the intent of applying a default configuration in the first call and a specific environment configuration in a subsequent call. This is also used for all internal constants for msngr so a developer can override them should they wish.
+
+```key (required)``` - The key used to fetch the configuration associated.
+
+```object (optional)``` - If the object is elided then the configuration will be returned otherwise the provided object will be merged with the existing configuration.
+
+```javascript
+msngr.config("yotest", {
+    something: true,
+    another: {
+        what: "yes"
+    }
+});
+
+msngr.config("yotest", {
+    okay: 47
+});
+
+console.log(msngr.config("yotest")); // outputs { something: true, another: { what: "yes" }, okay: 47 };
 ```
 
 ### ```msngr.exist(obj)```
@@ -461,6 +554,9 @@ Removes duplicates from an array and returns the resulting, deduped array.
 var myArray = [5, 17, 42, 56, 42, 56, 42, 97];
 console.log(msngr.deDupeArray(myArray)); // Outputs [5, 17, 42, 56, 97]
 ```
+
+### ```msngr.isBrowser()```
+Returns a boolean indicating whether msngr is running in a browser context or not.
 
 ### ```msngr.argumentsToArray(args)```
 Converts an arguments object to an array object.

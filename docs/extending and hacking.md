@@ -24,12 +24,12 @@ You can also supply a method which is provided the external and internal interfa
 
 ```javascript
 msngr.extend(function (external, internal) {
-    internal.options["my option"] = function (message, payload, options, async) {
+    internal.option("my option", function (message, payload, options, async) {
         var config = options["my option"];
         var done = async();
         // Do something here
         done("My Result");
-    };
+    });
 
     return { }; // Optionally return an object that gets mixed with the msngr object
 });
