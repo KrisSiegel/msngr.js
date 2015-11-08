@@ -118,20 +118,20 @@ describe("./objects/message.js", function() {
     });
 
     it("msngr().option() - custom option processor works as expected", function(done) {
-        msngr.internal.options["testsync"] = function(message, payload, options, async) {
+        msngr.internal.option("testsync", function(message, payload, options, async) {
             return "synced!";
-        };
+        });
 
         var msg = msngr("MyTopic").option("testsync").on(function(payload) {
             expect(payload).to.exist;
             expect(payload).to.equal("synced!");
 
-            msngr.internal.options["testasync"] = function(message, payload, options, async) {
-                var d = async();
+            msngr.internal.option("testasync", function(message, payload, options, masync) {
+                var d = masync();
                 d({
                     words: "asynced!"
                 });
-            };
+            });
 
             var msg2 = msngr("AnotherTopic").option("testasync").on(function(payload2) {
                 expect(payload2).to.exist;
@@ -139,6 +139,37 @@ describe("./objects/message.js", function() {
                 done();
             }).emit();
         }).emit();
+    });
+
+    it("msngr().emit() / on() - Successfully emits a payload that, when modifies, doesn't affect the handler's data", function(done) {
+        var msg = msngr("MyTopicalTopic");
+        var originalPayload = { tester: "yipyup", num: 7 };
+        msg.on(function(payload, message) {
+            expect(payload).to.exist;
+            expect(payload.tester).to.equal("yipyup");
+            originalPayload.stuff = 47;
+            expect(payload.stuff).to.not.exist;
+
+            originalPayload.num = 42;
+            expect(payload.num).to.equal(7);
+            done();
+        });
+
+        msg.emit(originalPayload);
+    });
+
+    it("msngr().emit() / on() - Successfully emits specific message to generic handler and gets the emitted message object", function(done) {
+        msngr("HighlyTopical").on(function(payload, message) {
+            expect(payload).to.exist;
+            expect(payload).to.equal("stuff");
+            expect(message).to.exist;
+            expect(message.topic).to.equal("HighlyTopical");
+            expect(message.category).to.equal("MyCats");
+            expect(message.subcategory).to.equal("OtherCats");
+            done();
+        });
+
+        msngr("HighlyTopical", "MyCats", "OtherCats").emit("stuff");
     });
 
     it("msngr().emit() / on() - Successfully emits and handles a topic only message", function(done) {
@@ -269,10 +300,14 @@ describe("./objects/message.js", function() {
             return "testering";
         });
 
-        msg.on(function(payload, async) {
+        msg.on(function(payload, message, async) {
             var finished = async();
             ++handled;
             expect(payload).to.exist;
+            expect(message).to.exist;
+            expect(message.topic).to.equal("MyTopic");
+            expect(message.category).to.equal("MyCategory");
+            expect(message.subcategory).to.equal("MySubCategory");
             expect(payload).to.equal("ThreeHandlers");
             finished(42);
         });

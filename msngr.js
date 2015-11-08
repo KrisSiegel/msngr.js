@@ -9,16 +9,25 @@ var msngr = msngr || (function() {
 
     // Defaults for some internal functions
     var internal = {
-        globalOptions: {},
         warnings: true
     };
+
+    internal.config = { };
 
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "2.4.1";
+    external.version = "3.0.0";
+
+    var getType = function(input) {
+        return Object.prototype.toString.call(input);
+    };
+
+    var extractFunction = function(input) {
+        return input.bind({});
+    };
 
     // Merge two inputs into one
     var twoMerge = function(input1, input2) {
@@ -131,13 +140,41 @@ var msngr = msngr || (function() {
         return result;
     };
 
-    // An external options interface for global options settings
-    external.options = function(key, value) {
-        if (!external.exist(key)) {
-            throw internal.InvalidParametersException("key");
+    external.copy = function(obj) {
+        if (obj === undefined || obj === null) {
+            return obj;
+        }
+        var objType = getType(obj);
+        if (["[object Object]", "[object Function]"].indexOf(objType) === -1) {
+            return obj;
         }
 
-        internal.globalOptions[key] = value;
+        var result;
+        if (getType(obj) === "[object Object]") {
+            result = {};
+        } else if (getType(obj) === "[object Function]") {
+            result = extractFunction(obj)
+        }
+
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                var keyType = getType(obj[key]);
+                if (["[object Object]", "[object Function]"].indexOf(keyType) !== -1) {
+                    result[key] = external.copy(obj[key]);
+                } else {
+                    result[key] = obj[key];
+                }
+            }
+        }
+
+        return result;
+    };
+
+    external.config = function(key, value) {
+        if (value !== undefined) {
+            internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
+        }
+        return internal.config[key];
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.
@@ -284,12 +321,16 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.InvalidParametersException = function(str) {
-        return {
+    internal.InvalidParametersException = function(str, reason) {
+        var m = {
             name: "InvalidParametersException",
             severity: "unrecoverable",
             message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
         };
+        if (!external.isEmptyString(reason)) {
+            m.message = m.message + " " + reason;
+        }
+        return m;
     };
 
     internal.ReservedKeywordsException = function(keyword) {
@@ -315,6 +356,24 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
+    // This chunk of code is only for the browser as a setImmediate workaround
+    if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
+        external.config("immediate", {
+            channel: "__msngr_immediate"
+        });
+
+        var immediateQueue = [];
+
+        window.addEventListener("message", function(event) {
+            if (event.source === window && event.data === internal.config["immediate"].channel) {
+                event.stopPropagation();
+                if (immediateQueue.length > 0) {
+                    immediateQueue.shift()();
+                }
+            }
+        }, true);
+    }
+
     var nowPerformance = function() {
         return performance.now();
     };
@@ -324,12 +383,14 @@ msngr.extend((function(external, internal) {
     };
 
     var nowLegacy = function() {
-        return (new Date).getTime();
+        return Date.now();
     };
 
     var nowExec = undefined;
     var nowExecDebugLabel = "";
     var lastNow = undefined;
+    var isBrowserCached;
+    var immediateFn;
 
     return {
         id: function() {
@@ -371,7 +432,7 @@ msngr.extend((function(external, internal) {
             }
             arr.pop();
         },
-        deDupeArray: function (arr) {
+        deDupeArray: function(arr) {
             var hash = { };
             var result = [];
             var arrLength = arr.length;
@@ -383,6 +444,29 @@ msngr.extend((function(external, internal) {
             }
 
             return result;
+        },
+        isBrowser: function() {
+            if (isBrowserCached === undefined) {
+                isBrowserCached = (typeof XMLHttpRequest !== "undefined");
+            }
+            return isBrowserCached;
+        },
+        immediate: function(fn) {
+            if (immediateFn === undefined) {
+                if (typeof setImmediate !== "undefined") {
+                    immediateFn = setImmediate;
+                } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
+                    immediateFn = function(f) {
+                        immediateQueue.push(f);
+                        window.postMessage(internal.config["immediate"].channel, "*");
+                    };
+                } else {
+                    immediateFn = function(f) {
+                        setTimeout(f, 0);
+                    };
+                }
+            }
+            immediateFn(fn);
         }
     };
 }));
@@ -473,9 +557,6 @@ msngr.extend((function(external, internal) {
         },
         areEmptyStrings: function() {
             return internal.reiterativeValidation(external.isEmptyString, external.argumentsToArray(arguments));
-        },
-        hasWildCard: function(str) {
-            return (str.indexOf("*") !== -1);
         }
     };
 }));
@@ -484,50 +565,47 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
-    internal.objects.executer = function(methods, payload, context) {
-
-        if (external.isFunction(methods)) {
-            methods = [methods];
-        }
+    internal.objects.executer = function(methods) {
 
         if (!external.exist(methods) || !external.isArray(methods)) {
             throw internal.InvalidParametersException("executor");
         }
 
-        var exec = function(method, pay, ctx, done) {
-            setTimeout(function() {
-                var async = false;
+        // Support passing in just methods
+        for (var i = 0; i < methods.length; ++i) {
+            if (external.isFunction(methods[i])) {
+                methods[i] = {
+                    method: methods[i]
+                };
+            }
+        }
+
+        var exec = function(method, params, ctx, done) {
+            external.immediate(function() {
+                var asyncFlag = false;
                 var asyncFunc = function() {
-                    async = true;
+                    asyncFlag = true;
                     return function(result) {
                         done.apply(ctx, [result]);
                     };
                 }
 
-                var params = undefined;
-                if (external.isArray(pay)) {
-                    params = pay;
-                } else {
-                    params = [pay];
+                if (!external.isArray(params)) {
+                    if (external.exist(params)) {
+                        params = [params];
+                    } else {
+                        params = [];
+                    }
                 }
                 params.push(asyncFunc);
-
                 var syncResult = method.apply(ctx || this, params);
-                if (async !== true) {
+                if (asyncFlag !== true) {
                     done.apply(ctx, [syncResult]);
                 }
-            }, 0);
+            });
         };
 
         return {
-            execute: function(done) {
-                if (methods.length === 0 && external.exist(done)) {
-                    return done.apply(context, [
-                        []
-                    ]);
-                }
-                return exec(methods[0], payload, context, done);
-            },
             parallel: function(done) {
                 var results = [];
                 var executed = 0;
@@ -539,6 +617,10 @@ msngr.extend((function(external, internal) {
                 }
 
                 for (var i = 0; i < methods.length; ++i) {
+                    var method = methods[i].method;
+                    var params = methods[i].params;
+                    var context = methods[i].context;
+
                     (function(m, p, c) {
                         exec(m, p, c, function(result) {
                             if (external.exist(result)) {
@@ -551,7 +633,7 @@ msngr.extend((function(external, internal) {
                                 done.apply(context, [results]);
                             }
                         });
-                    }(methods[i], payload, context));
+                    }(method, params, context));
                 }
             }
         };
@@ -687,6 +769,9 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
+    internal.option = function(opt, handler) {
+        internal.option[opt] = handler;
+    };
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
@@ -732,8 +817,11 @@ msngr.extend((function(external, internal) {
     internal.processOpts = function(opts, message, payload, callback) {
         var optProcessors = [];
         for (var key in opts) {
-            if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
-                optProcessors.push(internal.options[key]);
+            if (opts.hasOwnProperty(key) && external.exist(internal.option[key])) {
+                optProcessors.push({
+                    method: internal.option[key],
+                    params: [message, payload, opts]
+                });
             }
         }
 
@@ -743,7 +831,7 @@ msngr.extend((function(external, internal) {
         }
 
         // Long circuit to do stuff (du'h)
-        var execs = internal.objects.executer(optProcessors, [message, payload, opts], this);
+        var execs = internal.objects.executer(optProcessors);
 
         execs.parallel(function(results) {
             var result = payload;
@@ -784,7 +872,7 @@ msngr.extend((function(external, internal) {
         }
 
         if (external.isObject(topic)) {
-            msg = topic;
+            msg = external.copy(topic);
         } else {
             msg = {};
             msg.topic = topic;
@@ -798,9 +886,7 @@ msngr.extend((function(external, internal) {
             }
         }
 
-        // Copy global options
-        var options = external.merge({}, internal.globalOptions);
-
+        var options = {};
         var counts = {
             emits: 0,
             persists: 0,
@@ -812,19 +898,23 @@ msngr.extend((function(external, internal) {
 
         var explicitEmit = function(payload, uuids, callback) {
             var uuids = uuids || messageIndex.query(msg) || [];
-            var methods = [];
-            var toDrop = [];
-            for (var i = 0; i < uuids.length; ++i) {
-                var obj = handlers[uuids[i]];
-                methods.push(obj.handler);
-
-                if (obj.once === true) {
-                    toDrop.push(obj.handler);
-                }
-            }
 
             internal.processOpts(options, msg, payload, function(result) {
-                var execs = internal.objects.executer(methods, result, (msg.context || this));
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < uuids.length; ++i) {
+                    var obj = handlers[uuids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [result, msg]
+                    });
+
+                    if (obj.once === true) {
+                        toDrop.push(obj.handler);
+                    }
+                }
+
+                var execs = internal.objects.executer(methods);
 
                 for (var i = 0; i < toDrop.length; ++i) {
                     msgObj.drop(toDrop[i]);
@@ -861,7 +951,7 @@ msngr.extend((function(external, internal) {
                     throw internal.InvalidParametersException("option");
                 }
 
-                options[key] = value;
+                options[key] = external.copy(value);
                 counts.options = counts.options + 1;
 
                 return msgObj;
@@ -871,7 +961,7 @@ msngr.extend((function(external, internal) {
                     callback = payload;
                     payload = undefined;
                 }
-                explicitEmit(payload, undefined, callback);
+                explicitEmit(external.copy(payload), undefined, callback);
                 counts.emits = counts.emits + 1;
 
                 return msgObj;
@@ -884,11 +974,11 @@ msngr.extend((function(external, internal) {
                 var uuids = payloadIndex.query(msg);
                 if (uuids.length === 0) {
                     var uuid = payloadIndex.index(msg);
-                    payloads[uuid] = payload;
+                    payloads[uuid] = external.copy(payload);
                     uuids = [uuid];
                 } else {
                     for (var i = 0; i < uuids.length; ++i) {
-                        payloads[uuids[i]] = external.extend(payload, payloads[uuids[i]]);
+                        payloads[uuids[i]] = external.merge(payload, payloads[uuids[i]]);
                     }
                 }
 
@@ -1041,6 +1131,322 @@ msngr.extend((function(external, internal) {
     return {};
 }));
 
+msngr.extend((function(external, internal) {
+    "use strict";
+
+    // Setup constants
+    external.config("net", {
+        defaults: {
+            protocol: "http",
+            port: {
+                http: "80",
+                https: "443"
+            },
+            autoJson: true
+        }
+    });
+
+    // This method handles requests when msngr is running within a semi-modern net browser
+    var browser = function(server, options, callback) {
+        try {
+            var xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200 || xhr.status === 201) {
+                        var obj;
+                        if (options.autoJson === true && this.getResponseHeader("content-type") === "application/json") {
+                            try {
+                                obj = JSON.parse(xhr.response);
+                            } catch (ex) {
+                                // Don't do anything; probably wasn't JSON anyway
+                                // Set obj to undefined just incase it contains something awful
+                                obj = undefined;
+                            }
+                        }
+                        callback.apply(undefined, [null, (obj || xhr.response)]);
+                    } else {
+                        var errObj = {
+                            status: xhr.status,
+                            response: xhr.response
+                        };
+                        callback.apply(undefined, [errObj, null]);
+                    }
+                }
+            };
+
+            var url = server.protocol + "://" + server.host;
+            if (server.canOmitPort === true) {
+                url = url + options.path;
+            } else {
+                url = url + ":" + server.port + options.path;
+            }
+
+            var datum;
+            if (external.exist(options.payload)) {
+                if (external.isObject(options.payload)) {
+                    try {
+                        datum = JSON.stringify(options.payload);
+                    } catch (ex) {
+                        // Really couldn't give a shit about this exception
+                    }
+                }
+
+                // undefined has no meaning in JSON but null does; so let's only
+                // and explicitly set anything if it's still undefined (so no null checks)
+                if (datum === undefined) {
+                    datum = options.payload;
+                }
+            }
+
+            xhr.open(options.method, url);
+            xhr.send(datum);
+        } catch (ex) {
+            callback.apply(undefined, [ex, null]);
+        }
+    };
+
+    // This method handles requests when msngr is running within node.js
+    var node = function(server, options, callback) {
+        var http = require("http");
+        var request = http.request({
+            method: options.method,
+            host: server.host,
+            port: server.port,
+            path: options.path
+        }, function(response) {
+            response.setEncoding("utf8");
+            var body = "";
+            response.on("data", function(chunk) {
+                body = body + chunk;
+            });
+
+            response.on("end", function() {
+                var obj;
+                if (options.autoJson === true && response.headers["content-type"] === "application/json") {
+                    try {
+                        obj = JSON.parse(body);
+                    } catch (ex) {
+                        // Don't do anything; probably wasn't JSON anyway
+                        // Set obj to undefined just incase it contains something awful
+                        obj = undefined;
+                    }
+                }
+                obj = obj || body;
+                var errObj;
+                if (request.statusCode >= 400) {
+                        errObj = {
+                        status: request.statusCode,
+                        response: (obj || body)
+                    };
+                    obj = null;
+                }
+                callback.apply(undefined, [errObj, obj]);
+            });
+        });
+
+        if (external.exist(options.payload)) {
+            var datum;
+            if (external.isObject(options.payload)) {
+                try {
+                    datum = JSON.stringify(options.payload);
+                } catch (ex) {
+                    // Really couldn't give a shit about this exception
+                }
+            }
+
+            // undefined has no meaning in JSON but null does; so let's only
+            // and explicitly set anything if it's still undefined (so no null checks)
+            if (datum === undefined) {
+                datum = options.payload;
+            }
+
+            request.write(datum);
+        }
+
+        request.end();
+    };
+
+    var request = function(server, opts, callback) {
+        opts.path = opts.path || "/";
+        opts.autoJson = opts.autoJson || internal.config["net"].defaults.autoJson;
+
+        if (external.exist(opts.query)) {
+            if (external.isString(opts.query)) {
+                opts.queryString = opts.query;
+            }
+
+            if (external.isObject(opts.query)) {
+                opts.queryString = "?";
+                for (var key in opts.query) {
+                    if (opts.query.hasOwnProperty(key)) {
+                        if (opts.queryString !== "?") {
+                            opts.queryString = opts.queryString + "&";
+                        }
+                        opts.queryString = opts.queryString + encodeURIComponent(key) + "=" + encodeURIComponent(opts.query[key]);
+                    }
+                }
+            }
+        }
+
+        opts.path = opts.path + (opts.queryString || "");
+
+        if (external.isBrowser()) {
+            browser(server, opts, callback);
+        } else {
+            node(server, opts, callback);
+        }
+    };
+
+    // This method is crazy; tries to figure out what the developer sent to
+    // the net() method to allow maximum flexibility. Normalization is important here.
+    var figureOutServer = function(protocol, host, port) {
+        var server = { protocol: undefined, host: undefined, port: undefined, canOmitPort: false };
+        var handled = false;
+        var invalid = false;
+        var invalidReason;
+
+        if (external.isEmptyString(protocol)) {
+            invalid = true;
+            invalidReason = "Protocol or host not provided";
+        }
+
+        if (!invalid && !external.isEmptyString(protocol) && external.isEmptyString(host) && external.isEmptyString(port)) {
+            // Only one argument was provided; must be whole host.
+            var split = protocol.split("://");
+            if (split.length == 2) {
+                server.protocol = split[0];
+                server.host = split[1];
+            } else {
+                // Must have omitted protocol.
+                server.host = protocol;
+                server.protocol = internal.config.net.defaults.protocol;
+            }
+
+            var lastColon = server.host.lastIndexOf(":");
+            if (lastColon !== -1) {
+                // There is a port; let's grab it!
+                server.port = server.host.substring(lastColon + 1, server.host.length);
+                server.host = server.host.substring(0, lastColon);
+            } else {
+                // There ain't no port!
+                server.port = internal.config.net.defaults.port[server.protocol];
+            }
+
+            handled = true;
+        }
+
+        if (!invalid && !handled && !external.isEmptyString(protocol) && !external.isEmptyString(host) && external.isEmptyString(port)) {
+            // Okay, protocol and host are provided. Figure out port!
+            server.protocol = protocol;
+            server.host = host;
+
+            var lastColon = server.host.lastIndexOf(":");
+            if (lastColon !== -1) {
+                // There is a port; let's grab it!
+                server.port = server.host.substring(lastColon + 1, server.host.length);
+                server.host = server.host.substring(0, lastColon);
+            } else {
+                // There ain't no port!
+                server.port = internal.config.net.defaults.port[server.protocol];
+            }
+
+            handled = true;
+        }
+
+        if (!invalid && !handled && !external.isEmptyString(protocol) && !external.isEmptyString(host) && !external.isEmptyString(port)) {
+            // Everything is provided. Holy shit, does that ever happen!?
+            server.protocol = protocol;
+            server.host = host;
+            server.port = port;
+
+            handled = true;
+        }
+
+        // Port explicitness can be omitted for some protocols where the port is their default
+        // so let's mark them as can be omitted. This will make output less confusing for
+        // more inexperienced developers plus it looks prettier :).
+        if (!invalid && handled && internal.config.net.defaults.port[server.protocol] === server.port) {
+            server.canOmitPort = true;
+        }
+
+        if (!invalid && !handled) {
+            // Well we didn't handle the input but also didn't think it was invalid. Crap!
+            invalid = true;
+            invalidReason = "Unable to handle input into method. Please open a GitHub issue with your input :)";
+        }
+
+        if (invalid === true) {
+            throw internal.InvalidParametersException("net", invalidReason);
+        }
+
+        // Strip any supplied paths
+        var stripPath = function(input) {
+            var index = input.indexOf("/");
+            return input.substring(0, ((index === -1) ? input.length : index));
+        };
+
+        server.host = stripPath(server.host);
+        server.port = stripPath(server.port);
+
+        return server;
+    };
+
+    return {
+        net: function(protocol, host, port) {
+            var server = figureOutServer(protocol, host, port);
+
+            var netObj = {
+                get: function(options, callback) {
+                    var opts = external.merge(options, { });
+                    opts.method = "get";
+                    request(server, opts, callback);
+                },
+                post: function(options, callback) {
+                    var opts = external.merge(options, { });
+                    opts.method = "post";
+                    request(server, opts, callback);
+                },
+                put: function(options, callback) {
+                    var opts = external.merge(options, { });
+                    opts.method = "put";
+                    request(server, opts, callback);
+                },
+                delete: function(options, callback) {
+                    var opts = external.merge(options, { });
+                    opts.method = "delete";
+                    request(server, opts, callback);
+                },
+                options: function(options, callback) {
+                    var opts = external.merge(options, { });
+                    opts.method = "options";
+                    request(server, opts, callback);
+                }
+            };
+
+            Object.defineProperty(netObj, "protocol", {
+                get: function() {
+                    return server.protocol;
+                }
+            });
+
+            Object.defineProperty(netObj, "host", {
+                get: function() {
+                    return server.host;
+                }
+            });
+
+            Object.defineProperty(netObj, "port", {
+                get: function() {
+                    return server.port;
+                }
+            });
+
+            return netObj;
+        }
+    };
+}));
+
 /*
     ./options/cross-window.js
 
@@ -1050,9 +1456,9 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    var CHANNEL_NAME = "__msngr_cross-window";
-
-    internal.options = internal.options || {};
+    external.config("cross-window", {
+        channel: "__msngr_cross-window"
+    });
 
     // Let's check if localstorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
@@ -1060,7 +1466,7 @@ msngr.extend((function(external, internal) {
     }
 
     window.addEventListener("storage", function(event) {
-        if (event.key === CHANNEL_NAME) {
+        if (event.key === internal.config["cross-window"].channel) {
             // New message data. Respond!
             var obj;
             try {
@@ -1075,7 +1481,7 @@ msngr.extend((function(external, internal) {
         }
     });
 
-    internal.options["cross-window"] = function(message, payload, options, async) {
+    internal.option("cross-window", function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options["cross-window"] || {};
@@ -1086,13 +1492,13 @@ msngr.extend((function(external, internal) {
         };
 
         try {
-            localStorage.setItem(CHANNEL_NAME, JSON.stringify(obj));
+            localStorage.setItem(internal.config["cross-window"].channel, JSON.stringify(obj));
         } catch (ex) {
             throw "msngr was unable to store data in its storage channel";
         }
 
         return undefined;
-    };
+    });
 
     // This is an internal extension; do not export explicitly.
     return {};
@@ -1106,9 +1512,7 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.options = internal.options || {};
-
-    internal.options.dom = function(message, payload, options, async) {
+    internal.option("dom", function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options.dom || {};
@@ -1172,7 +1576,7 @@ msngr.extend((function(external, internal) {
 
         return resultMap;
 
-    };
+    });
 
     // This is an internal extension; do not export explicitly.
     return {};

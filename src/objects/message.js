@@ -7,6 +7,9 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
+    internal.option = function(opt, handler) {
+        internal.option[opt] = handler;
+    };
 
     var messageIndex = internal.objects.memory();
     var payloadIndex = internal.objects.memory();
@@ -52,8 +55,11 @@ msngr.extend((function(external, internal) {
     internal.processOpts = function(opts, message, payload, callback) {
         var optProcessors = [];
         for (var key in opts) {
-            if (opts.hasOwnProperty(key) && external.exist(internal.options[key])) {
-                optProcessors.push(internal.options[key]);
+            if (opts.hasOwnProperty(key) && external.exist(internal.option[key])) {
+                optProcessors.push({
+                    method: internal.option[key],
+                    params: [message, payload, opts]
+                });
             }
         }
 
@@ -63,7 +69,7 @@ msngr.extend((function(external, internal) {
         }
 
         // Long circuit to do stuff (du'h)
-        var execs = internal.objects.executer(optProcessors, [message, payload, opts], this);
+        var execs = internal.objects.executer(optProcessors);
 
         execs.parallel(function(results) {
             var result = payload;
@@ -104,7 +110,7 @@ msngr.extend((function(external, internal) {
         }
 
         if (external.isObject(topic)) {
-            msg = topic;
+            msg = external.copy(topic);
         } else {
             msg = {};
             msg.topic = topic;
@@ -118,9 +124,7 @@ msngr.extend((function(external, internal) {
             }
         }
 
-        // Copy global options
-        var options = external.merge({}, internal.globalOptions);
-
+        var options = {};
         var counts = {
             emits: 0,
             persists: 0,
@@ -132,19 +136,23 @@ msngr.extend((function(external, internal) {
 
         var explicitEmit = function(payload, uuids, callback) {
             var uuids = uuids || messageIndex.query(msg) || [];
-            var methods = [];
-            var toDrop = [];
-            for (var i = 0; i < uuids.length; ++i) {
-                var obj = handlers[uuids[i]];
-                methods.push(obj.handler);
-
-                if (obj.once === true) {
-                    toDrop.push(obj.handler);
-                }
-            }
 
             internal.processOpts(options, msg, payload, function(result) {
-                var execs = internal.objects.executer(methods, result, (msg.context || this));
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < uuids.length; ++i) {
+                    var obj = handlers[uuids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [result, msg]
+                    });
+
+                    if (obj.once === true) {
+                        toDrop.push(obj.handler);
+                    }
+                }
+
+                var execs = internal.objects.executer(methods);
 
                 for (var i = 0; i < toDrop.length; ++i) {
                     msgObj.drop(toDrop[i]);
@@ -181,7 +189,7 @@ msngr.extend((function(external, internal) {
                     throw internal.InvalidParametersException("option");
                 }
 
-                options[key] = value;
+                options[key] = external.copy(value);
                 counts.options = counts.options + 1;
 
                 return msgObj;
@@ -191,7 +199,7 @@ msngr.extend((function(external, internal) {
                     callback = payload;
                     payload = undefined;
                 }
-                explicitEmit(payload, undefined, callback);
+                explicitEmit(external.copy(payload), undefined, callback);
                 counts.emits = counts.emits + 1;
 
                 return msgObj;
@@ -204,11 +212,11 @@ msngr.extend((function(external, internal) {
                 var uuids = payloadIndex.query(msg);
                 if (uuids.length === 0) {
                     var uuid = payloadIndex.index(msg);
-                    payloads[uuid] = payload;
+                    payloads[uuid] = external.copy(payload);
                     uuids = [uuid];
                 } else {
                     for (var i = 0; i < uuids.length; ++i) {
-                        payloads[uuids[i]] = external.extend(payload, payloads[uuids[i]]);
+                        payloads[uuids[i]] = external.merge(payload, payloads[uuids[i]]);
                     }
                 }
 

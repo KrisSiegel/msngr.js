@@ -84,9 +84,6 @@ msngr.extend((function(external, internal) {
         },
         areEmptyStrings: function() {
             return internal.reiterativeValidation(external.isEmptyString, external.argumentsToArray(arguments));
-        },
-        hasWildCard: function(str) {
-            return (str.indexOf("*") !== -1);
         }
     };
 }));

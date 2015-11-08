@@ -9,16 +9,25 @@ var msngr = msngr || (function() {
 
     // Defaults for some internal functions
     var internal = {
-        globalOptions: {},
         warnings: true
     };
+
+    internal.config = { };
 
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "2.4.1";
+    external.version = "3.0.0";
+
+    var getType = function(input) {
+        return Object.prototype.toString.call(input);
+    };
+
+    var extractFunction = function(input) {
+        return input.bind({});
+    };
 
     // Merge two inputs into one
     var twoMerge = function(input1, input2) {
@@ -131,13 +140,41 @@ var msngr = msngr || (function() {
         return result;
     };
 
-    // An external options interface for global options settings
-    external.options = function(key, value) {
-        if (!external.exist(key)) {
-            throw internal.InvalidParametersException("key");
+    external.copy = function(obj) {
+        if (obj === undefined || obj === null) {
+            return obj;
+        }
+        var objType = getType(obj);
+        if (["[object Object]", "[object Function]"].indexOf(objType) === -1) {
+            return obj;
         }
 
-        internal.globalOptions[key] = value;
+        var result;
+        if (getType(obj) === "[object Object]") {
+            result = {};
+        } else if (getType(obj) === "[object Function]") {
+            result = extractFunction(obj)
+        }
+
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                var keyType = getType(obj[key]);
+                if (["[object Object]", "[object Function]"].indexOf(keyType) !== -1) {
+                    result[key] = external.copy(obj[key]);
+                } else {
+                    result[key] = obj[key];
+                }
+            }
+        }
+
+        return result;
+    };
+
+    external.config = function(key, value) {
+        if (value !== undefined) {
+            internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
+        }
+        return internal.config[key];
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.

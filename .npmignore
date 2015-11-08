@@ -1,4 +1,6 @@
 # msngr.js specific
+benchRunner.html
+benchRunner.min.html
 specRunner.html
 specRunner.min.html
 crossWindowVerifier.html

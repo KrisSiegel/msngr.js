@@ -6,9 +6,7 @@
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.options = internal.options || {};
-
-    internal.options.dom = function(message, payload, options, async) {
+    internal.option("dom", function(message, payload, options, async) {
         // Normalize all of the inputs
         options = options || {};
         options = options.dom || {};
@@ -72,7 +70,7 @@ msngr.extend((function(external, internal) {
 
         return resultMap;
 
-    };
+    });
 
     // This is an internal extension; do not export explicitly.
     return {};

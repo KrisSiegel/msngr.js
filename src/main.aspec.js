@@ -84,19 +84,6 @@ describe("./main.js", function() {
         expect(merged.this.is.a.test.yup()).to.equal("yup!");
     });
 
-    it("msngr.merge(input1, input2) - merges two methods together", function() {
-        var func1 = function() {
-            return "test"
-        };
-        var func2 = function() {
-            return "again"
-        };
-
-        var merged = msngr.merge(func1, func2);
-        expect(merged).to.exist;
-        expect(merged()).to.equal("testagain");
-    });
-
     it("msngr.merge(input1, input2) - merges a method with properties", function() {
         var myFunc = function() {
             return 15;
@@ -118,16 +105,14 @@ describe("./main.js", function() {
     });
 
     it("msngr.merge(input1, input2) - merging undefined value is simply ignored", function() {
-        var myTest = {};
-        var merged = msngr.merge(undefined, myTest);
+        var merged = msngr.merge(undefined, {});
 
         expect(merged).to.exist;
         expect(Object.keys(merged).length).to.equal(0);
     });
 
     it("msngr.merge(input1, input2) - Property extends a string with another string", function() {
-        var t = "something";
-        var merged = msngr.merge("whatever", t);
+        var merged = msngr.merge("whatever", "something");
         expect(merged).to.exist;
         expect(msngr.getType(merged)).to.equal("[object String]");
         expect(merged).to.equal("whateversomething");
@@ -221,6 +206,42 @@ describe("./main.js", function() {
         delete msngr.sayHello;
     });
 
+    it("msngr.copy(obj) - copies an object", function() {
+        var obj = {
+            stuff: {
+                goes: {
+                    here: {
+                        value: 41,
+                        str: "some",
+                        fn: function () {},
+                        yeah: true
+                    }
+                }
+            }
+        };
+
+        var copy = msngr.copy(obj);
+
+        // Make sure the references / copy are at least good
+        expect(copy).to.exist;
+        expect(copy.stuff).to.exist;
+        expect(copy.stuff.goes).to.exist;
+        expect(copy.stuff.goes.here).to.exist;
+        expect(copy.stuff.goes.here.value).to.equal(41);
+        expect(copy.stuff.goes.here.str).to.equal("some");
+        expect(msngr.isFunction(copy.stuff.goes.here.fn)).to.equal(true);
+        expect(copy.stuff.goes.here.yeah).to.equal(true);
+
+        // Let's make sure this is a real copy and not references to the original
+        obj.stuff.goes.here.value = 999;
+        expect(obj.stuff.goes.here.value).to.equal(999);
+        expect(copy.stuff.goes.here.value).to.equal(41);
+
+        obj.stuff.goes.here.str = "whatever!";
+        expect(obj.stuff.goes.here.str).to.equal("whatever!");
+        expect(copy.stuff.goes.here.str).to.equal("some");
+    });
+
     it("msngr.debug - property setting exports internal object for testing and debugging", function() {
         msngr.debug = false;
         expect(msngr.internal).to.not.exist;
@@ -238,38 +259,55 @@ describe("./main.js", function() {
         expect(msngr.warnings).to.equal(false);
     });
 
-    it("msngr.options(key, value) - allows saving of global options", function() {
-        msngr.debug = true;
-        msngr.options("myoptions", true);
-        msngr.options("anotheroption", {
-            something: true
+    it("msngr.config() - can set key value pairs for configuration", function() {
+        msngr.config("something_goofy", {
+            crazy: true
         });
 
-        expect(msngr.internal.globalOptions["myoptions"]).to.equal(true);
-        expect(msngr.internal.globalOptions["anotheroption"].something).to.equal(true);
-
-        delete msngr.internal.options["myoptions"];
-        delete msngr.internal.globalOptions["myoptions"];
-        delete msngr.internal.options["anotheroption"];
-        delete msngr.internal.globalOptions["anotheroption"];
+        msngr.debug = true;
+        expect(msngr.internal.config.something_goofy).to.exist;
+        expect(msngr.internal.config.something_goofy.crazy).to.exist;
+        expect(msngr.internal.config.something_goofy.crazy).to.equal(true);
         msngr.debug = false;
     });
 
-    it("msngr.options(key, value) - global options are copied and sent to any options", function(done) {
-        msngr.debug = true;
-
-        msngr.options("my-opts", {
-            chicken: "tasty"
+    it("msngr.config() - configuration options should be additive", function() {
+        msngr.config("yotest", {
+            something: true,
+            another: {
+                what: "yes"
+            }
         });
 
-        msngr.internal.options["my-opts"] = function(message, payload, options, async) {
-            expect(options["my-opts"].chicken).to.equal("tasty");
-            delete msngr.internal.options["my-opts"];
-            delete msngr.internal.globalOptions["my-opts"];
-            msngr.debug = false;
-            done();
-        };
+        msngr.config("yotest", {
+            okay: 47
+        });
 
-        msngr("MyTopic").emit("test");
+        msngr.debug = true;
+        expect(msngr.internal.config.yotest).to.exist;
+        expect(msngr.internal.config.yotest.something).to.exist;
+        expect(msngr.internal.config.yotest.another).to.exist;
+        expect(msngr.internal.config.yotest.okay).to.exist;
+        expect(msngr.internal.config.yotest.okay).to.equal(47);
+
+        msngr.config("yotest", {
+            okay: 999
+        });
+
+        expect(msngr.internal.config.yotest.okay).to.equal(999);
+        expect(msngr.internal.config.yotest.another.what).to.equal("yes");
+    });
+
+    it("msngr.config() - providing only the key should return the existing config", function() {
+        msngr.config("whatevers", {
+            stuff: true,
+            you: {
+                there: "yes"
+            }
+        });
+
+        expect(msngr.config("whatevers")).to.exist;
+        expect(msngr.config("whatevers").stuff).to.equal(true);
+        expect(msngr.config("whatevers").you.there).to.equal("yes");
     });
 });

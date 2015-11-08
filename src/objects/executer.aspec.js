@@ -21,49 +21,15 @@ describe("./objects/executer.js", function() {
         msngr.debug = false;
     });
 
-
-    it("msngr.internal.objects.executer(method, payload, context).execute(done) - executes and returns a result from a sync method", function(done) {
-        var myFunc = function(payload, async) {
-            return 15;
-        };
-
-        msngr.internal.objects.executer(myFunc, undefined, this).execute(function(result) {
-            expect(result).to.exist;
-            expect(result).to.equal(15);
-            done();
-        });
-    });
-
-    it("msngr.internal.objects.executer(method, payload, context).execute(done) - executes and returns a result from an async method", function(done) {
-        var myFunc = function(payload, async) {
-            var d = async();
-            d(42);
-        };
-
-        msngr.internal.objects.executer(myFunc, undefined, this).execute(function(result) {
-            expect(result).to.existl
-            expect(result).to.equal(42);
-            done();
-        });
-    });
-
-    it("msngr.internal.objects.executer(method, payload, context).execute(done) - done is executed even with no methods", function(done) {
-        msngr.internal.objects.executer([], undefined, this).execute(function(result) {
+    it("msngr.internal.objects.executer(methodsAndParams, context).parallel(done) - done is executed even with no methods", function(done) {
+        msngr.internal.objects.executer([]).parallel(function(result) {
             expect(result).to.exist;
             expect(result.length).to.equal(0);
             done();
         });
     });
 
-    it("msngr.internal.objects.executer(method, payload, context).parallel(done) - done is executed even with no methods", function(done) {
-        msngr.internal.objects.executer([], undefined, this).parallel(function(result) {
-            expect(result).to.exist;
-            expect(result.length).to.equal(0);
-            done();
-        });
-    });
-
-    it("msngr.internal.objects.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
+    it("msngr.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
         var func1 = function(payload, async) {
             expect(payload.t).to.exist;
             expect(payload.t).to.equal(false);
@@ -101,7 +67,14 @@ describe("./objects/executer.js", function() {
             return true;
         }
 
-        var executer = msngr.internal.objects.executer([func1, func2, func3, func4, func5, func6], {
+        var makeObj = function(fn) {
+            return {
+                method: fn,
+                params: [{ t: false }]
+            };
+        }
+
+        var executer = msngr.executer([makeObj(func1), makeObj(func2), makeObj(func3), makeObj(func4), makeObj(func5), makeObj(func6)], {
             t: false
         }, this);
         executer.parallel(function(results) {
@@ -121,8 +94,18 @@ describe("./objects/executer.js", function() {
     it("msngr.executer(methods, payload, context) - executer is exposed for anyone to access", function() {
         expect(msngr.executer).to.exist;
         expect(msngr.executer([], {}, undefined)).to.exist;
-        expect(msngr.executer([], {}, undefined).execute).to.exist;
         expect(msngr.executer([], {}, undefined).parallel).to.exist;
+    });
+
+    it("msngr.executer(funcs).parallel() - With no parameters specified async is the first parameter", function(done) {
+        var executer = msngr.executer([
+            function(async) {
+                expect(async).to.exist;
+                expect(msngr.isFunction(async)).to.equal(true);
+            }
+        ]).parallel(function() {
+            done();
+        });
     });
 
 });

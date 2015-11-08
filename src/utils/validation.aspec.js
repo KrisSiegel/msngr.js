@@ -480,13 +480,6 @@ describe("./utils/validation.js", function() {
         expect(msngr.isEmptyString(new Date())).to.equal(false);
     });
 
-    // hasWildCard(str)
-    it("msngr.hasWildCard(str)", function() {
-        expect(msngr.hasWildCard("whatever")).to.equal(false);
-        expect(msngr.hasWildCard("")).to.equal(false);
-        expect(msngr.hasWildCard("what*")).to.equal(true);
-    });
-
     // reiterativeValidation(func, inputs)
     it("msngr.internal.reiterativeValidation(func, inputs) - func is undefined", function() {
         expect(msngr.internal.reiterativeValidation(undefined, [true, false, 15, "534"])).to.equal(false);

@@ -94,4 +94,10 @@ describe("./utils/misc.js", function() {
         var arr2 = ["yeah", "oh", "nice", "chips", "chips", "chips"];
         expect(msngr.deDupeArray(arr2).length).to.equal(4);
     });
+
+    it("msngr.immediate() - works just like setTimeout(fn, 0)", function(done) {
+        msngr.immediate(function() {
+            done();
+        });
+    });
 });
