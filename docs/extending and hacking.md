@@ -46,7 +46,7 @@ So first we passed in a method to msngr.extend(). This automatically gives us ac
 
 ```external``` provides access to all top level msngr methods without requiring the name 'msngr' should it later need to be changed due to the environment (such as multiple versions of msngr).
 
-```internal``` is a raw object with a set of objects, methods, properties and other items that are internally accessible to all msngr components. Here we add our new option method to an options object where, upon each execution, we receive a message, the payload, an optional configuration object (which includes configurations for *all* options to be executed for this message, not just your option) and an async method that allows a return value to be returned asynchronously.
+```internal``` is an object with a set of objects, methods, properties and other items that are internally accessible to all msngr components. Here we add our new option method via a simple function call where, upon each execution, we receive a message, the payload, an optional configuration object (which includes configurations for *all* options to be executed for this message, not just your option) and an async method that allows a return value to be returned asynchronously.
 
 So what happens when your option returns a value? This value is taken and merged with the payload that is already being sent to the handler. So take caution that you're not doing anything funny with the payload.
 
