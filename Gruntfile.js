@@ -242,13 +242,12 @@ module.exports = (function(grunt) {
                 var headers = {
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Headers": "origin, content-type, accept",
-                    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,HEAD",
-                    "Content-Type": "application/json"
+                    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,HEAD"
                 };
 
                 try {
                     var objBody = JSON.parse(body);
-                    if (objBody.headers != undefined && objBody.headers.length > 0) {
+                    if (objBody.headers != undefined && Object.keys(objBody.headers).length > 0) {
                         for (var key in objBody.headers) {
                             headers[key] = objBody.headers[key];
                         }
@@ -261,6 +260,10 @@ module.exports = (function(grunt) {
                     // Couldn't care less as opposed to the commonly misused "could care less"
                     // in which you actually do care a little. No, I couldn't care less because
                     // this error just means there are no commands to reflect :)
+                }
+
+                if (headers["content-type"] === undefined) {
+                    headers["content-type"] = "application/json";
                 }
 
                 response.writeHead(200, headers);

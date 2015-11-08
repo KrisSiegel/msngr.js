@@ -8,7 +8,8 @@ msngr.extend((function(external, internal) {
             port: {
                 http: "80",
                 https: "443"
-            }
+            },
+            autoJson: true
         }
     });
 
@@ -21,7 +22,7 @@ msngr.extend((function(external, internal) {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200 || xhr.status === 201) {
                         var obj;
-                        if (options.autoJson === true) {
+                        if (options.autoJson === true && this.getResponseHeader("content-type") === "application/json") {
                             try {
                                 obj = JSON.parse(xhr.response);
                             } catch (ex) {
@@ -89,7 +90,7 @@ msngr.extend((function(external, internal) {
 
             response.on("end", function() {
                 var obj;
-                if (options.autoJson === true) {
+                if (options.autoJson === true && response.headers["content-type"] === "application/json") {
                     try {
                         obj = JSON.parse(body);
                     } catch (ex) {
@@ -135,7 +136,7 @@ msngr.extend((function(external, internal) {
 
     var request = function(server, opts, callback) {
         opts.path = opts.path || "/";
-        opts.autoJson = opts.autoJson || true;
+        opts.autoJson = opts.autoJson || internal.config["net"].defaults.autoJson;
 
         if (external.exist(opts.query)) {
             if (external.isString(opts.query)) {

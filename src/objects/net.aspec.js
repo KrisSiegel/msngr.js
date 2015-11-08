@@ -134,6 +134,9 @@ describe("./objects/net.js", function() {
         net.post({
             path: "/users",
             payload: {
+                headers: {
+                    "content-type": "application/json"
+                },
                 username: "kris",
                 email: "redacted@redacted.com"
             }
@@ -151,11 +154,19 @@ describe("./objects/net.js", function() {
     it("msngr.net(protocol, host, port).put(opts, callback) - creates a PUT request and returns 200", function(done) {
         var net = msngr.net(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
         net.put({
-            path: "/"
+            path: "/user/394859",
+            payload: {
+                headers: {
+                    "content-type": "application/json"
+                },
+                username: "kris"
+            }
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
-            expect(result.path).to.equal("/");
+            expect(result.path).to.equal("/user/394859");
+            result.body = JSON.parse(result.body);
+            expect(result.body.username).to.equal("kris");
             done();
         });
     });
@@ -163,11 +174,30 @@ describe("./objects/net.js", function() {
     it("msngr.net(protocol, host, port).delete(opts, callback) - creates a DELETE request and returns 200", function(done) {
         var net = msngr.net(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
         net.delete({
-            path: "/"
+            path: "/user/3928024"
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
-            expect(result.path).to.equal("/");
+            expect(result.path).to.equal("/user/3928024");
+            done();
+        });
+    });
+
+    it("msngr.net(protocol, host, port).post(opts, callback) - creates a POST request with data and returns a 200 with plain text", function(done) {
+        var net = msngr.net(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        net.post({
+            path: "/users",
+            payload: {
+                headers: {
+                    "content-type": "text/plain"
+                },
+                username: "kris",
+                email: "redacted@redacted.com"
+            }
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
+            expect(msngr.isString(result)).to.equal(true);
             done();
         });
     });
