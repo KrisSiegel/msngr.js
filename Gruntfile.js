@@ -241,7 +241,7 @@ module.exports = (function(grunt) {
 
                 var headers = {
                     "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "origin, content-type, accept",
+                    "Access-Control-Allow-Headers": "origin, content-type, accept, custom-header",
                     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,HEAD"
                 };
 
