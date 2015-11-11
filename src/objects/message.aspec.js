@@ -42,11 +42,11 @@ describe("./objects/message.js", function() {
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
-        expect(m.message.topic).to.equal("MyTopic");
+        expect(m.message.topic).to.equal("mytopic");
         expect(m.message.category).to.exist;
-        expect(m.message.category).to.equal("MyCategory");
+        expect(m.message.category).to.equal("mycategory");
         expect(m.message.subcategory).to.exist;
-        expect(m.message.subcategory).to.equal("MySubCategory");
+        expect(m.message.subcategory).to.equal("mysubcategory");
     });
 
     it("msngr() - converts single string into message object with a topic", function() {
@@ -54,7 +54,7 @@ describe("./objects/message.js", function() {
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
-        expect(m.message.topic).to.equal("MyTopic");
+        expect(m.message.topic).to.equal("mytopic");
     });
 
     it("msngr() - converts two strings into message object with a topic and category", function() {
@@ -62,9 +62,9 @@ describe("./objects/message.js", function() {
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
-        expect(m.message.topic).to.equal("MyTopic");
+        expect(m.message.topic).to.equal("mytopic");
         expect(m.message.category).to.exist;
-        expect(m.message.category).to.equal("MyCategory");
+        expect(m.message.category).to.equal("mycategory");
     });
 
     it("msngr() - converts three strings into message object with a topic, category and subcategory", function() {
@@ -72,11 +72,11 @@ describe("./objects/message.js", function() {
         expect(m).to.exist;
         expect(m.message).to.exist;
         expect(m.message.topic).to.exist;
-        expect(m.message.topic).to.equal("MyTopic");
+        expect(m.message.topic).to.equal("mytopic");
         expect(m.message.category).to.exist;
-        expect(m.message.category).to.equal("MyCategory");
+        expect(m.message.category).to.equal("mycategory");
         expect(m.message.subcategory).to.exist;
-        expect(m.message.subcategory).to.equal("MySubCategory");
+        expect(m.message.subcategory).to.equal("mysubcategory");
     });
 
     it("msngr.internal.handlerCount - returns the correct count of registered messages", function() {
@@ -146,9 +146,9 @@ describe("./objects/message.js", function() {
             expect(payload).to.exist;
             expect(payload).to.equal("stuff");
             expect(message).to.exist;
-            expect(message.topic).to.equal("HighlyTopical");
-            expect(message.category).to.equal("MyCats");
-            expect(message.subcategory).to.equal("OtherCats");
+            expect(message.topic).to.equal("highlytopical");
+            expect(message.category).to.equal("mycats");
+            expect(message.subcategory).to.equal("othercats");
             done();
         });
 
@@ -288,9 +288,9 @@ describe("./objects/message.js", function() {
             ++handled;
             expect(payload).to.exist;
             expect(message).to.exist;
-            expect(message.topic).to.equal("MyTopic");
-            expect(message.category).to.equal("MyCategory");
-            expect(message.subcategory).to.equal("MySubCategory");
+            expect(message.topic).to.equal("mytopic");
+            expect(message.category).to.equal("mycategory");
+            expect(message.subcategory).to.equal("mysubcategory");
             expect(payload).to.equal("ThreeHandlers");
             finished(42);
         });
@@ -480,6 +480,42 @@ describe("./objects/message.js", function() {
         expect(msg.subscribers).to.equal(1);
         msg.dropAll();
         expect(msg.subscribers).to.equal(0);
+    });
+
+    it("msngr().on() / emit() - messages are case insensitive", function(done) {
+        var flagTop = false;
+        var flagCat = false;
+        var flagSub = false;
+        var flagAll = false;
+
+        msngr("MyToPiC").on(function() {
+            flagTop = true;
+        });
+
+        msngr("anothertopic", "MyCaTeGoRy").on(function() {
+            flagCat = true;
+        });
+
+        msngr("atop", "cat", "MySuBcAtEgOrY").on(function() {
+            flagSub = true;
+        });
+
+        msngr("aBcDe", "FgHi", "JkLmNo").on(function() {
+            flagAll = true;
+        })
+
+        msngr("MYTOPIC").emit();
+        msngr("anothertopic", "MYCATEGORY").emit();
+        msngr("atop", "cat", "MYSUBCATEGORY").emit();
+        msngr("ABCDE", "FGHI", "JKLMNO").emit();
+
+        setTimeout(function() {
+            expect(flagTop).to.equal(true);
+            expect(flagCat).to.equal(true);
+            expect(flagSub).to.equal(true);
+            expect(flagAll).to.equal(true);
+            done();
+        }, 250);
     });
 
 });

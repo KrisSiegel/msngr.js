@@ -67,6 +67,13 @@ msngr.extend((function(external, internal) {
             }
 
             xhr.open(options.method, url);
+            if (external.exist(options.headers)) {
+                for (var key in options.headers) {
+                    if (options.headers.hasOwnProperty(key)) {
+                        xhr.setRequestHeader(key, options.headers[key]);
+                    }
+                }
+            }
             xhr.send(datum);
         } catch (ex) {
             callback.apply(undefined, [ex, null]);
@@ -80,7 +87,8 @@ msngr.extend((function(external, internal) {
             method: options.method,
             host: server.host,
             port: server.port,
-            path: options.path
+            path: options.path,
+            headers: options.headers
         }, function(response) {
             response.setEncoding("utf8");
             var body = "";

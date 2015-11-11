@@ -176,7 +176,8 @@ Conducts an HTTP / HTTPS for the specified verb operation.
     path: "/", // The path to send the request to
     autoJson: true, // Whether or not it should attempt to JSON.parse() a response IF the content type is 'application/json'
     query: { }, // A set of properties used to generate a query string
-    queryString: undefined, // The query object is used to generate this property; only explicitly use this to provide your own querystring
+    queryString: undefined, // The query object is used to generate this property; only explicitly use this to provide your own querystring,
+    headers: { }, // A set of keys and values sent as headers to the specified HTTP service
     payload: undefined // The payload to deliver in the request body
 }
 ```

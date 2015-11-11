@@ -201,4 +201,27 @@ describe("./objects/net.js", function() {
             done();
         });
     });
+
+    it("msngr.net(protocol, host, port).post(opts, callback) - sends data with HTTP headers and returns 200 and validates headers were sent", function(done) {
+        var net = msngr.net(HOST_PROTOCOL, HOST_NAME, HOST_PORT);
+        net.post({
+            path: "/users",
+            headers: {
+                "custom-header": "myheader"
+            },
+            payload: {
+                headers: {
+                    "content-type": "application/json"
+                },
+                username: "kris",
+                email: "redacted@redacted.com"
+            }
+        }, function(err, result) {
+            expect(err).to.not.exist;
+            expect(result).to.exist;
+            expect(result.headers["custom-header"]).to.exist;
+            expect(result.headers["custom-header"]).to.equal("myheader");
+            done();
+        });
+    });
 });

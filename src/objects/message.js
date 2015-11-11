@@ -124,6 +124,11 @@ msngr.extend((function(external, internal) {
             }
         }
 
+        // Normalize message to lowercase
+        msg.topic = (msg.topic) ? msg.topic.toLowerCase() : msg.topic;
+        msg.category = (msg.category) ? msg.category.toLowerCase() : msg.category;
+        msg.subcategory = (msg.subcategory) ? msg.subcategory.toLowerCase() : msg.subcategory;
+
         var options = {};
         var counts = {
             emits: 0,
@@ -342,6 +347,24 @@ msngr.extend((function(external, internal) {
         Object.defineProperty(msgObj, "message", {
             get: function() {
                 return msg;
+            }
+        });
+
+        Object.defineProperty(msgObj, "topic", {
+            get: function() {
+                return msg.topic;
+            }
+        });
+
+        Object.defineProperty(msgObj, "category", {
+            get: function() {
+                return msg.category;
+            }
+        });
+
+        Object.defineProperty(msgObj, "subcategory", {
+            get: function() {
+                return msg.subcategory;
             }
         });
 

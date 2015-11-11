@@ -17,7 +17,7 @@ msngr.extend((function(external, internal) {
             index: function(message) {
                 if (external.exist(message) && external.exist(message.topic)) {
                     var uuid = external.id();
-                    id_to_message[uuid] = message;
+                    id_to_message[uuid] = external.copy(message);
 
                     if (!external.exist(index[message.topic])) {
                         index[message.topic] = {

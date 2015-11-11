@@ -19,7 +19,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "3.0.1";
+    external.version = "3.1.0";
 
     var getType = function(input) {
         return Object.prototype.toString.call(input);
@@ -664,7 +664,7 @@ msngr.extend((function(external, internal) {
             index: function(message) {
                 if (external.exist(message) && external.exist(message.topic)) {
                     var uuid = external.id();
-                    id_to_message[uuid] = message;
+                    id_to_message[uuid] = external.copy(message);
 
                     if (!external.exist(index[message.topic])) {
                         index[message.topic] = {
@@ -885,6 +885,11 @@ msngr.extend((function(external, internal) {
                 msg.subcategory = subcategory;
             }
         }
+
+        // Normalize message to lowercase
+        msg.topic = (msg.topic) ? msg.topic.toLowerCase() : msg.topic;
+        msg.category = (msg.category) ? msg.category.toLowerCase() : msg.category;
+        msg.subcategory = (msg.subcategory) ? msg.subcategory.toLowerCase() : msg.subcategory;
 
         var options = {};
         var counts = {
@@ -1107,6 +1112,24 @@ msngr.extend((function(external, internal) {
             }
         });
 
+        Object.defineProperty(msgObj, "topic", {
+            get: function() {
+                return msg.topic;
+            }
+        });
+
+        Object.defineProperty(msgObj, "category", {
+            get: function() {
+                return msg.category;
+            }
+        });
+
+        Object.defineProperty(msgObj, "subcategory", {
+            get: function() {
+                return msg.subcategory;
+            }
+        });
+
         // Setup a property to get subscribers
         Object.defineProperty(msgObj, "subscribers", {
             get: function() {
@@ -1200,6 +1223,13 @@ msngr.extend((function(external, internal) {
             }
 
             xhr.open(options.method, url);
+            if (external.exist(options.headers)) {
+                for (var key in options.headers) {
+                    if (options.headers.hasOwnProperty(key)) {
+                        xhr.setRequestHeader(key, options.headers[key]);
+                    }
+                }
+            }
             xhr.send(datum);
         } catch (ex) {
             callback.apply(undefined, [ex, null]);
@@ -1213,7 +1243,8 @@ msngr.extend((function(external, internal) {
             method: options.method,
             host: server.host,
             port: server.port,
-            path: options.path
+            path: options.path,
+            headers: options.headers
         }, function(response) {
             response.setEncoding("utf8");
             var body = "";
