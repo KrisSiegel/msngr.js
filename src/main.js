@@ -19,7 +19,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "3.0.1";
+    external.version = "3.1.0";
 
     var getType = function(input) {
         return Object.prototype.toString.call(input);
