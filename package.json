@@ -1,16 +1,21 @@
 {
   "name": "msngr",
   "main": "msngr.js",
-  "description": "msngr.js is a small library used to facilitate communication through messages rather than direct binding. This loose coupling allows connecting components to each other or to UI components in an abstract way on the server or the client.",
-  "version": "3.1.0",
+  "description": "An asynchronous messaging library, written in JavaScript, for node and browser use",
+  "version": "3.1.1",
   "keywords": [
     "message",
     "messaging",
-    "subscription",
     "delegation",
     "eventing",
     "dom",
-    "binding"
+    "binding",
+    "pub",
+    "sub",
+    "publish",
+    "subscription",
+    "subscribe",
+    "pubsub"
   ],
   "repository": {
     "type": "git",

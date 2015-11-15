@@ -8,7 +8,7 @@ crossWindowVerifier.min.html
 .travis.yml
 bower.json
 Gruntfile.js
-README.cspec.js
 docs
 src
 node_modules
+CHANGELOG.md
