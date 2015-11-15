@@ -18,9 +18,9 @@
         ".travis.yml",
         "bower.json",
         "Gruntfile.js",
-        "README.cspec.js",
         "docs",
         "src",
-        "node_modules"
+        "node_modules",
+        "CHANGELOG.md"
     ]
 }
