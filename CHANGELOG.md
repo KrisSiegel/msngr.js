@@ -1,6 +1,11 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 3.1.1 - November 15, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.1.1)
+- Heavily revised README
+- Added CHANGELOG for tracking release information
+- Revised package.json to better suit the current capabilities
+
 ## [Release 3.1.0 - November 11, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.1.0)
 - Makes message topics, categories and subcategories case insensitive
 - Adds sending of headers in msngr.net()
