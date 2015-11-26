@@ -25,7 +25,7 @@ msngr.extend((function(external, internal) {
 
             if (elm === undefined && external.isString(selector)) {
                 var doc = root || document;
-                var result = doc.querySelectorAll(selector);
+                var result = external.querySelectorAllWithEq(selector, doc);
                 if (result !== null) {
                     elm = result;
                 }
@@ -34,14 +34,18 @@ msngr.extend((function(external, internal) {
             return elm;
         },
         getDomPath: function(element) {
-            var node = external.isHtmlElement(element) ? element : undefined;
+            var node = external.findElement(element);
+            // User gave us jack shit. What the hell, user? Return undefined!
             if (node === undefined) {
                 return undefined;
             }
 
-            if (node.id === undefined) {
-                node.id = external.id();
+            // There is an id on a node which, by definition, must be unique. So return that!
+            if (!external.isEmptyString(node.id)) {
+                return "#" + node.id;
             }
+
+            node.id = external.id();
 
             return "#" + node.id;
         },

@@ -176,6 +176,7 @@ describe("./utils/dom.js", function() {
 
         document.body.appendChild(div);
         var path = msngr.getDomPath(msngr.findElement("#TestID2"));
+        expect(path).to.equal("#TestID2");
         expect(msngr.querySelectorAllWithEq(path)[0].id).to.equal("TestID2");
         document.body.removeChild(div);
     });
