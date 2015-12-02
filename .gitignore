@@ -41,9 +41,9 @@ Thumbs.db
 node_modules
 
 # msngr.js specific
-specRunner.html
-specRunner.min.html
-crossWindowVerifier.html
-crossWindowVerifier.min.html
-benchRunner.html
-benchRunner.min.html
+test-resources/specRunner.html
+test-resources/specRunner.min.html
+test-resources/crossWindowVerifier.html
+test-resources/crossWindowVerifier.min.html
+test-resources/benchRunner.html
+test-resources/benchRunner.min.html
