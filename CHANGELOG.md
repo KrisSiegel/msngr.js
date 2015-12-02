@@ -1,6 +1,9 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 3.2.1 - December 2, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.2.1)
+- Minor fix to hyperlinks in README.md
+
 ## [Release 3.2.0 - December 2, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.2.0)
 - Fixed a bug in ```msngr.querySelectorAllWithEq()``` where more than one :eq() would create an invalid selector
 - Revised ```msngr.getDomPath() ```to properly return a DOM path instead of just adding an ID. If an ID exists that is simply returned as the selector
