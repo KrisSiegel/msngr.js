@@ -1,10 +1,5 @@
 # msngr.js specific
-benchRunner.html
-benchRunner.min.html
-specRunner.html
-specRunner.min.html
-crossWindowVerifier.html
-crossWindowVerifier.min.html
+test-resources
 .travis.yml
 bower.json
 Gruntfile.js
