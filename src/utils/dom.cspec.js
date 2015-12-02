@@ -13,6 +13,12 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/dom.js", function() {
     "use strict";
 
+    beforeEach(function() {
+        while (document.body.firstChild) {
+            document.body.removeChild(document.body.firstChild);
+        }
+    });
+
     it("msngr.isHtmlElement(obj) - obj is a function", function() {
         expect(msngr.isHtmlElement(function() {})).to.equal(false);
     });
@@ -165,7 +171,7 @@ describe("./utils/dom.js", function() {
         expect(msngr.findElements("div div p").length).to.equal(0);
     });
 
-    it("msngr.getDomPath(element) - element is a tested HTMLElement", function() {
+    it("msngr.getDomPath(element) - returns proper selector of an ID when a specified node has an ID", function() {
         var div = document.createElement("div");
         div.style.display = "none";
 
@@ -176,7 +182,23 @@ describe("./utils/dom.js", function() {
 
         document.body.appendChild(div);
         var path = msngr.getDomPath(msngr.findElement("#TestID2"));
+        expect(path).to.equal("#TestID2");
         expect(msngr.querySelectorAllWithEq(path)[0].id).to.equal("TestID2");
+        document.body.removeChild(div);
+    });
+
+    it("msngr.getDomPath(element) - returns proper selector of a node when no ID exists", function() {
+        var div = document.createElement("div");
+        div.style.display = "none";
+
+        var p = document.createElement("p");
+        p.setAttribute("name", "somethingsomething12");
+
+        div.appendChild(p);
+        document.body.appendChild(div);
+        var path = msngr.getDomPath(p);
+        expect(path).to.equal("HTML > BODY:eq(2) > DIV > P");
+        expect(msngr.findElement(path).getAttribute("name")).to.equal("somethingsomething12");
         document.body.removeChild(div);
     });
 
@@ -226,6 +248,10 @@ describe("./utils/dom.js", function() {
         var p3 = document.createElement("p");
         p3.id = "TestID3p3";
 
+        var strong1 = document.createElement("strong");
+        strong1.id = "StrongID1";
+        p3.appendChild(strong1);
+
         idiv.appendChild(p1);
         idiv.appendChild(p2);
         idiv.appendChild(p3);
@@ -237,7 +263,7 @@ describe("./utils/dom.js", function() {
         expect(msngr.querySelectorAllWithEq("div#TestID3 > p:eq(0)", document)[0].id).to.equal("TestID3p1");
         expect(msngr.querySelectorAllWithEq("div#TestID3 > p:eq(1)", document)[0].id).to.equal("TestID3p2");
         expect(msngr.querySelectorAllWithEq("div#TestID3 > p:eq(2)", document)[0].id).to.equal("TestID3p3");
-
+        expect(msngr.querySelectorAllWithEq("div#TestID3 > p:eq(2) > strong:eq(0)", document)[0].id).to.equal("StrongID1");
     });
 
     it("msngr.querySelectorWithEq(selector) - selector uses eq to target specific indexes", function() {

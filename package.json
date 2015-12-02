@@ -2,7 +2,7 @@
   "name": "msngr",
   "main": "msngr.js",
   "description": "An asynchronous messaging library, written in JavaScript, for node and browser use",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "keywords": [
     "message",
     "messaging",
@@ -33,12 +33,12 @@
     "chai": "3.4.1",
     "grunt": "0.4.5",
     "grunt-available-tasks": "0.6.1",
-    "grunt-contrib-clean": "0.6.0",
+    "grunt-contrib-clean": "0.7.0",
     "grunt-contrib-concat": "0.5.1",
-    "grunt-contrib-uglify": "0.10.0",
-    "grunt-mocha-phantomjs": "2.0.0",
+    "grunt-contrib-uglify": "0.11.0",
+    "grunt-mocha-phantomjs": "2.0.1",
     "grunt-mocha-test": "0.12.7",
-    "mocha": "2.3.3"
+    "mocha": "2.3.4"
   },
   "scripts": {
     "test": "node -e \"var g = require('grunt'); g.cli.tasks = ['test']; g.cli();\"",

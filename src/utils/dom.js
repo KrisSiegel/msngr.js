@@ -25,7 +25,7 @@ msngr.extend((function(external, internal) {
 
             if (elm === undefined && external.isString(selector)) {
                 var doc = root || document;
-                var result = doc.querySelectorAll(selector);
+                var result = external.querySelectorAllWithEq(selector, doc);
                 if (result !== null) {
                     elm = result;
                 }
@@ -34,16 +34,52 @@ msngr.extend((function(external, internal) {
             return elm;
         },
         getDomPath: function(element) {
-            var node = external.isHtmlElement(element) ? element : undefined;
+            var node = external.findElement(element);
+            // User gave us jack shit. What the hell, user? Return undefined!
             if (node === undefined) {
                 return undefined;
             }
 
-            if (node.id === undefined) {
-                node.id = external.id();
+            // There is an id on a node which, by definition, must be unique. So return that!
+            if (!external.isEmptyString(node.id)) {
+                return "#" + node.id;
             }
 
-            return "#" + node.id;
+            var path;
+            var currentTag;
+            var next = function(elm) {
+                var parent = elm.parentNode;
+                if (external.exist(parent)) {
+                    currentTag = elm.tagName;
+                    if (parent.childNodes.length > 1) {
+                        for (var i = 0; i < parent.childNodes.length; ++i) {
+                            if (parent.childNodes[i] === elm) {
+                                // Found it!
+                                currentTag = currentTag + ":eq(" + i + ")";
+                                break;
+                            }
+                        }
+                    }
+
+                    if (external.isEmptyString(path)) {
+                        path = currentTag;
+                    } else {
+                        path = currentTag + " > " + path;
+                    }
+
+                    if (external.exist(parent.parentNode)) {
+                        next(parent);
+                    }
+                }
+            };
+
+            next(element);
+            if (external.isEmptyString(path)) {
+                node.id = external.id();
+                path = "#" + node.id;;
+            }
+
+            return path;
         },
         querySelectorAllWithEq: function(selector, root) {
             if (selector === undefined) {
@@ -59,7 +95,7 @@ msngr.extend((function(external, internal) {
                 var eqlLoc = input.indexOf(":eq(");
                 var sel = input.substring(0, eqlLoc);
                 var ind = input.substring((eqlLoc + 4), input.indexOf(")", eqlLoc));
-                selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length);
+                selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length).trim();
 
                 if (sel.charAt(0) === ">") {
                     sel = sel.substring(1, sel.length);
