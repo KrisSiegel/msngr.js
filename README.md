@@ -119,9 +119,9 @@ While msngr.js isn't very large the full documentation has been split up for eas
 
 [Full API](https://github.com/KrisSiegel/msngr.js/blob/master/docs/api.md) - This is the full, exposed API that msngr makes available. This includes the methods that can be used and examples for each.
 
-[Web browser niceties](https://github.com/KrisSiegel/msngr.js/blob/master/docs/web browser niceties.md) - This covers binding msngr.js to elements and events, unbinding them, how to gather up values from various types of elements and cross-window communication.
+[Web browser niceties](https://github.com/KrisSiegel/msngr.js/blob/master/docs/web%20browser%20niceties.md) - This covers binding msngr.js to elements and events, unbinding them, how to gather up values from various types of elements and cross-window communication.
 
-[Extending and hacking](https://github.com/KrisSiegel/msngr.js/blob/master/docs/extending and hacking.md) - Want to extend the capabilities of msngr.js? It's actually quite easy and this document covers it. Using msngr.js deep in a production system then suddenly find *something* that you need to change to avoid catastrophe? Hacking msngr.js is also covered for those times when you need *unorthodox* solutions :)
+[Extending and hacking](https://github.com/KrisSiegel/msngr.js/blob/master/docs/extending%20and%20hacking.md) - Want to extend the capabilities of msngr.js? It's actually quite easy and this document covers it. Using msngr.js deep in a production system then suddenly find *something* that you need to change to avoid catastrophe? Hacking msngr.js is also covered for those times when you need *unorthodox* solutions :)
 
 [Contributing](https://github.com/KrisSiegel/msngr.js/blob/master/docs/contributing.md) - Want to contributed to msngr.js? There are a couple of things you should know before you submit that pull request to better ensure it gets accepted :)
 
