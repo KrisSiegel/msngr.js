@@ -57,7 +57,7 @@ module.exports = (function(grunt) {
             }
         },
         mocha_phantomjs: {
-            all: ["specRunner.html", "specRunner.min.html"]
+            all: ["test-resources/specRunner.html", "test-resources/specRunner.min.html"]
         },
         availabletasks: {
             tasks: {
@@ -164,7 +164,7 @@ module.exports = (function(grunt) {
     var setRunner = function(runner, files) {
         var fs = require("fs");
         var makeScript = function(path) {
-            return "<script type='text/javascript' src='" + path + "'></script>";
+            return "<script type='text/javascript' src='../" + path + "'></script>";
         };
 
         var scriptHtml = "";
@@ -202,16 +202,16 @@ module.exports = (function(grunt) {
     */
     grunt.registerTask("setRunner", "Set the client side spec runner", function() {
         var tests = fetchJsFiles([".cspec.js", ".aspec.js"]);
-        setRunner("specRunner.html", tests.concat([]));
-        setRunner("specRunner.min.html", tests.concat([]));
+        setRunner("test-resources/specRunner.html", tests.concat([]));
+        setRunner("test-resources/specRunner.min.html", tests.concat([]));
     });
 
     grunt.registerTask("run-benchmarks", "Finds all benchmarks and executes them", function() {
         var async = require("async");
         var done = this.async();
         var benchmarks = fetchJsFiles([".bench.js"]);
-        setRunner("benchRunner.html", benchmarks.concat([]));
-        setRunner("benchRunner.min.html", benchmarks.concat([]));
+        setRunner("test-resources/benchRunner.html", benchmarks.concat([]));
+        setRunner("test-resources/benchRunner.min.html", benchmarks.concat([]));
         var meths = [];
         for (var i = 0; i < benchmarks.length; ++i) {
             meths.push(function(p) {
