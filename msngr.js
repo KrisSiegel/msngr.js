@@ -268,9 +268,41 @@ msngr.extend((function(external, internal) {
                 return "#" + node.id;
             }
 
-            node.id = external.id();
+            var path;
+            var currentTag;
+            var next = function(elm) {
+                var parent = elm.parentNode;
+                if (external.exist(parent)) {
+                    currentTag = elm.tagName;
+                    if (parent.childNodes.length > 1) {
+                        for (var i = 0; i < parent.childNodes.length; ++i) {
+                            if (parent.childNodes[i] === elm) {
+                                // Found it!
+                                currentTag = currentTag + ":eq(" + i + ")";
+                                break;
+                            }
+                        }
+                    }
 
-            return "#" + node.id;
+                    if (external.isEmptyString(path)) {
+                        path = currentTag;
+                    } else {
+                        path = currentTag + " > " + path;
+                    }
+
+                    if (external.exist(parent.parentNode)) {
+                        next(parent);
+                    }
+                }
+            };
+
+            next(element);
+            if (external.isEmptyString(path)) {
+                node.id = external.id();
+                path = "#" + node.id;;
+            }
+
+            return path;
         },
         querySelectorAllWithEq: function(selector, root) {
             if (selector === undefined) {
@@ -286,7 +318,7 @@ msngr.extend((function(external, internal) {
                 var eqlLoc = input.indexOf(":eq(");
                 var sel = input.substring(0, eqlLoc);
                 var ind = input.substring((eqlLoc + 4), input.indexOf(")", eqlLoc));
-                selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length);
+                selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length).trim();
 
                 if (sel.charAt(0) === ">") {
                     sel = sel.substring(1, sel.length);

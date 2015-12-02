@@ -19,6 +19,9 @@ describe("./options/dom.js", function() {
 
     beforeEach(function() {
         msngr.internal.reset();
+        while (document.body.firstChild) {
+            document.body.removeChild(document.body.firstChild);
+        }
     });
 
     after(function() {
