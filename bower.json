@@ -9,7 +9,7 @@
     ],
     "license": "MIT",
     "ignore": [
-        "test-resources",
+        "test",
         ".travis.yml",
         "bower.json",
         "Gruntfile.js",
