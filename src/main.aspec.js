@@ -310,4 +310,29 @@ describe("./main.js", function() {
         expect(msngr.config("whatevers").stuff).to.equal(true);
         expect(msngr.config("whatevers").you.there).to.equal("yes");
     });
+
+    it("msngr.config() - generates properties using a key specified in the configuration", function() {
+        expect(msngr.config.yourface).to.not.exist;
+
+        msngr.config("yourface", {
+            is: "ugly"
+        });
+
+        expect(msngr.config.yourface).to.exist;
+        expect(msngr.config.yourface.is).to.exist;
+        expect(msngr.config.yourface.is).to.equal("ugly");
+    });
+
+    it("msngr.unconfig() - Unconfigurates something already configurated", function() {
+        msngr.config("something", {
+            test: 1
+        });
+
+        expect(msngr.config("something")).to.exist;
+        expect(msngr.config("something").test).to.exist;
+
+        msngr.unconfig("something");
+        expect(msngr.config("something")).to.not.exist;
+        expect(msngr.config.something).to.not.exist;
+    });
 });

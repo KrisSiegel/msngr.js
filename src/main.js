@@ -173,9 +173,25 @@ var msngr = msngr || (function() {
     external.config = function(key, value) {
         if (value !== undefined) {
             internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
+
+            if (!external.config.hasOwnProperty(key)) {
+                (function(k) {
+                    Object.defineProperty(external.config, k, {
+                        configurable: true,
+                        get: function() { return internal.config[k]; }
+                    });
+                }(key));
+            }
         }
         return internal.config[key];
     };
+
+    external.unconfig = function(key) {
+        if (!external.isEmptyString(key) && external.exist(internal.config[key])) {
+            delete internal.config[key];
+            delete external.config[key];
+        }
+    }
 
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.
