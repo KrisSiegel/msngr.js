@@ -1,6 +1,9 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 4.0.0 - UNKNOWN DATE](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.0)
+- Moved test resources to yet another dedicated folder (this time just ```test```)
+
 ## [Release 3.2.2 - December 2, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.2.2)
 - Ugh, forgot to add new bower and npm ignores for the test-resources directory so there are added here
 
