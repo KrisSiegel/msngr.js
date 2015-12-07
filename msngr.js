@@ -130,9 +130,9 @@ var msngr = msngr || (function() {
     };
 
     external.merge = function() {
-        var result;
-        if (arguments.length > 0) {
-            for (var i = 0; i < arguments.length; ++i) {
+        var result = arguments[0];
+        if (arguments.length > 1) {
+            for (var i = 1; i < arguments.length; ++i) {
                 result = twoMerge(result, arguments[i]);
             }
         }
@@ -214,7 +214,7 @@ msngr.extend((function(external, internal) {
                 return args;
             }
             if (external.isArguments(args)) {
-                return Array.prototype.slice.call(args, 0);
+                return args;
             }
             return [args];
         }
