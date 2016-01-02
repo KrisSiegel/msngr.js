@@ -514,10 +514,17 @@ console.log(msngr.areArguments(arguments, [])); // Outputs false
 ```
 
 ### ```msngr.id()```
+Returns a random, high performance but unique-enough ID.
+
+```javascript
+console.log(msngr.id()); // Outputs ID
+```
+
+### ```msngr.uuid()```
 Returns a random UUID.
 
 ```javascript
-console.log(msngr.id()); // Outputs UUID
+console.log(msngr.uuid()); // Outputs UUID
 ```
 
 ### ```msngr.now(noDuplicates)```

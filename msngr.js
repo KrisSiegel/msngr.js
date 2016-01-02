@@ -443,9 +443,17 @@ msngr.extend((function(external, internal) {
     var lastNow = undefined;
     var isBrowserCached;
     var immediateFn;
+    var atomicCount = 0;
+    var seed = "Mxx".replace(/[x]/g, function() {
+        return Math.floor(Math.random() * 100);
+    });
 
     return {
         id: function() {
+            ++atomicCount;
+            return (seed + atomicCount);
+        },
+        uuid: function() {
             var d = external.now();
             var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = (d + Math.random() * 16) % 16 | 0;
@@ -617,6 +625,18 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     internal.objects = internal.objects || {};
+    internal.objects.eventer = function() {
+        
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return {};
+}));
+
+msngr.extend((function(external, internal) {
+    "use strict";
+
+    internal.objects = internal.objects || {};
     internal.objects.executer = function(methods) {
 
         if (!external.exist(methods) || !external.isArray(methods)) {
@@ -715,57 +735,57 @@ msngr.extend((function(external, internal) {
         var mem = {
             index: function(message) {
                 if (external.exist(message) && external.exist(message.topic)) {
-                    var uuid = external.id();
-                    id_to_message[uuid] = external.copy(message);
+                    var id = external.id();
+                    id_to_message[id] = external.copy(message);
 
                     if (!external.exist(index[message.topic])) {
                         index[message.topic] = {
-                            uuids: [],
+                            ids: [],
                             category: { }
                         };
                     }
 
                     if (!external.exist(index[message.topic].category[message.category])) {
                         index[message.topic].category[message.category] = {
-                            uuids: [],
+                            ids: [],
                             subcategory: { }
                         }
                     }
 
                     if (!external.exist(index[message.topic].category[message.category].subcategory[message.subcategory])) {
                         index[message.topic].category[message.category].subcategory[message.subcategory] = {
-                            uuids: []
+                            ids: []
                         }
                     }
 
 
                     if (!external.exist(message.category) && !external.exist(message.subcategory)) {
-                        index[message.topic].uuids.push(uuid);
+                        index[message.topic].ids.push(id);
                     }
 
                     if (external.exist(message.category) && !external.exist(message.subcategory)) {
-                        index[message.topic].category[message.category].uuids.push(uuid);
+                        index[message.topic].category[message.category].ids.push(id);
                     }
 
                     if (external.exist(message.category) && external.exist(message.subcategory)) {
-                        index[message.topic].category[message.category].subcategory[message.subcategory].uuids.push(uuid);
+                        index[message.topic].category[message.category].subcategory[message.subcategory].ids.push(id);
                     }
 
                     index_count++;
 
-                    return uuid;
+                    return id;
                 }
                 return undefined;
             },
-            delete: function(uuid) {
-                if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
-                    var message = id_to_message[uuid];
+            delete: function(id) {
+                if (external.exist(id) && external.exist(id_to_message[id])) {
+                    var message = id_to_message[id];
 
-                    external.removeFromArray(index[message.topic].uuids, uuid);
-                    external.removeFromArray(index[message.topic].category[message.category].uuids, uuid);
-                    external.removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].uuids, uuid);
+                    external.removeFromArray(index[message.topic].ids, id);
+                    external.removeFromArray(index[message.topic].category[message.category].ids, id);
+                    external.removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].ids, id);
 
-                    delete id_to_message[uuid];
+                    delete id_to_message[id];
                     index_count--;
 
                     return true;
@@ -779,9 +799,9 @@ msngr.extend((function(external, internal) {
                     var indexTopicCategory = ((indexTopic || { }).category || { })[message.category];
                     var indexTopicCategorySubcategory = ((indexTopicCategory || { }).subcategory || { })[message.subcategory];
 
-                    result = result.concat(indexTopic.uuids || []);
-                    result = result.concat((indexTopicCategory || { }).uuids || []);
-                    result = result.concat((indexTopicCategorySubcategory || { }).uuids || []);
+                    result = result.concat(indexTopic.ids || []);
+                    result = result.concat((indexTopicCategory || { }).ids || []);
+                    result = result.concat((indexTopicCategorySubcategory || { }).ids || []);
                 }
 
                 return external.deDupeArray(result);
@@ -953,14 +973,14 @@ msngr.extend((function(external, internal) {
             binds: 0
         };
 
-        var explicitEmit = function(payload, uuids, callback) {
-            var uuids = uuids || messageIndex.query(msg) || [];
+        var explicitEmit = function(payload, ids, callback) {
+            var ids = ids || messageIndex.query(msg) || [];
 
             internal.processOpts(options, msg, payload, function(result) {
                 var methods = [];
                 var toDrop = [];
-                for (var i = 0; i < uuids.length; ++i) {
-                    var obj = handlers[uuids[i]];
+                for (var i = 0; i < ids.length; ++i) {
+                    var obj = handlers[ids[i]];
                     methods.push({
                         method: obj.handler,
                         params: [result, msg]
@@ -983,19 +1003,19 @@ msngr.extend((function(external, internal) {
         };
 
         var fetchPersisted = function() {
-            var uuids = payloadIndex.query(msg);
+            var ids = payloadIndex.query(msg);
 
             var fpay;
 
-            if (uuids.length === 0) {
+            if (ids.length === 0) {
                 return undefined;
             }
 
-            if (uuids.length === 1) {
-                return payloads[uuids[0]];
+            if (ids.length === 1) {
+                return payloads[ids[0]];
             }
 
-            for (var i = 0; i < uuids.length; ++i) {
+            for (var i = 0; i < ids.length; ++i) {
                 fpay = external.extend(innerPay, fpay);
             }
 
@@ -1028,14 +1048,14 @@ msngr.extend((function(external, internal) {
                     payload = null;
                 }
 
-                var uuids = payloadIndex.query(msg);
-                if (uuids.length === 0) {
-                    var uuid = payloadIndex.index(msg);
-                    payloads[uuid] = payload;
-                    uuids = [uuid];
+                var ids = payloadIndex.query(msg);
+                if (ids.length === 0) {
+                    var id = payloadIndex.index(msg);
+                    payloads[id] = payload;
+                    ids = [id];
                 } else {
-                    for (var i = 0; i < uuids.length; ++i) {
-                        payloads[uuids[i]] = external.merge(payload, payloads[uuids[i]]);
+                    for (var i = 0; i < ids.length; ++i) {
+                        payloads[ids[i]] = external.merge(payload, payloads[ids[i]]);
                     }
                 }
 
@@ -1048,18 +1068,18 @@ msngr.extend((function(external, internal) {
                 return msgObj.emit(fpay);
             },
             cease: function() {
-                var uuids = payloadIndex.query(msg);
+                var ids = payloadIndex.query(msg);
 
-                for (var i = 0; i < uuids.length; ++i) {
-                    delete payloads[uuids[i]];
+                for (var i = 0; i < ids.length; ++i) {
+                    delete payloads[ids[i]];
                     --payloadCount;
                 }
 
                 return msgObj;
             },
             on: function(handler) {
-                var uuid = messageIndex.index(msg);
-                handlers[uuid] = {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
                     handler: handler,
                     context: (msg.context || this),
                     once: false
@@ -1068,15 +1088,15 @@ msngr.extend((function(external, internal) {
 
                 var payload = fetchPersisted();
                 if (payload !== undefined) {
-                    explicitEmit(payload, [uuid], undefined);
+                    explicitEmit(payload, [id], undefined);
                 }
                 counts.ons = counts.ons + 1;
 
                 return msgObj;
             },
             once: function(handler) {
-                var uuid = messageIndex.index(msg);
-                handlers[uuid] = {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
                     handler: handler,
                     context: (msg.context || this),
                     once: true
@@ -1085,7 +1105,7 @@ msngr.extend((function(external, internal) {
 
                 var payload = fetchPersisted();
                 if (payload !== undefined) {
-                    explicitEmit(payload, [uuid], undefined);
+                    explicitEmit(payload, [id], undefined);
                 }
                 counts.onces = counts.onces + 1;
 
@@ -1109,15 +1129,15 @@ msngr.extend((function(external, internal) {
                 return msgObj;
             },
             drop: function(handler) {
-                var uuids = messageIndex.query(msg);
-                if (uuids.length > 0) {
-                    for (var i = 0; i < uuids.length; ++i) {
-                        var uuid = uuids[i];
-                        if (handlers[uuid].handler === handler) {
-                            delete handlers[uuid];
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        if (handlers[id].handler === handler) {
+                            delete handlers[id];
                             handlerCount--;
 
-                            messageIndex.delete(uuid);
+                            messageIndex.delete(id);
                         }
                     }
                 }
@@ -1141,14 +1161,14 @@ msngr.extend((function(external, internal) {
                 return msgObj;
             },
             dropAll: function() {
-                var uuids = messageIndex.query(msg);
-                if (uuids.length > 0) {
-                    for (var i = 0; i < uuids.length; ++i) {
-                        var uuid = uuids[i];
-                        delete handlers[uuid];
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        delete handlers[id];
                         handlerCount--;
 
-                        messageIndex.delete(uuid);
+                        messageIndex.delete(id);
                     }
                 }
 

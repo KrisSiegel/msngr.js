@@ -36,9 +36,17 @@ msngr.extend((function(external, internal) {
     var lastNow = undefined;
     var isBrowserCached;
     var immediateFn;
+    var atomicCount = 0;
+    var seed = "Mxx".replace(/[x]/g, function() {
+        return Math.floor(Math.random() * 100);
+    });
 
     return {
         id: function() {
+            ++atomicCount;
+            return (seed + atomicCount);
+        },
+        uuid: function() {
             var d = external.now();
             var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = (d + Math.random() * 16) % 16 | 0;
