@@ -128,4 +128,4 @@ While msngr.js isn't very large the full documentation has been split up for eas
 ## Getting in contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
-Copyright © 2014-2015 Kris Siegel
+Copyright © 2014-2016 Kris Siegel
