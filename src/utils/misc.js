@@ -120,6 +120,27 @@ msngr.extend((function(external, internal) {
                 }
             }
             immediateFn(fn);
+        },
+        asyncify: function(fn) {
+            if (external.isFunction(fn)) {
+                fn.async = function () {
+                    var args = [].slice.call(arguments);
+                    var callback = args.pop();
+                    if (external.isFunction(callback)) {
+                        (function (a, c) {
+                            external.immediate(function () {
+                                try {
+                                    c.apply(null, [null, fn.apply(null, a)]);
+                                } catch (e) {
+                                    c.apply(null, [e, null]);
+                                }
+                            });
+                        }(args, callback));
+                    }
+                };
+            }
+
+            return fn;
         }
     };
 }));
