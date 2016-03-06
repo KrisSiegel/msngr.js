@@ -721,6 +721,13 @@ msngr.extend((function(external, internal) {
     internal.objects.mache = function (opts) {
         opts = opts || { };
         var meta = {
+            events: {
+                onChange: {
+                    topic: "msngr.mache",
+                    category: "change",
+                    emit: opts.emitChanges || false
+                }
+            },
             revisions: {
                 toKeep: (opts.revisions || 3)
             }
@@ -758,6 +765,15 @@ msngr.extend((function(external, internal) {
 
             if (data[id].length > meta.revisions.toKeep) {
                 data[id].shift();
+            }
+
+            if (meta.events.onChange.emit) {
+                var msg = internal.objects.message(meta.events.onChange.topic, meta.events.onChange.category, id);
+                msg.emit({
+                    id: id,
+                    oldValue: data[id][data[id].length - 2],
+                    newValue: data[id][data[id].length - 1]
+                });
             }
 
             return true;

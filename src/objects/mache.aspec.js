@@ -13,6 +13,10 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./objects/mache.js", function() {
     "use strict";
 
+    it("msngr.mache() - Throws an exception without a specified namespace", function () {
+        expect(msngr.mache.bind()).to.throw;
+    });
+
     it("msngr.mache() - Creates a new merge cache object", function () {
         var mache = msngr.mache();
         expect(mache).to.exist;
@@ -150,6 +154,20 @@ describe("./objects/mache.js", function() {
         expect(mache.getDeep("config", "this.is.super.bool")).to.equal(true);
         expect(mache.getDeep("config", "this.is.not.a.real.path")).to.not.exist;
         expect(mache.getDeep("config", "this.is.not.a.real.path", 42)).to.equal(42);
+    });
+
+    it("msngr.mache() - When enabled data changes are emitted", function (done) {
+        var mache = msngr.mache({
+            emitChanges: true
+        });
+        mache.set("something", "first");
+        msngr("msngr.mache", "change").on(function (data, msg) {
+            expect(data).to.exist;
+            expect(data.newValue).to.equal("second");
+            expect(data.oldValue).to.equal("first");
+            done();
+        });
+        mache.set("something", "second");
     });
 
 });
