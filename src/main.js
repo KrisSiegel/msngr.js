@@ -8,9 +8,7 @@ var msngr = msngr || (function() {
     "use strict";
 
     // Defaults for some internal functions
-    var internal = {
-        warnings: true
-    };
+    var internal = { };
 
     internal.config = { };
 
@@ -205,16 +203,6 @@ var msngr = msngr || (function() {
         },
         get: function() {
             return (external.internal !== undefined)
-        }
-    });
-
-    // This governs warning messages that some methods may spit into the console when warranted (du'h).
-    Object.defineProperty(external, "warnings", {
-        set: function(value) {
-            internal.warnings = value;
-        },
-        get: function() {
-            return internal.warnings;
         }
     });
 

@@ -253,12 +253,6 @@ describe("./main.js", function() {
         expect(msngr.internal).to.not.exist;
     });
 
-    it("msngr.warnings - can set the property to true or false", function() {
-        expect(msngr.warnings).to.equal(true);
-        msngr.warnings = false;
-        expect(msngr.warnings).to.equal(false);
-    });
-
     it("msngr.config() - can set key value pairs for configuration", function() {
         msngr.config("something_goofy", {
             crazy: true

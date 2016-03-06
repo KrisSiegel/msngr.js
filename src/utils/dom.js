@@ -75,8 +75,8 @@ msngr.extend((function(external, internal) {
 
             next(element);
             if (external.isEmptyString(path)) {
-                node.id = external.id();
-                path = "#" + node.id;;
+                node.id = external.uuid();
+                path = "#" + node.id;
             }
 
             return path;

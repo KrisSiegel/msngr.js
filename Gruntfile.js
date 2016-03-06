@@ -74,7 +74,6 @@ module.exports = (function(grunt) {
     /*
     	Grabs the version specified in `package.json` and writes it into the main.js file.
     */
-
     grunt.registerTask("verisionify", "Verisionifying msngr.js", function() {
         var fs = require("fs");
         var pkg = grunt.file.readJSON('package.json');
@@ -96,7 +95,6 @@ module.exports = (function(grunt) {
     /*
     	Grunt is kinda funky; these header:* tasks just print out pretty headers.
     */
-
     grunt.registerTask("header:building", function() {
         grunt.log.subhead("Building msngr.js");
     });
@@ -207,22 +205,34 @@ module.exports = (function(grunt) {
     });
 
     grunt.registerTask("run-benchmarks", "Finds all benchmarks and executes them", function() {
-        var async = require("async");
+        var async = require("async")
         var done = this.async();
+
+        // Make a list of benchmark files to run
         var benchmarks = fetchJsFiles([".bench.js"]);
+
+        // Set HTML benchmark runners to use the list of benchmarks
         setRunner("test/benchRunner.html", benchmarks.concat([]));
         setRunner("test/benchRunner.min.html", benchmarks.concat([]));
         var meths = [];
+
+        // Add each benchmark test to the set of methods of execute in series
         for (var i = 0; i < benchmarks.length; ++i) {
             meths.push(function(p) {
                 return require(p);
             }("./" + benchmarks[i]));
         }
+
+        // Execute all benchmarks in series
         async.series(meths, function (err, results) {
             done();
         });
     });
 
+    /*
+        The reflective server simply accepts JSON, parses it and echos what it received
+        back to the client. Pretty useful when testing sending and receiving data.
+    */
     grunt.registerTask("start-reflective-server", "Creates a test service with some dummy endpoints for testing", function() {
         var http = require("http");
         var server = http.createServer(function(request, response) {
@@ -281,7 +291,6 @@ module.exports = (function(grunt) {
     	multiple tasks each to accomplish their goals. These are the only intended tasks
     	to be run by the developer.
     */
-
     grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
     grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "start-reflective-server", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);

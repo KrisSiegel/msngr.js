@@ -28,17 +28,17 @@
     "url": "http://www.KrisSiegel.com/"
   },
   "devDependencies": {
-    "async": "1.5.0",
-    "benchmark": "1.0.0",
-    "chai": "3.4.1",
+    "async": "1.5.2",
+    "benchmark": "2.1.0",
+    "chai": "3.5.0",
     "grunt": "0.4.5",
     "grunt-available-tasks": "0.6.1",
-    "grunt-contrib-clean": "0.7.0",
-    "grunt-contrib-concat": "0.5.1",
-    "grunt-contrib-uglify": "0.11.0",
+    "grunt-contrib-clean": "1.0.0",
+    "grunt-contrib-concat": "1.0.0",
+    "grunt-contrib-uglify": "1.0.0",
     "grunt-mocha-phantomjs": "2.0.1",
     "grunt-mocha-test": "0.12.7",
-    "mocha": "2.3.4"
+    "mocha": "2.4.5"
   },
   "scripts": {
     "test": "node -e \"var g = require('grunt'); g.cli.tasks = ['test']; g.cli();\"",
