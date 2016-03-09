@@ -1,7 +1,7 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
-## [Release 4.0.0 - UNKNOWN DATE](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.0)
+## [Release 4.0.0 - March 8, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.0)
 Version 4.0 brings along many performance improvements (20% faster! ha!), API changes, new features and some deprecations.
 
 ***What's new?***
