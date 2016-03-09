@@ -328,7 +328,7 @@ Executes a function, asynchronously, as quickly as possible. In node.js and IE t
 ```fn (required)``` - the function to execute asynchronously.
 
 ### ```msngr.asyncify(fn)```
-Takes a synchronous function and adds an .async() method to it which can be called like ```fn.async()```. It takes the same amount of parameters as the original synchronous method but adds an ended callback method to it. When executed the callback will receive an ```(error, result)``` pair of parameters. ```error``` will contain any exceptions thrown and ```result``` will be whatever was returned.
+Takes a synchronous function and adds an .async() method to it which can be called like ```fn.async()```. It takes the same amount of parameters as the original synchronous method but adds a callback method to the end of the arguments. When executed the callback will receive an ```(error, result)``` pair of parameters. ```error``` will contain any exceptions thrown and ```result``` will be whatever was returned.
 
 ### Executer object
 The executor object is a very simple way of specifying n number of functions that can then be executed in parallel (similar to async.parallel).
