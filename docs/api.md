@@ -151,6 +151,38 @@ var msg = msngr("MyTopic");
 msg.dropAll(); // Drops all handlers even outside of 'MyTopic'!!!
 ```
 
+## ```msngr.mache(options)```
+Provides a merge cache with the ability to revert changes and modify data within a transaction. The ```msngr.mache()``` method itself always returns a new instance of a merge cache.
+
+```options (optional)``` - Currently has two options that can be specified as part of a JavaScript object. ```revisions``` can be specified if you want to change the amount of revisions stored for each object (default is 3). You can specify any positive number. There is also ```emitChanges``` which is a boolean value that defaults to false. When set to true you can listen to the topic of ```msngr.mache``` with a category of ```change``` with the optional subcategory of whatever id you used in mache. This will return a payload with the ```id```, ```oldValue``` and ```newValue``` tuple.
+
+## msngr mache object
+The mache object provides an interface to store, update and remove data along with some handy ways to revert changes and use transactions.
+
+### ```.get(id)```
+Gets an item back based on the supplied id.
+
+### ```.getDeep(id, property, defaultValue)```
+Takes an item with a specific ID and transverses the properties to the designated one. If it doesn't exist it will return the specified defaultValue or undefined.
+
+### ```.set(id, value)```
+Sets a value at a specified ID.
+
+### ```.remove(id)```
+Removes an item at the specified ID.
+
+### ```.revert(id)```
+Reverts an item at the specified ID to the previous value it held. This can be called multiple times until you hit the revision limit.
+
+### ```.begin()```
+Starts a transaction. Anything done to the mache object from this point on is batch-commit-able or batch-revert-able.
+
+### ```.rollback()```
+Ends a transaction by undoing all actions done to the mache instance since calling ```.begin()```.
+
+### ```.commit()```
+Ends a transaction by committing all actions done to the mache instance since calling ```.begin()```.
+
 ## ```msngr.net(protocol, host, port)```
 Provides a way to conduct consistent network communications in both the web browser and node.js. The result of this method is a msngr net object.
 
@@ -379,20 +411,8 @@ console.log(merged.val2); // Prints "no!"
 ### ```msngr.copy(object)```
 Performs a deep copy on the supplied object. Any non-native JavaScript object is simply returned as a reference (coping those, accurately, without knowledge of the object is difficult to get right and is rarely something you'd want copied anyway).
 
-### ```msngr.config(key, object)```
-Provides a handy way to store a configuration that never completely overwrites but, instead, merges with the intent of applying a default configuration in the first call and a specific environment configuration in a subsequent call. This is also used for all internal constants for msngr so a developer can override them should they wish.
-
-```key (required)``` - The key used to fetch the configuration associated.
-
-```object (optional)``` - If the object is elided then the configuration will be returned otherwise the provided object will be merged with the existing configuration.
-
-```javascript
-msngr.config("yotest", {
-    something: true,
-    another: {
-        what: "yes"
-    }
-});
+### ```msngr.config()```
+The ```msngr.config()``` global cache is now powered by a mache() instance. Please see the msngr.mache() documentation for usage.
 
 msngr.config("yotest", {
     okay: 47

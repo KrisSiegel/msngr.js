@@ -10,8 +10,6 @@ var msngr = msngr || (function() {
     // Defaults for some internal functions
     var internal = { };
 
-    internal.config = { };
-
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
@@ -168,29 +166,6 @@ var msngr = msngr || (function() {
         return result;
     };
 
-    external.config = function(key, value) {
-        if (value !== undefined) {
-            internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
-
-            if (!external.config.hasOwnProperty(key)) {
-                (function(k) {
-                    Object.defineProperty(external.config, k, {
-                        configurable: true,
-                        get: function() { return internal.config[k]; }
-                    });
-                }(key));
-            }
-        }
-        return internal.config[key];
-    };
-
-    external.unconfig = function(key) {
-        if (!external.isEmptyString(key) && external.exist(internal.config[key])) {
-            delete internal.config[key];
-            delete external.config[key];
-        }
-    }
-
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.
     Object.defineProperty(external, "debug", {
@@ -208,6 +183,338 @@ var msngr = msngr || (function() {
 
     return external;
 }());
+
+msngr.extend((function(external, internal) {
+    "use strict";
+
+    internal.reiterativeValidation = function(validationMethod, inputs) {
+        var result = false;
+        if (external.exist(validationMethod) && external.exist(inputs)) {
+            if (!external.isArray(inputs)) {
+                inputs = [inputs];
+            }
+            for (var i = 0; i < inputs.length; ++i) {
+                result = validationMethod.apply(this, [inputs[i]]);
+                if (result === false) {
+                    break;
+                }
+            }
+        }
+        return result;
+    };
+
+    return {
+        getType: function(obj) {
+            if (!external.exist(obj)) {
+                return "" + obj;
+            }
+            return Object.prototype.toString.call(obj);
+        },
+        isArguments: function(obj) {
+            return (external.getType(obj) === "[object Arguments]");
+        },
+        areArguments: function() {
+            return internal.reiterativeValidation(external.isArguments, external.argumentsToArray(arguments));
+        },
+        isNullOrUndefined: function(obj) {
+            return (obj === undefined || obj === null);
+        },
+        exist: function(obj) {
+            return !external.isNullOrUndefined(obj);
+        },
+        exists: function() {
+            return internal.reiterativeValidation(external.exist, external.argumentsToArray(arguments));
+        },
+        isString: function(str) {
+            return (external.getType(str) === "[object String]");
+        },
+        areStrings: function() {
+            return internal.reiterativeValidation(external.isString, external.argumentsToArray(arguments));
+        },
+        isDate: function(obj) {
+            return (external.getType(obj) === "[object Date]");
+        },
+        areDates: function() {
+            return internal.reiterativeValidation(external.isDate, external.argumentsToArray(arguments));
+        },
+        isArray: function(obj) {
+            return (external.getType(obj) === "[object Array]");
+        },
+        areArrays: function() {
+            return internal.reiterativeValidation(external.isArray, external.argumentsToArray(arguments));
+        },
+        isNumber: function(obj) {
+            return (external.getType(obj) === "[object Number]");
+        },
+        areNumbers: function() {
+            return internal.reiterativeValidation(external.isNumber, external.argumentsToArray(arguments));
+        },
+        isObject: function(obj) {
+            return (external.getType(obj) === "[object Object]");
+        },
+        areObjects: function() {
+            return internal.reiterativeValidation(external.isObject, external.argumentsToArray(arguments));
+        },
+        isFunction: function(func) {
+            return (external.getType(func) === "[object Function]");
+        },
+        areFunctions: function() {
+            return internal.reiterativeValidation(external.isFunction, external.argumentsToArray(arguments));
+        },
+        isEmptyString: function(str) {
+            var isStr = external.isString(str);
+            if (str === undefined || str === null || (isStr && str.toString().trim().length === 0)) {
+                return true;
+            }
+            return false;
+        },
+        areEmptyStrings: function() {
+            return internal.reiterativeValidation(external.isEmptyString, external.argumentsToArray(arguments));
+        }
+    };
+}));
+
+msngr.extend((function(external, internal) {
+    "use strict";
+
+    internal.objects = internal.objects || {};
+    internal.objects.mache = function (opts) {
+        opts = opts || { };
+        var meta = {
+            events: {
+                onChange: {
+                    topic: "msngr.mache",
+                    category: "change",
+                    emit: opts.emitChanges || false
+                }
+            },
+            revisions: {
+                toKeep: (opts.revisions || 3)
+            }
+        }
+        var flatCache = { };
+        var data = { };
+        var transData = undefined;
+        var transRemovals = undefined;
+        var transacting = false;
+
+        var objMerge = function (input1, input2) {
+            if (external.isObject(input1) && external.isObject(input2)) {
+                return external.merge(input1, input2);
+            }
+            return input2;
+        };
+
+        var normalGet = function (id) {
+            if (data[id] === undefined) {
+                return undefined;
+            }
+            return data[id][data[id].length - 1];
+        };
+
+        var transGet = function (id) {
+            return (transRemovals[id] === true) ? undefined : (transData[id] || normalGet(id));
+        };
+
+        var normalSet = function (id, value) {
+            if (data[id] === undefined) {
+                data[id] = [];
+            }
+
+            data[id].push(objMerge(api.get(id), external.copy(value)));
+            flatCache[id] = api.get(id);
+
+            if (data[id].length > meta.revisions.toKeep) {
+                data[id].shift();
+            }
+
+            if (meta.events.onChange.emit) {
+                var msg = internal.objects.message(meta.events.onChange.topic, meta.events.onChange.category, id);
+                msg.emit({
+                    id: id,
+                    oldValue: data[id][data[id].length - 2],
+                    newValue: data[id][data[id].length - 1]
+                });
+            }
+
+            return true;
+        };
+
+        var transSet = function (id, value) {
+            transData[id] = objMerge((transData[id] || normalGet(id)), external.copy(value));
+            return true;
+        };
+
+        var normalRemove = function (id) {
+            if (data[id] === undefined) {
+                return false;
+            }
+
+            delete data[id];
+            delete flatCache[id];
+            return true;
+        };
+
+        var transRemove = function (id) {
+            if (transData[id] === undefined && data[id] === undefined) {
+                return false;
+            }
+
+            if (transData[id] !== undefined) {
+                delete transData[id];
+            }
+
+            transRemovals[id] = true;
+            return true;
+        };
+
+        var normalRevert = function (id) {
+            if (data[id] === undefined) {
+                return false;
+            }
+
+            if (data[id].length === 1) {
+                delete data[id];
+                delete flatCache[id];
+                return true;
+            }
+
+            data[id].pop();
+            flatCache[id] = api.get(id);
+            return true;
+        };
+
+        var api = {
+            get: function (id) {
+                return (transacting) ? transGet(id) : normalGet(id);
+            },
+            getDeep: function (id, property, defaultValue) {
+                var obj = api.get(id);
+                if (obj === undefined || external.isEmptyString(property)) {
+                    return defaultValue;
+                }
+
+                var keys = property.trim().split(".");
+                var currentObj = obj;
+                for (var i = 0; i < keys.length; ++i) {
+                    if (currentObj[keys[i]] === undefined) {
+                        return defaultValue;
+                    }
+                    currentObj = currentObj[keys[i]];
+                }
+
+                return (currentObj || defaultValue);
+            },
+            set: function (id, value) {
+                return (transacting) ? transSet(id, value) : normalSet(id, value);
+            },
+            remove: function (id) {
+                return (transacting) ? transRemove(id) : normalRemove(id);
+            },
+            revert: function (id) {
+                return (transacting) ? false : normalRevert(id);
+            },
+            begin: function () {
+                if (transacting) {
+                    // Shit we're already transacting!
+                    return false;
+                }
+                transacting = true;
+                transData = { };
+                transRemovals = { };
+                return true;
+            },
+            rollback: function () {
+                if (!transacting) {
+                    // How can we rollback outside of a transaction? ugh
+                    return false;
+                }
+
+                transacting = false;
+                transData = undefined;
+                transRemovals = undefined;
+                return true;
+            },
+            commit: function () {
+                if (!transacting) {
+                    // How can we commit outside of a transaction? ugh
+                    return false;
+                }
+
+                transacting = false;
+                for (var key in transData) {
+                    if (transData.hasOwnProperty(key)) {
+                        normalSet(key, transData[key]);
+                    }
+                }
+                for (var key in transRemovals) {
+                    if (transRemovals.hasOwnProperty(key)) {
+                        normalRemove(key);
+                    }
+                }
+                transData = undefined;
+                transRemovals = undefined;
+                return true;
+            }
+        };
+
+        Object.defineProperty(api, "meta", {
+            get: function () {
+                return meta;
+            }
+        });
+
+        Object.defineProperty(api, "data", {
+            get: function () {
+                return (transacting) ? objMerge(flatCache, transData) : flatCache;
+            }
+        });
+
+        return api;
+    };
+
+    // Provide a mache instance for msngr.config.
+    external.config = internal.objects.mache();
+
+    return {
+        mache: internal.objects.mache
+    };
+}));
+
+msngr.extend((function(external, internal) {
+    "use strict";
+
+    internal.InvalidParametersException = function(str, reason) {
+        var m = {
+            name: "InvalidParametersException",
+            severity: "unrecoverable",
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+        if (!external.isEmptyString(reason)) {
+            m.message = m.message + " " + reason;
+        }
+        return m;
+    };
+
+    internal.ReservedKeywordsException = function(keyword) {
+        return {
+            name: "ReservedKeywordsException",
+            severity: "unrecoverable",
+            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
+        };
+    };
+
+    internal.MangledException = function(variable, method) {
+        return {
+            name: "MangledException",
+            severity: "unrecoverable",
+            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
+        };
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return {};
+}));
 
 msngr.extend((function(external, internal) {
     "use strict";
@@ -361,51 +668,16 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    internal.InvalidParametersException = function(str, reason) {
-        var m = {
-            name: "InvalidParametersException",
-            severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
-        };
-        if (!external.isEmptyString(reason)) {
-            m.message = m.message + " " + reason;
-        }
-        return m;
-    };
-
-    internal.ReservedKeywordsException = function(keyword) {
-        return {
-            name: "ReservedKeywordsException",
-            severity: "unrecoverable",
-            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
-        };
-    };
-
-    internal.MangledException = function(variable, method) {
-        return {
-            name: "MangledException",
-            severity: "unrecoverable",
-            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
-        };
-    };
-
-    // This is an internal extension; do not export explicitly.
-    return {};
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
     // This chunk of code is only for the browser as a setImmediate workaround
     if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-        external.config("immediate", {
+        external.config.set("msngr.immediate", {
             channel: "__msngr_immediate"
         });
 
         var immediateQueue = [];
 
         window.addEventListener("message", function(event) {
-            if (event.source === window && event.data === internal.config["immediate"].channel) {
+            if (event.source === window && event.data === external.config.get("msngr.immediate").channel) {
                 event.stopPropagation();
                 if (immediateQueue.length > 0) {
                     immediateQueue.shift()();
@@ -506,7 +778,7 @@ msngr.extend((function(external, internal) {
                 } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
                     immediateFn = function(f) {
                         immediateQueue.push(f);
-                        window.postMessage(internal.config["immediate"].channel, "*");
+                        window.postMessage(external.config.get("msngr.immediate").channel, "*");
                     };
                 } else {
                     immediateFn = function(f) {
@@ -536,96 +808,6 @@ msngr.extend((function(external, internal) {
             }
 
             return fn;
-        }
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.reiterativeValidation = function(validationMethod, inputs) {
-        var result = false;
-        if (external.exist(validationMethod) && external.exist(inputs)) {
-            if (!external.isArray(inputs)) {
-                inputs = [inputs];
-            }
-            for (var i = 0; i < inputs.length; ++i) {
-                result = validationMethod.apply(this, [inputs[i]]);
-                if (result === false) {
-                    break;
-                }
-            }
-        }
-        return result;
-    };
-
-    return {
-        getType: function(obj) {
-            if (!external.exist(obj)) {
-                return "" + obj;
-            }
-            return Object.prototype.toString.call(obj);
-        },
-        isArguments: function(obj) {
-            return (external.getType(obj) === "[object Arguments]");
-        },
-        areArguments: function() {
-            return internal.reiterativeValidation(external.isArguments, external.argumentsToArray(arguments));
-        },
-        isNullOrUndefined: function(obj) {
-            return (obj === undefined || obj === null);
-        },
-        exist: function(obj) {
-            return !external.isNullOrUndefined(obj);
-        },
-        exists: function() {
-            return internal.reiterativeValidation(external.exist, external.argumentsToArray(arguments));
-        },
-        isString: function(str) {
-            return (external.getType(str) === "[object String]");
-        },
-        areStrings: function() {
-            return internal.reiterativeValidation(external.isString, external.argumentsToArray(arguments));
-        },
-        isDate: function(obj) {
-            return (external.getType(obj) === "[object Date]");
-        },
-        areDates: function() {
-            return internal.reiterativeValidation(external.isDate, external.argumentsToArray(arguments));
-        },
-        isArray: function(obj) {
-            return (external.getType(obj) === "[object Array]");
-        },
-        areArrays: function() {
-            return internal.reiterativeValidation(external.isArray, external.argumentsToArray(arguments));
-        },
-        isNumber: function(obj) {
-            return (external.getType(obj) === "[object Number]");
-        },
-        areNumbers: function() {
-            return internal.reiterativeValidation(external.isNumber, external.argumentsToArray(arguments));
-        },
-        isObject: function(obj) {
-            return (external.getType(obj) === "[object Object]");
-        },
-        areObjects: function() {
-            return internal.reiterativeValidation(external.isObject, external.argumentsToArray(arguments));
-        },
-        isFunction: function(func) {
-            return (external.getType(func) === "[object Function]");
-        },
-        areFunctions: function() {
-            return internal.reiterativeValidation(external.isFunction, external.argumentsToArray(arguments));
-        },
-        isEmptyString: function(str) {
-            var isStr = external.isString(str);
-            if (str === undefined || str === null || (isStr && str.toString().trim().length === 0)) {
-                return true;
-            }
-            return false;
-        },
-        areEmptyStrings: function() {
-            return internal.reiterativeValidation(external.isEmptyString, external.argumentsToArray(arguments));
         }
     };
 }));
@@ -711,175 +893,6 @@ msngr.extend((function(external, internal) {
     // This is an internal extension; do not export explicitly.
     return {
         executer: internal.objects.executer
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.objects = internal.objects || {};
-    internal.objects.mache = function (opts) {
-        opts = opts || { };
-        var meta = {
-            events: {
-                onChange: {
-                    topic: "msngr.mache",
-                    category: "change",
-                    emit: opts.emitChanges || false
-                }
-            },
-            revisions: {
-                toKeep: (opts.revisions || 3)
-            }
-        }
-        var flatCache = { };
-        var data = { };
-        var transData = undefined;
-        var transacting = false;
-
-        var objMerge = function (input1, input2) {
-            if (external.isObject(input1) && external.isObject(input2)) {
-                return external.merge(input1, input2);
-            }
-            return input2;
-        };
-
-        var normalGet = function (id) {
-            if (data[id] === undefined) {
-                return undefined;
-            }
-            return data[id][data[id].length - 1];
-        };
-
-        var transGet = function (id) {
-            return transData[id] || normalGet(id);
-        };
-
-        var normalSet = function (id, value) {
-            if (data[id] === undefined) {
-                data[id] = [];
-            }
-
-            data[id].push(objMerge(api.get(id), external.copy(value)));
-            flatCache[id] = api.get(id);
-
-            if (data[id].length > meta.revisions.toKeep) {
-                data[id].shift();
-            }
-
-            if (meta.events.onChange.emit) {
-                var msg = internal.objects.message(meta.events.onChange.topic, meta.events.onChange.category, id);
-                msg.emit({
-                    id: id,
-                    oldValue: data[id][data[id].length - 2],
-                    newValue: data[id][data[id].length - 1]
-                });
-            }
-
-            return true;
-        };
-
-        var transSet = function (id, value) {
-            transData[id] = objMerge((transData[id] || normalGet(id)), external.copy(value));
-            return true;
-        };
-
-        var normalRevert = function (id) {
-            if (data[id] === undefined) {
-                return false;
-            }
-
-            if (data[id].length === 1) {
-                delete data[id];
-                delete flatCache[id];
-                return true;
-            }
-
-            data[id].pop();
-            flatCache[id] = api.get(id);
-            return true;
-        };
-
-        var api = {
-            get: function (id) {
-                return (transacting) ? transGet(id) : normalGet(id);
-            },
-            getDeep: function (id, property, defaultValue) {
-                var obj = api.get(id);
-                if (obj === undefined || external.isEmptyString(property)) {
-                    return defaultValue;
-                }
-
-                var keys = property.trim().split(".");
-                var currentObj = obj;
-                for (var i = 0; i < keys.length; ++i) {
-                    if (currentObj[keys[i]] === undefined) {
-                        return defaultValue;
-                    }
-                    currentObj = currentObj[keys[i]];
-                }
-
-                return (currentObj || defaultValue);
-            },
-            set: function (id, value) {
-                return (transacting) ? transSet(id, value) : normalSet(id, value);
-            },
-            revert: function (id) {
-                return (transacting) ? false : normalRevert(id);
-            },
-            begin: function () {
-                if (transacting) {
-                    // Shit we're already transacting!
-                    return false;
-                }
-                transacting = true;
-                transData = { };
-                return true;
-            },
-            rollback: function () {
-                if (!transacting) {
-                    // How can we rollback outside of a transaction? ugh
-                    return false;
-                }
-
-                transacting = false;
-                transData = undefined;
-                return true;
-            },
-            commit: function () {
-                if (!transacting) {
-                    // How can we commit outside of a transaction? ugh
-                    return false;
-                }
-
-                transacting = false;
-                for (var key in transData) {
-                    if (transData.hasOwnProperty(key)) {
-                        normalSet(key, transData[key]);
-                    }
-                }
-                transData = undefined;
-                return true;
-            }
-        };
-
-        Object.defineProperty(api, "meta", {
-            get: function () {
-                return meta;
-            }
-        });
-
-        Object.defineProperty(api, "data", {
-            get: function () {
-                return flatCache;
-            }
-        });
-
-        return api;
-    };
-
-    return {
-        mache: internal.objects.mache
     };
 }));
 
@@ -1396,7 +1409,7 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     // Setup constants
-    external.config("net", {
+    external.config.set("msngr.net", {
         defaults: {
             protocol: "http",
             port: {
@@ -1538,7 +1551,7 @@ msngr.extend((function(external, internal) {
 
     var request = function(server, opts, callback) {
         opts.path = opts.path || "/";
-        opts.autoJson = opts.autoJson || internal.config["net"].defaults.autoJson;
+        opts.autoJson = opts.autoJson || external.config.get("msngr.net").defaults.autoJson;
 
         if (external.exist(opts.query)) {
             if (external.isString(opts.query)) {
@@ -1589,7 +1602,7 @@ msngr.extend((function(external, internal) {
             } else {
                 // Must have omitted protocol.
                 server.host = protocol;
-                server.protocol = internal.config.net.defaults.protocol;
+                server.protocol = external.config.get("msngr.net").defaults.protocol;
             }
 
             var lastColon = server.host.lastIndexOf(":");
@@ -1599,7 +1612,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = internal.config.net.defaults.port[server.protocol];
+                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
             }
 
             handled = true;
@@ -1617,7 +1630,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = internal.config.net.defaults.port[server.protocol];
+                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
             }
 
             handled = true;
@@ -1635,7 +1648,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && internal.config.net.defaults.port[server.protocol] === server.port) {
+        if (!invalid && handled && external.config.get("msngr.net").defaults.port[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 
@@ -1725,17 +1738,17 @@ msngr.extend((function(external, internal) {
 msngr.extend((function(external, internal) {
     "use strict";
 
-    external.config("cross-window", {
+    external.config.set("msngr.cross-window", {
         channel: "__msngr_cross-window"
     });
 
-    // Let's check if localstorage is even available. If it isn't we shouldn't register
+    // Let's check if localStorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
         return {};
     }
 
     window.addEventListener("storage", function(event) {
-        if (event.key === internal.config["cross-window"].channel) {
+        if (event.key === external.config.get("msngr.cross-window").channel) {
             // New message data. Respond!
             var obj;
             try {
@@ -1761,7 +1774,7 @@ msngr.extend((function(external, internal) {
         };
 
         try {
-            localStorage.setItem(internal.config["cross-window"].channel, JSON.stringify(obj));
+            localStorage.setItem(external.config.get("msngr.cross-window").channel, JSON.stringify(obj));
         } catch (ex) {
             throw "msngr was unable to store data in its storage channel";
         }

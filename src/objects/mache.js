@@ -19,6 +19,7 @@ msngr.extend((function(external, internal) {
         var flatCache = { };
         var data = { };
         var transData = undefined;
+        var transRemovals = undefined;
         var transacting = false;
 
         var objMerge = function (input1, input2) {
@@ -36,7 +37,7 @@ msngr.extend((function(external, internal) {
         };
 
         var transGet = function (id) {
-            return transData[id] || normalGet(id);
+            return (transRemovals[id] === true) ? undefined : (transData[id] || normalGet(id));
         };
 
         var normalSet = function (id, value) {
@@ -65,6 +66,29 @@ msngr.extend((function(external, internal) {
 
         var transSet = function (id, value) {
             transData[id] = objMerge((transData[id] || normalGet(id)), external.copy(value));
+            return true;
+        };
+
+        var normalRemove = function (id) {
+            if (data[id] === undefined) {
+                return false;
+            }
+
+            delete data[id];
+            delete flatCache[id];
+            return true;
+        };
+
+        var transRemove = function (id) {
+            if (transData[id] === undefined && data[id] === undefined) {
+                return false;
+            }
+
+            if (transData[id] !== undefined) {
+                delete transData[id];
+            }
+
+            transRemovals[id] = true;
             return true;
         };
 
@@ -108,6 +132,9 @@ msngr.extend((function(external, internal) {
             set: function (id, value) {
                 return (transacting) ? transSet(id, value) : normalSet(id, value);
             },
+            remove: function (id) {
+                return (transacting) ? transRemove(id) : normalRemove(id);
+            },
             revert: function (id) {
                 return (transacting) ? false : normalRevert(id);
             },
@@ -118,6 +145,7 @@ msngr.extend((function(external, internal) {
                 }
                 transacting = true;
                 transData = { };
+                transRemovals = { };
                 return true;
             },
             rollback: function () {
@@ -128,6 +156,7 @@ msngr.extend((function(external, internal) {
 
                 transacting = false;
                 transData = undefined;
+                transRemovals = undefined;
                 return true;
             },
             commit: function () {
@@ -142,7 +171,13 @@ msngr.extend((function(external, internal) {
                         normalSet(key, transData[key]);
                     }
                 }
+                for (var key in transRemovals) {
+                    if (transRemovals.hasOwnProperty(key)) {
+                        normalRemove(key);
+                    }
+                }
                 transData = undefined;
+                transRemovals = undefined;
                 return true;
             }
         };
@@ -155,12 +190,15 @@ msngr.extend((function(external, internal) {
 
         Object.defineProperty(api, "data", {
             get: function () {
-                return flatCache;
+                return (transacting) ? objMerge(flatCache, transData) : flatCache;
             }
         });
 
         return api;
     };
+
+    // Provide a mache instance for msngr.config.
+    external.config = internal.objects.mache();
 
     return {
         mache: internal.objects.mache

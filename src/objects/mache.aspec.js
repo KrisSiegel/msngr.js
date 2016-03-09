@@ -13,10 +13,6 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./objects/mache.js", function() {
     "use strict";
 
-    it("msngr.mache() - Throws an exception without a specified namespace", function () {
-        expect(msngr.mache.bind()).to.throw;
-    });
-
     it("msngr.mache() - Creates a new merge cache object", function () {
         var mache = msngr.mache();
         expect(mache).to.exist;
@@ -120,6 +116,25 @@ describe("./objects/mache.js", function() {
         expect(mache.get("test1")).to.equal("nono");
         expect(mache.revert("test1")).to.equal(true);
         expect(mache.get("test1")).to.equal("yupyup");
+    });
+
+    it("msngr.mache().remove() - Removes correctly inside and outside transactions", function () {
+        var mache = msngr.mache();
+        mache.set("testing", "value1");
+        expect(mache.remove("testing")).to.equal(true);
+        expect(mache.get("testing")).to.not.exist;
+
+        mache.set("test1", "value9");
+        expect(mache.begin()).to.equal(true);
+        mache.set("test2", "value10");
+        expect(mache.remove("test1")).to.equal(true);
+        expect(mache.get("test1")).to.not.exist;
+        expect(mache.remove("test2")).to.equal(true);
+        expect(mache.get("test2")).to.not.exist;
+        expect(mache.rollback()).to.equal(true);
+
+        expect(mache.get("test1")).to.equal("value9");
+        expect(mache.get("test2")).to.not.exist;
     });
 
     it("msngr.mache().begin() / .rollback() / .commit() - Handles duplicate calls", function () {

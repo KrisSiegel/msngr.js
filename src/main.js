@@ -10,8 +10,6 @@ var msngr = msngr || (function() {
     // Defaults for some internal functions
     var internal = { };
 
-    internal.config = { };
-
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
@@ -167,29 +165,6 @@ var msngr = msngr || (function() {
 
         return result;
     };
-
-    external.config = function(key, value) {
-        if (value !== undefined) {
-            internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
-
-            if (!external.config.hasOwnProperty(key)) {
-                (function(k) {
-                    Object.defineProperty(external.config, k, {
-                        configurable: true,
-                        get: function() { return internal.config[k]; }
-                    });
-                }(key));
-            }
-        }
-        return internal.config[key];
-    };
-
-    external.unconfig = function(key) {
-        if (!external.isEmptyString(key) && external.exist(internal.config[key])) {
-            delete internal.config[key];
-            delete external.config[key];
-        }
-    }
 
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.

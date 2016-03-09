@@ -7,15 +7,18 @@ Version 4.0 brings along many performance improvements (20% faster! ha!), API ch
 ***What's new?***
 - ```msngr.uuid()``` This method returns a valid UUID and was simply renamed from the original ```msngr.id()``` which has now changed (see breaking changes below)
 - ```msngr.asyncify()``` This method takes a function that operates and returns a synchronous result and adds a .async() method on top of it so it can be used asynchronously.
-- ```msngr.mache()``` This creates a new merge cache. Data can be cached into it with all objects always being merged. It also provides a way to revert changes on an individual basis or it can be operated in a transaction! Neat, huh?
+- ```msngr.mache()``` This creates a new merge cache. Data can be cached into it with all objects always being merged. It also provides a way to revert changes on an individual basis or it can be used in a transaction! Neat, huh?
 
 ***Breaking changes***
 - ```msngr.id()``` no longer returns a UUID. Instead it returns a higher performance but unique ID. This is used mostly internally to msngr.
 - ```msngr.warnings``` is no longer a property. It was never used and I don't like the idea of adding logging inside of a library. Could revisit it in the future if there is any demands.
+- ```msngr.config()``` still exists but is now powered by a ```msngr.mache()``` instance so its API has changed accordingly.
 
 ***Misc changes***
 - Moved test resources to yet another dedicated folder (this time just ```test```)
 - Upgraded all development dependencies to latest versions
+- Removed documentation for ```msngr.getDomPath()```; unless the element contains an ID this method is unreliable but I want to later improve upon it so for now it's considered part of the "private API" aka don't use it.
+- Re-ordered the files that are included in the build process and made them explicit instead of wildcards so I can explicitly tune them to the correct ordering.
 
 
 ## [Release 3.2.2 - December 2, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.2.2)

@@ -3,14 +3,14 @@ msngr.extend((function(external, internal) {
 
     // This chunk of code is only for the browser as a setImmediate workaround
     if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-        external.config("immediate", {
+        external.config.set("msngr.immediate", {
             channel: "__msngr_immediate"
         });
 
         var immediateQueue = [];
 
         window.addEventListener("message", function(event) {
-            if (event.source === window && event.data === internal.config["immediate"].channel) {
+            if (event.source === window && event.data === external.config.get("msngr.immediate").channel) {
                 event.stopPropagation();
                 if (immediateQueue.length > 0) {
                     immediateQueue.shift()();
@@ -111,7 +111,7 @@ msngr.extend((function(external, internal) {
                 } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
                     immediateFn = function(f) {
                         immediateQueue.push(f);
-                        window.postMessage(internal.config["immediate"].channel, "*");
+                        window.postMessage(external.config.get("msngr.immediate").channel, "*");
                     };
                 } else {
                     immediateFn = function(f) {
