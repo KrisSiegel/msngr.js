@@ -2,7 +2,7 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     // Setup constants
-    external.config("net", {
+    external.config.set("msngr.net", {
         defaults: {
             protocol: "http",
             port: {
@@ -144,7 +144,7 @@ msngr.extend((function(external, internal) {
 
     var request = function(server, opts, callback) {
         opts.path = opts.path || "/";
-        opts.autoJson = opts.autoJson || internal.config["net"].defaults.autoJson;
+        opts.autoJson = opts.autoJson || external.config.get("msngr.net").defaults.autoJson;
 
         if (external.exist(opts.query)) {
             if (external.isString(opts.query)) {
@@ -195,7 +195,7 @@ msngr.extend((function(external, internal) {
             } else {
                 // Must have omitted protocol.
                 server.host = protocol;
-                server.protocol = internal.config.net.defaults.protocol;
+                server.protocol = external.config.get("msngr.net").defaults.protocol;
             }
 
             var lastColon = server.host.lastIndexOf(":");
@@ -205,7 +205,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = internal.config.net.defaults.port[server.protocol];
+                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
             }
 
             handled = true;
@@ -223,7 +223,7 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = internal.config.net.defaults.port[server.protocol];
+                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
             }
 
             handled = true;
@@ -241,7 +241,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && internal.config.net.defaults.port[server.protocol] === server.port) {
+        if (!invalid && handled && external.config.get("msngr.net").defaults.port[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 

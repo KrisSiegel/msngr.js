@@ -43,6 +43,34 @@ describe("./utils/misc.js", function() {
         expect(ids.length).to.equal(10000);
     });
 
+    it("msngr.uuid() - generate 1 id", function() {
+        expect(msngr.uuid()).to.not.equal(undefined);
+    });
+
+    it("msngr.uuid() - generate 100 unique ids", function() {
+        var ids = [];
+        for (var i = 0; i < 100; ++i) {
+            var d = msngr.uuid();
+            if (ids.indexOf(d) === -1) {
+                ids.push(d);
+            }
+        }
+
+        expect(ids.length).to.equal(100);
+    });
+
+    it("msngr.uuid() - generate 10000 unique ids", function() {
+        var ids = [];
+        for (var i = 0; i < 10000; ++i) {
+            var d = msngr.uuid();
+            if (ids.indexOf(d) === -1) {
+                ids.push(d);
+            }
+        }
+
+        expect(ids.length).to.equal(10000);
+    });
+
     it("msngr.now() - generates a value", function() {
         expect(msngr.now()).to.exist;
     });
@@ -97,6 +125,34 @@ describe("./utils/misc.js", function() {
 
     it("msngr.immediate() - works just like setTimeout(fn, 0)", function(done) {
         msngr.immediate(function() {
+            done();
+        });
+    });
+
+    it("msngr.asyncify() - takes a normal, sync method and adds a .async() method onto it and properly returns a result", function (done) {
+        var helloworld = function() {
+            return "helloworld";
+        };
+
+        msngr.asyncify(helloworld);
+        helloworld.async(function(err, result) {
+            expect(err).to.not.existl
+            expect(result).to.exist;
+            expect(result).to.equal("helloworld");
+            done();
+        });
+    });
+
+    it("msngr.asyncify() - takes a normal, sync method and adds a .async() method onto it and properly returns an error", function (done) {
+        var helloworld = function() {
+            throw "helloworldexception";
+        };
+
+        msngr.asyncify(helloworld);
+        helloworld.async(function(err, result) {
+            expect(err).to.existl
+            expect(result).to.not.exist;
+            expect(err).to.equal("helloworldexception");
             done();
         });
     });

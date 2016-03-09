@@ -7,17 +7,17 @@
 msngr.extend((function(external, internal) {
     "use strict";
 
-    external.config("cross-window", {
+    external.config.set("msngr.cross-window", {
         channel: "__msngr_cross-window"
     });
 
-    // Let's check if localstorage is even available. If it isn't we shouldn't register
+    // Let's check if localStorage is even available. If it isn't we shouldn't register
     if (typeof localStorage === "undefined" || typeof window === "undefined") {
         return {};
     }
 
     window.addEventListener("storage", function(event) {
-        if (event.key === internal.config["cross-window"].channel) {
+        if (event.key === external.config.get("msngr.cross-window").channel) {
             // New message data. Respond!
             var obj;
             try {
@@ -43,7 +43,7 @@ msngr.extend((function(external, internal) {
         };
 
         try {
-            localStorage.setItem(internal.config["cross-window"].channel, JSON.stringify(obj));
+            localStorage.setItem(external.config.get("msngr.cross-window").channel, JSON.stringify(obj));
         } catch (ex) {
             throw "msngr was unable to store data in its storage channel";
         }

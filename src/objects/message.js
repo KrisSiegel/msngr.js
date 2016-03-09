@@ -139,14 +139,14 @@ msngr.extend((function(external, internal) {
             binds: 0
         };
 
-        var explicitEmit = function(payload, uuids, callback) {
-            var uuids = uuids || messageIndex.query(msg) || [];
+        var explicitEmit = function(payload, ids, callback) {
+            var ids = ids || messageIndex.query(msg) || [];
 
             internal.processOpts(options, msg, payload, function(result) {
                 var methods = [];
                 var toDrop = [];
-                for (var i = 0; i < uuids.length; ++i) {
-                    var obj = handlers[uuids[i]];
+                for (var i = 0; i < ids.length; ++i) {
+                    var obj = handlers[ids[i]];
                     methods.push({
                         method: obj.handler,
                         params: [result, msg]
@@ -169,19 +169,19 @@ msngr.extend((function(external, internal) {
         };
 
         var fetchPersisted = function() {
-            var uuids = payloadIndex.query(msg);
+            var ids = payloadIndex.query(msg);
 
             var fpay;
 
-            if (uuids.length === 0) {
+            if (ids.length === 0) {
                 return undefined;
             }
 
-            if (uuids.length === 1) {
-                return payloads[uuids[0]];
+            if (ids.length === 1) {
+                return payloads[ids[0]];
             }
 
-            for (var i = 0; i < uuids.length; ++i) {
+            for (var i = 0; i < ids.length; ++i) {
                 fpay = external.extend(innerPay, fpay);
             }
 
@@ -214,14 +214,14 @@ msngr.extend((function(external, internal) {
                     payload = null;
                 }
 
-                var uuids = payloadIndex.query(msg);
-                if (uuids.length === 0) {
-                    var uuid = payloadIndex.index(msg);
-                    payloads[uuid] = payload;
-                    uuids = [uuid];
+                var ids = payloadIndex.query(msg);
+                if (ids.length === 0) {
+                    var id = payloadIndex.index(msg);
+                    payloads[id] = payload;
+                    ids = [id];
                 } else {
-                    for (var i = 0; i < uuids.length; ++i) {
-                        payloads[uuids[i]] = external.merge(payload, payloads[uuids[i]]);
+                    for (var i = 0; i < ids.length; ++i) {
+                        payloads[ids[i]] = external.merge(payload, payloads[ids[i]]);
                     }
                 }
 
@@ -234,18 +234,18 @@ msngr.extend((function(external, internal) {
                 return msgObj.emit(fpay);
             },
             cease: function() {
-                var uuids = payloadIndex.query(msg);
+                var ids = payloadIndex.query(msg);
 
-                for (var i = 0; i < uuids.length; ++i) {
-                    delete payloads[uuids[i]];
+                for (var i = 0; i < ids.length; ++i) {
+                    delete payloads[ids[i]];
                     --payloadCount;
                 }
 
                 return msgObj;
             },
             on: function(handler) {
-                var uuid = messageIndex.index(msg);
-                handlers[uuid] = {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
                     handler: handler,
                     context: (msg.context || this),
                     once: false
@@ -254,15 +254,15 @@ msngr.extend((function(external, internal) {
 
                 var payload = fetchPersisted();
                 if (payload !== undefined) {
-                    explicitEmit(payload, [uuid], undefined);
+                    explicitEmit(payload, [id], undefined);
                 }
                 counts.ons = counts.ons + 1;
 
                 return msgObj;
             },
             once: function(handler) {
-                var uuid = messageIndex.index(msg);
-                handlers[uuid] = {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
                     handler: handler,
                     context: (msg.context || this),
                     once: true
@@ -271,7 +271,7 @@ msngr.extend((function(external, internal) {
 
                 var payload = fetchPersisted();
                 if (payload !== undefined) {
-                    explicitEmit(payload, [uuid], undefined);
+                    explicitEmit(payload, [id], undefined);
                 }
                 counts.onces = counts.onces + 1;
 
@@ -295,15 +295,15 @@ msngr.extend((function(external, internal) {
                 return msgObj;
             },
             drop: function(handler) {
-                var uuids = messageIndex.query(msg);
-                if (uuids.length > 0) {
-                    for (var i = 0; i < uuids.length; ++i) {
-                        var uuid = uuids[i];
-                        if (handlers[uuid].handler === handler) {
-                            delete handlers[uuid];
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        if (handlers[id].handler === handler) {
+                            delete handlers[id];
                             handlerCount--;
 
-                            messageIndex.delete(uuid);
+                            messageIndex.delete(id);
                         }
                     }
                 }
@@ -327,14 +327,14 @@ msngr.extend((function(external, internal) {
                 return msgObj;
             },
             dropAll: function() {
-                var uuids = messageIndex.query(msg);
-                if (uuids.length > 0) {
-                    for (var i = 0; i < uuids.length; ++i) {
-                        var uuid = uuids[i];
-                        delete handlers[uuid];
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        delete handlers[id];
                         handlerCount--;
 
-                        messageIndex.delete(uuid);
+                        messageIndex.delete(id);
                     }
                 }
 

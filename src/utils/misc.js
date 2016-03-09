@@ -3,14 +3,14 @@ msngr.extend((function(external, internal) {
 
     // This chunk of code is only for the browser as a setImmediate workaround
     if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-        external.config("immediate", {
+        external.config.set("msngr.immediate", {
             channel: "__msngr_immediate"
         });
 
         var immediateQueue = [];
 
         window.addEventListener("message", function(event) {
-            if (event.source === window && event.data === internal.config["immediate"].channel) {
+            if (event.source === window && event.data === external.config.get("msngr.immediate").channel) {
                 event.stopPropagation();
                 if (immediateQueue.length > 0) {
                     immediateQueue.shift()();
@@ -36,9 +36,17 @@ msngr.extend((function(external, internal) {
     var lastNow = undefined;
     var isBrowserCached;
     var immediateFn;
+    var atomicCount = 0;
+    var seed = "Mxx".replace(/[x]/g, function() {
+        return Math.floor(Math.random() * 100);
+    });
 
     return {
         id: function() {
+            ++atomicCount;
+            return (seed + atomicCount);
+        },
+        uuid: function() {
             var d = external.now();
             var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = (d + Math.random() * 16) % 16 | 0;
@@ -103,7 +111,7 @@ msngr.extend((function(external, internal) {
                 } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
                     immediateFn = function(f) {
                         immediateQueue.push(f);
-                        window.postMessage(internal.config["immediate"].channel, "*");
+                        window.postMessage(external.config.get("msngr.immediate").channel, "*");
                     };
                 } else {
                     immediateFn = function(f) {
@@ -112,6 +120,27 @@ msngr.extend((function(external, internal) {
                 }
             }
             immediateFn(fn);
+        },
+        asyncify: function(fn) {
+            if (external.isFunction(fn)) {
+                fn.async = function () {
+                    var args = [].slice.call(arguments);
+                    var callback = args.pop();
+                    if (external.isFunction(callback)) {
+                        (function (a, c) {
+                            external.immediate(function () {
+                                try {
+                                    c.apply(null, [null, fn.apply(null, a)]);
+                                } catch (e) {
+                                    c.apply(null, [e, null]);
+                                }
+                            });
+                        }(args, callback));
+                    }
+                };
+            }
+
+            return fn;
         }
     };
 }));

@@ -16,57 +16,57 @@ msngr.extend((function(external, internal) {
         var mem = {
             index: function(message) {
                 if (external.exist(message) && external.exist(message.topic)) {
-                    var uuid = external.id();
-                    id_to_message[uuid] = external.copy(message);
+                    var id = external.id();
+                    id_to_message[id] = external.copy(message);
 
                     if (!external.exist(index[message.topic])) {
                         index[message.topic] = {
-                            uuids: [],
+                            ids: [],
                             category: { }
                         };
                     }
 
                     if (!external.exist(index[message.topic].category[message.category])) {
                         index[message.topic].category[message.category] = {
-                            uuids: [],
+                            ids: [],
                             subcategory: { }
                         }
                     }
 
                     if (!external.exist(index[message.topic].category[message.category].subcategory[message.subcategory])) {
                         index[message.topic].category[message.category].subcategory[message.subcategory] = {
-                            uuids: []
+                            ids: []
                         }
                     }
 
 
                     if (!external.exist(message.category) && !external.exist(message.subcategory)) {
-                        index[message.topic].uuids.push(uuid);
+                        index[message.topic].ids.push(id);
                     }
 
                     if (external.exist(message.category) && !external.exist(message.subcategory)) {
-                        index[message.topic].category[message.category].uuids.push(uuid);
+                        index[message.topic].category[message.category].ids.push(id);
                     }
 
                     if (external.exist(message.category) && external.exist(message.subcategory)) {
-                        index[message.topic].category[message.category].subcategory[message.subcategory].uuids.push(uuid);
+                        index[message.topic].category[message.category].subcategory[message.subcategory].ids.push(id);
                     }
 
                     index_count++;
 
-                    return uuid;
+                    return id;
                 }
                 return undefined;
             },
-            delete: function(uuid) {
-                if (external.exist(uuid) && external.exist(id_to_message[uuid])) {
-                    var message = id_to_message[uuid];
+            delete: function(id) {
+                if (external.exist(id) && external.exist(id_to_message[id])) {
+                    var message = id_to_message[id];
 
-                    external.removeFromArray(index[message.topic].uuids, uuid);
-                    external.removeFromArray(index[message.topic].category[message.category].uuids, uuid);
-                    external.removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].uuids, uuid);
+                    external.removeFromArray(index[message.topic].ids, id);
+                    external.removeFromArray(index[message.topic].category[message.category].ids, id);
+                    external.removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].ids, id);
 
-                    delete id_to_message[uuid];
+                    delete id_to_message[id];
                     index_count--;
 
                     return true;
@@ -80,9 +80,9 @@ msngr.extend((function(external, internal) {
                     var indexTopicCategory = ((indexTopic || { }).category || { })[message.category];
                     var indexTopicCategorySubcategory = ((indexTopicCategory || { }).subcategory || { })[message.subcategory];
 
-                    result = result.concat(indexTopic.uuids || []);
-                    result = result.concat((indexTopicCategory || { }).uuids || []);
-                    result = result.concat((indexTopicCategorySubcategory || { }).uuids || []);
+                    result = result.concat(indexTopic.ids || []);
+                    result = result.concat((indexTopicCategory || { }).ids || []);
+                    result = result.concat((indexTopicCategorySubcategory || { }).ids || []);
                 }
 
                 return external.deDupeArray(result);

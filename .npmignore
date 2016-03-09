@@ -1,5 +1,5 @@
 # msngr.js specific
-test-resources
+test
 .travis.yml
 bower.json
 Gruntfile.js

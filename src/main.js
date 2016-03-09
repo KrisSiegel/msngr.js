@@ -8,18 +8,14 @@ var msngr = msngr || (function() {
     "use strict";
 
     // Defaults for some internal functions
-    var internal = {
-        warnings: true
-    };
-
-    internal.config = { };
+    var internal = { };
 
     // The main method for msngr uses the message object
     var external = function(topic, category, subcategory) {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "3.2.2";
+    external.version = "4.0.0";
 
     var getType = function(input) {
         return Object.prototype.toString.call(input);
@@ -130,9 +126,9 @@ var msngr = msngr || (function() {
     };
 
     external.merge = function() {
-        var result;
-        if (arguments.length > 0) {
-            for (var i = 0; i < arguments.length; ++i) {
+        var result = arguments[0];
+        if (arguments.length > 1) {
+            for (var i = 1; i < arguments.length; ++i) {
                 result = twoMerge(result, arguments[i]);
             }
         }
@@ -170,13 +166,6 @@ var msngr = msngr || (function() {
         return result;
     };
 
-    external.config = function(key, value) {
-        if (value !== undefined) {
-            internal.config[key] = external.merge((internal.config[key] || { }), external.copy(value));
-        }
-        return internal.config[key];
-    };
-
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.
     Object.defineProperty(external, "debug", {
@@ -189,16 +178,6 @@ var msngr = msngr || (function() {
         },
         get: function() {
             return (external.internal !== undefined)
-        }
-    });
-
-    // This governs warning messages that some methods may spit into the console when warranted (du'h).
-    Object.defineProperty(external, "warnings", {
-        set: function(value) {
-            internal.warnings = value;
-        },
-        get: function() {
-            return internal.warnings;
         }
     });
 
