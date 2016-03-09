@@ -327,6 +327,9 @@ Executes a function, asynchronously, as quickly as possible. In node.js and IE t
 
 ```fn (required)``` - the function to execute asynchronously.
 
+### ```msngr.asyncify(fn)```
+Takes a synchronous function and adds an .async() method to it which can be called like ```fn.async()```. It takes the same amount of parameters as the original synchronous method but adds an ended callback method to it. When executed the callback will receive an ```(error, result)``` pair of parameters. ```error``` will contain any exceptions thrown and ```result``` will be whatever was returned.
+
 ### Executer object
 The executor object is a very simple way of specifying n number of functions that can then be executed in parallel (similar to async.parallel).
 
@@ -400,7 +403,7 @@ console.log(msngr.sayHello());
 ### ```msngr.merge(input1, input2, ..., inputN)```
 Merges an n number of inputs together. Combines objects with other objects (the merging overwrites in order should conflict arrise), functions with objects, strings and strings and arrays. **NOTE** this will merge references together; it does not produce deep copies for objects.
 
-```inputn (required)``` - Specify as many parameters as necessary for merging.
+```inputN (required)``` - Specify as many parameters as necessary for merging.
 
 ```javascript
 var merged = msngr.merge({ val1: "test" }, { val2: "whatever!" }, { val2: "no!" });
