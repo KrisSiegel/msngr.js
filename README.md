@@ -90,26 +90,26 @@ msngr.net("http://localhost:3000")
 ```
 
 ### msngr.config()
-How about some configuration sexiness? [Execute on jsfiddle](http://jsfiddle.net/w2t0g1vc/6/)
+How about some configuration sexiness?
 
 ```html
 <div id="output"></div>
 ```
 ```javascript
 var output = document.getElementById("output");
-msngr.config("my.server.org", {
+msngr.config.set("my.server.org", {
     host: "localhost",
     port: 3000,
     debug: true
 });
 
-output.appendChild(document.createTextNode(JSON.stringify(msngr.config("my.server.org"))));
+output.appendChild(document.createTextNode(JSON.stringify(msngr.config.get("my.server.org"))));
 
-msngr.config("my.server.org", {
+msngr.config.set("my.server.org", {
     host: "productionsystem.org"
 });
 
-output.appendChild(document.createTextNode(JSON.stringify(msngr.config("my.server.org"))));
+output.appendChild(document.createTextNode(JSON.stringify(msngr.config.get("my.server.org"))));
 ```
 
 As you can see msngr's configuration management allows the merging and overwriting of configurations as you go along. This is great for setting a default set of configurations that can later be overwritten due to being in another environment, testing, etc.
