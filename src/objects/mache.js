@@ -127,7 +127,7 @@ msngr.extend((function(external, internal) {
                     currentObj = currentObj[keys[i]];
                 }
 
-                return (currentObj || defaultValue);
+                return (external.exist(currentObj)) ? currentObj : defaultValue;
             },
             set: function (id, value) {
                 return (transacting) ? transSet(id, value) : normalSet(id, value);

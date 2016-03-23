@@ -15,7 +15,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "4.0.0";
+    external.version = "4.0.1";
 
     var getType = function(input) {
         return Object.prototype.toString.call(input);
@@ -403,7 +403,7 @@ msngr.extend((function(external, internal) {
                     currentObj = currentObj[keys[i]];
                 }
 
-                return (currentObj || defaultValue);
+                return (external.exist(currentObj)) ? currentObj : defaultValue;
             },
             set: function (id, value) {
                 return (transacting) ? transSet(id, value) : normalSet(id, value);

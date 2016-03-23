@@ -185,4 +185,19 @@ describe("./objects/mache.js", function() {
         mache.set("something", "second");
     });
 
+    it("msngr.mache() - getDeep() property returns boolean values", function () {
+        var mache = msngr.mache();
+        mache.set("something", {
+            like: {
+                totally: {
+                    yes: true,
+                    no: false
+                }
+            }
+        });
+
+        expect(mache.getDeep("something", "like.totally.yes")).to.equal(true);
+        expect(mache.getDeep("something", "like.totally.no")).to.equal(false);
+    });
+
 });
