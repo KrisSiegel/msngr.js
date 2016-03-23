@@ -2,7 +2,7 @@
   "name": "msngr",
   "main": "msngr.js",
   "description": "An asynchronous messaging library, written in JavaScript, for node and browser use",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "keywords": [
     "message",
     "messaging",
@@ -15,7 +15,9 @@
     "publish",
     "subscription",
     "subscribe",
-    "pubsub"
+    "pubsub",
+    "cache",
+    "mache"
   ],
   "repository": {
     "type": "git",
