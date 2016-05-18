@@ -13,21 +13,11 @@ module.exports = (function(grunt) {
 
     /*
     	These are the paths to include or exclude in concatenation and minification steps.
+        The order here is important at some code references other code in other files.
     */
     var paths = [
         "src/main.js",
-        "src/utils/validation.js",
-        "src/objects/mache.js",
-        "src/utils/exceptional.js",
-        "src/utils/converters.js",
-        "src/utils/dom.js",
-        "src/utils/misc.js",
-        "src/objects/executer.js",
-        "src/objects/memory.js",
-        "src/objects/message.js",
-        "src/objects/net.js",
-        "src/options/cross-window.js",
-        "src/options/dom.js",
+        "src/validators/*.js",
         "src/module.exports.js",
         "!**/*.aspec.js",
         "!**/*.cspec.js",
@@ -36,7 +26,7 @@ module.exports = (function(grunt) {
     ];
 
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: grunt.file.readJSON("package.json"),
         clean: ["./msngr.js", "./msngr.min.js"],
         concat: {
             dist: {
@@ -58,8 +48,8 @@ module.exports = (function(grunt) {
                     reporter: "spec"
                 },
                 src: [
-                    "**/*.aspec.js",
-                    "**/*.nspec.js"
+                    "./src/**/*.aspec.js",
+                    "./src/**/*.nspec.js"
                 ]
             }
         },

@@ -10,10 +10,11 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./utils/misc.js", function() {
+describe("./validators/is.js", function () {
     "use strict";
 
-    it("msngr.isBrowser() - returns true when running in the browser", function() {
-        expect(msngr.isBrowser()).to.equal(true);
+    it("msngr.is.browser - expects to return false when not in a web browser", function () {
+        expect(msngr.is.browser).to.equal(false);
     });
+
 });
