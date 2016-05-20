@@ -35,6 +35,26 @@ describe("./validators/is.js", function () {
         }
     });
 
+    it("msngr.is(bool...).boolean - expects a correct result for boolean testing", function () {
+        (function () { expect(msngr.is(arguments).boolean).to.equal(false); }(1, 2, 3));
+        expect(msngr.is("testing").boolean).to.equal(false);
+        expect(msngr.is([]).boolean).to.equal(false);
+        expect(msngr.is({}).boolean).to.equal(false);
+        expect(msngr.is(12).boolean).to.equal(false);
+        expect(msngr.is(new Date()).boolean).to.equal(false);
+        expect(msngr.is(function () {}).boolean).to.equal(false);
+        expect(msngr.is(true).boolean).to.equal(true);
+        expect(msngr.is(false).boolean).to.equal(true);
+
+        if (typeof Symbol !== "undefined") {
+            expect(msngr.is(Symbol()).boolean).to.equal(false);
+        }
+
+        if (typeof Promise !== "undefined") {
+            expect(msngr.is(new Promise(function (resolve) { resolve(); })).boolean).to.equal(false);
+        }
+    });
+
     it("msngr.is(str...).string - expects a correct result for string testing", function () {
         (function () { expect(msngr.is(arguments).string).to.equal(false); }(1, 2, 3));
         expect(msngr.is("testing").string).to.equal(true);

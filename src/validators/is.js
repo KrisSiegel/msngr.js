@@ -11,6 +11,7 @@ msngr.extend(function (external, internal) {
     var simpleTypes = {
         // ECMAScript 5 Types
         arguments: "[object Arguments]",
+        boolean: "[object Boolean]",
         string: "[object String]",
         date: "[object Date]",
         array: "[object Array]",
@@ -73,6 +74,9 @@ msngr.extend(function (external, internal) {
         return props;
     };
 
+    // Add simple types to the internal interface
+    internal.types = simpleTypes;
+
     // The external is interface that supports N number of arguments.
     external.is = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
@@ -98,10 +102,6 @@ msngr.extend(function (external, internal) {
     };
 
     // Returns whether we're in a browser or not
-    Object.defineProperty(external.is, "browser", {
-        get: function () {
-            return (typeof XMLHttpRequest !== "undefined");
-        }
-    });
+    external.is.browser = (typeof XMLHttpRequest !== "undefined");
 
 });
