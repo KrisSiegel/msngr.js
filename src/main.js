@@ -15,7 +15,7 @@ var msngr = msngr || (function() {
         return internal.objects.message(topic, category, subcategory);
     };
 
-    external.version = "4.0.1";
+    external.version = "4.0.2";
 
     var getType = function(input) {
         return Object.prototype.toString.call(input);
@@ -157,6 +157,11 @@ var msngr = msngr || (function() {
                 var keyType = getType(obj[key]);
                 if (["[object Object]", "[object Function]"].indexOf(keyType) !== -1) {
                     result[key] = external.copy(obj[key]);
+                } else if ("[object Array]" === keyType) {
+                    result[key] = [];
+                    for (var i = 0; i < obj[key].length; ++i) {
+                        result[key][i] = external.copy(obj[key][i]);
+                    }
                 } else {
                     result[key] = obj[key];
                 }

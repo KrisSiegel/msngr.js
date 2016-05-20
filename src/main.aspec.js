@@ -240,6 +240,27 @@ describe("./main.js", function() {
         obj.stuff.goes.here.str = "whatever!";
         expect(obj.stuff.goes.here.str).to.equal("whatever!");
         expect(copy.stuff.goes.here.str).to.equal("some");
+
+        // Let's make sure arrays are deep copied
+        var tobj = {
+            something: [
+                { yes: "no" },
+                { totes: "magoats" }
+            ]
+        };
+
+        var tobjCopy = msngr.copy(tobj);
+        tobj.something[0].yes = "askdhad";
+        tobjCopy.something.push({
+            another: "yup"
+        });
+
+        expect(tobjCopy).to.exist;
+        expect(tobjCopy.something).to.exist;
+        expect(tobj.something.length).to.equal(2);
+        expect(tobjCopy.something.length).to.equal(3);
+        expect(tobj.something[0].yes).to.equal("askdhad");
+        expect(tobjCopy.something[0].yes).to.equal("no");
     });
 
     it("msngr.debug - property setting exports internal object for testing and debugging", function() {
