@@ -201,4 +201,34 @@ describe("./validators/is.js", function () {
         expect(msngr.is("sdad", 5, new Date()).getTypes()).to.deep.equal(["[object String]", "[object Number]", "[object Date]"]);
     });
 
+    it("msngr.is(obj...).there - expects to handle existance correctly with the 'there' property", function () {
+        expect(msngr.is(undefined).there).to.equal(false);
+        expect(msngr.is(null).there).to.equal(false);
+        expect(msngr.is({}, undefined).there).to.equal(false);
+        expect(msngr.is({}, null).there).to.equal(false);
+        expect(msngr.is("").there).to.equal(true);
+        expect(msngr.is(4).there).to.equal(true);
+        expect(msngr.is(true).there).to.equal(true);
+        expect(msngr.is(false).there).to.equal(true);
+        expect(msngr.is(new Date()).there).to.equal(true);
+        expect(msngr.is(function () {}).there).to.equal(true);
+    });
+
+    it("msngr.is(obj...).empty - expects to handle empty inputs correctly", function () {
+        expect(msngr.is("").empty).to.equal(true);
+        expect(msngr.is("    ").empty).to.equal(true);
+        expect(msngr.is("        ").empty).to.equal(true);
+        expect(msngr.is("sdlfjsdlkfjlsf").empty).to.equal(false);
+        expect(msngr.is(undefined).empty).to.equal(true);
+        expect(msngr.is(null).empty).to.equal(true);
+        expect(msngr.is({ }).empty).to.equal(true);
+        expect(msngr.is([]).empty).to.equal(true);
+        expect(msngr.is({ something: 1 }).empty).to.equal(false);
+        expect(msngr.is([1,2,3]).empty).to.equal(false);
+
+        expect(msngr.is("", "       ", { }).empty).to.equal(true);
+        expect(msngr.is("", "some").empty).to.equal(false);
+        expect(msngr.is("sgsdfgfsd", "").empty).to.equal(false);
+    });
+
 });

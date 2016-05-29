@@ -67,6 +67,7 @@ msngr.extend(function (external, internal) {
             return copyHandlers[inputType](input);
         }
 
+        // Return the input since we don't know what it is.
         return input;
     };
 

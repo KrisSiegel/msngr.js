@@ -13,13 +13,27 @@ msngr.extend(function (external, internal) {
         if (obj2 === undefined || obj2 === null) { return obj1; };
 
         var obj1Type = external.is(obj1).getType();
-        var obj12ype = external.is(obj2).getType();
+        var obj2Type = external.is(obj2).getType();
 
-        if (obj1Type !== internal.types.object || obj1Type !== internal.types.function || obj2Type !== internal.types.object) {
-            throw internal.InvalidParametersException("msngr.merge()", "Only objects or a single function followed by objects can be merged");
+        var acceptableForObj1 = [internal.types.object, internal.types.function, internal.types.array];
+        var acceptableForObj2 = [internal.types.object, internal.types.array];
+
+        if (acceptableForObj1.indexOf(obj1Type) === -1 || acceptableForObj2.indexOf(obj2Type) === -1) {
+            throw internal.InvalidParametersException("msngr.merge()", "Only objects, arrays or a single function followed by objects can be merged!");
+        }
+
+        if ([obj1Type, obj2Type].indexOf(internal.types.array) !== -1 && (obj1Type !== internal.types.array || obj2Type !== internal.types.array)) {
+            throw internal.InvalidParametersException("msngr.merge()", "Arrays cannot be merged with objects or functions!");
         }
 
         var result = obj1;
+
+        // If we're in the weird spot of getting only arrays then concat and return
+        // Seriously though, Mr or Mrs or Ms dev, but just use Array.prototype.concat()!
+        if (obj1Type === internal.types.array && obj2Type === internal.types.array) {
+            return obj1.concat(obj2);
+        }
+
         for (var key in obj2) {
             if (obj2.hasOwnProperty(key)) {
                 var is = external.is(obj2[key]);
@@ -34,7 +48,7 @@ msngr.extend(function (external, internal) {
                 }
             }
         }
-        
+
         return result;
     };
 

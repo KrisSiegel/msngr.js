@@ -18,10 +18,12 @@ msngr.extend(function (external, internal) {
         number: "[object Number]",
         object: "[object Object]",
         function: "[object Function]",
+        undefined: "[object Undefined]",
+        null: "[object Null]",
 
         // ECMAScript 6 Types
         symbol: "[object Symbol]",
-        promise: "[object Promise]", // node.js 4.x returns [object Object] for promises :( so limited testing possible
+        promise: "[object Promise]", // node.js 4.x returns [object Object] for promises so limited testing possible
 
         // HTML DOM Types
         nodelist: "[object NodeList]"
@@ -35,13 +37,37 @@ msngr.extend(function (external, internal) {
         }
     };
 
+    var getType = function (item) {
+        return Object.prototype.toString.call(item);
+    };
+
     // Check a type against an input
-    var check = function (type, item, hard) {
+    var checkType = function (type, item, hard) {
         if (hard) {
-            return harderTypes[type](Object.prototype.toString.call(item));
+            return harderTypes[type](getType(item));
         }
-        return (Object.prototype.toString.call(item) === simpleTypes[type]);
+        return (getType(item) === simpleTypes[type]);
     }
+
+    // Check an object for empiness
+    var checkEmpty = function (type, item) {
+        switch(type) {
+            case simpleTypes.undefined:
+            case simpleTypes.null:
+                return true;
+            case simpleTypes.string:
+                if (item.trim().length === 0) {
+                    return true;
+                }
+                return false;
+            case simpleTypes.object:
+                return (Object.keys(item).length === 0);
+            case simpleTypes.array:
+                return (item.length === 0);
+            default:
+                return false;
+        };
+    };
 
     // Bulld the properties that the is function returns for testing values
     var buildProps = function (inputs) {
@@ -49,14 +75,14 @@ msngr.extend(function (external, internal) {
 
         // Create a function to call with simple and hard types
         // This is done so simple types don't need to check for hard types
-        var iterateTypes = function (types, hard) {
+        var generateProps = function (types, hard) {
             for (var t in types) {
                 if (types.hasOwnProperty(t)) {
                     (function (prop) {
                         Object.defineProperty(props, prop, {
-                            get: function() {
+                            get: function () {
                                 for (var i = 0; i < inputs.length; ++i) {
-                                    if (!check(prop, inputs[i], hard)) {
+                                    if (!checkType(prop, inputs[i], hard)) {
                                         return false;
                                     }
                                 }
@@ -68,8 +94,32 @@ msngr.extend(function (external, internal) {
             }
         };
 
-        iterateTypes(simpleTypes);
-        iterateTypes(harderTypes);
+        generateProps(simpleTypes, false);
+        generateProps(harderTypes, true);
+
+        // Check whether the specified inputs even exist
+        Object.defineProperty(props, "there", {
+            get: function () {
+                for (var i = 0; i < inputs.length; ++i) {
+                    if (inputs[i] === undefined || inputs[i] === null) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        // Check whether a passed in input is considered empty or not
+        Object.defineProperty(props, "empty", {
+            get: function () {
+                for (var i = 0; i < inputs.length; ++i) {
+                    if (!checkEmpty(getType(inputs[i]), inputs[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
 
         return props;
     };
@@ -77,7 +127,7 @@ msngr.extend(function (external, internal) {
     // Add simple types to the internal interface
     internal.types = simpleTypes;
 
-    // The external is interface that supports N number of arguments.
+    // The external `is` interface that supports N number of arguments.
     external.is = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
 

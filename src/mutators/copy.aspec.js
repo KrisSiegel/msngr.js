@@ -83,4 +83,28 @@ describe("./mutators/copy.js", function () {
         expect(d.getTime()).to.not.equal(dCopy.getTime());
     });
 
+    it("msngr.copy() - expect copy to properly deep copy", function () {
+        var org1 = {
+            something: [
+                { what: "yes", arr: [{ chickens: "yup" }] }
+            ]
+        };
+
+        var org1Copy = msngr.copy(org1);
+        expect(org1Copy).to.deep.equal(org1);
+
+        org1.something[0].arr[0].chickens = "goofball";
+        expect(org1Copy).to.not.deep.equal(org1);
+
+        var org2 = [
+            { testing: [{ another:"no" }] }
+        ];
+
+        var org2Copy = msngr.copy(org2);
+        expect(org2Copy).to.deep.equal(org2);
+
+        org2[0].testing[0].another = "yes";
+        expect(org2Copy).to.not.deep.equal(org2);
+    });
+
 });
