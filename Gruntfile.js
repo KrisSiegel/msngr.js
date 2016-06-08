@@ -21,6 +21,7 @@ module.exports = (function(grunt) {
         "src/validators/*.js",
         "src/utils/*.js",
         "src/mutators/*.js",
+        "src/messaging/*.js",
         "src/module.exports.js",
         "!**/*.aspec.js",
         "!**/*.cspec.js",

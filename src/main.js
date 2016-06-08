@@ -4,7 +4,7 @@
 	The main entry point for msngr.js. Covers internal and external interface generation,
 	versioning (for programmatic access) and the core extend method.
 */
-var msngr = msngr || (function() {
+var msngr = msngr || (function () {
     "use strict";
 
     // The internal object for holding the internal API
@@ -14,7 +14,7 @@ var msngr = msngr || (function() {
     var external = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
 
-        this.input = inputs;
+        return internal.message.apply(this, inputs);
     };
 
     // Built version of msngr.js for programatic access; this is auto generated
@@ -37,14 +37,14 @@ var msngr = msngr || (function() {
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.
     Object.defineProperty(external, "debug", {
-        set: function(value) {
+        set: function (value) {
             if (value === true) {
                 external.internal = internal;
             } else if (value === false) {
                 delete external.internal;
             }
         },
-        get: function() {
+        get: function () {
             return (external.internal !== undefined)
         }
     });

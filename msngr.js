@@ -4,7 +4,7 @@
 	The main entry point for msngr.js. Covers internal and external interface generation,
 	versioning (for programmatic access) and the core extend method.
 */
-var msngr = msngr || (function() {
+var msngr = msngr || (function () {
     "use strict";
 
     // The internal object for holding the internal API
@@ -14,7 +14,7 @@ var msngr = msngr || (function() {
     var external = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
 
-        this.input = inputs;
+        return internal.message.apply(this, inputs);
     };
 
     // Built version of msngr.js for programatic access; this is auto generated
@@ -37,14 +37,14 @@ var msngr = msngr || (function() {
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.
     Object.defineProperty(external, "debug", {
-        set: function(value) {
+        set: function (value) {
             if (value === true) {
                 external.internal = internal;
             } else if (value === false) {
                 delete external.internal;
             }
         },
-        get: function() {
+        get: function () {
             return (external.internal !== undefined)
         }
     });
@@ -578,6 +578,595 @@ msngr.extend(function (external, internal) {
     };
 
 });
+
+/*
+    ./src/mutators/safe.js
+
+    Provides a safe way to access objects and functions
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    external.safe = function (obj, path, def) {
+        if (!external.is(obj).object || !external.is(path).string) {
+            throw internal.InvalidParametersException("msngr.safe");
+        }
+
+        var props = path.split(".");
+        var position = obj, prop = undefined;
+        while (prop = props.shift()) {
+            position = position[prop];
+            if (position === undefined) {
+                break;
+            }
+        }
+
+        return (position || def);
+    };
+
+});
+
+/*
+    ./src/messaging/executer.js
+
+    Executer provides asynchronous execution of indexed methods
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    internal.executer = function (methods) {
+        var isMethods = external.is(methods);
+        if (!isMethods.there || !isMethods.array) {
+            throw internal.InvalidParametersException("executor");
+        }
+
+        // Support passing in just methods
+        for (var i = 0; i < methods.length; ++i) {
+            if (external.is(methods[i]).function) {
+                methods[i] = {
+                    method: methods[i]
+                };
+            }
+        }
+
+        var exec = function (method, params, ctx, done) {
+            var isParams = external.is(params);
+            external.immediate(function () {
+                var asyncFlag = false;
+                var asyncFunc = function () {
+                    asyncFlag = true;
+                    return function (result) {
+                        done.apply(ctx, [result]);
+                    };
+                }
+
+                if (!isParams.array) {
+                    if (isParams.there) {
+                        params = [params];
+                    } else {
+                        params = [];
+                    }
+                }
+                params.push(asyncFunc);
+                var syncResult = method.apply(ctx || this, params);
+                if (asyncFlag !== true) {
+                    done.apply(ctx, [syncResult]);
+                }
+            });
+        };
+
+        return {
+            parallel: function (done) {
+                var isDone = external.is(done);
+                var results = [];
+                var executed = 0;
+
+                if (methods.length === 0 && isDone.there) {
+                    return done.apply(context, [ [] ]);
+                }
+
+                for (var i = 0; i < methods.length; ++i) {
+                    var method = methods[i].method;
+                    var params = methods[i].params;
+                    var context = methods[i].context;
+
+                    (function (m, p, c) {
+                        exec(m, p, c, function(result) {
+                            if (external.is(result).there) {
+                                results.push(result);
+                            }
+
+                            ++executed;
+
+                            if (executed === methods.length && isDone.there) {
+                                done.apply(context, [results]);
+                            }
+                        });
+                    }(method, params, context));
+                }
+            }
+        };
+    };
+}));
+
+/*
+    ./src/messaging/memory.js
+
+    An indexer for message objects.
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    var exists = function (input) {
+        return (input !== undefined && input !== null);
+    };
+
+    var removeFromArray = function(arr, value) {
+        var inx = arr.indexOf(value);
+        var endIndex = arr.length - 1;
+        if (inx !== endIndex) {
+            var temp = arr[endIndex];
+            arr[endIndex] = arr[inx];
+            arr[inx] = temp;
+        }
+        arr.pop();
+    };
+
+    internal.memory = function () {
+
+        // Index for id to message objects
+        var id_to_message = {};
+
+        // Direct index (no partials) for message
+        var index = { };
+
+        // Message index count
+        var index_count = 0;
+
+        // Memory indexer API
+        var mem = {
+            index: function(message) {
+                if (exists(message) && exists(message.topic)) {
+                    var id = external.id();
+                    id_to_message[id] = external.copy(message);
+
+                    if (!exists(index[message.topic])) {
+                        index[message.topic] = {
+                            ids: [],
+                            category: { }
+                        };
+                    }
+
+                    if (!exists(index[message.topic].category[message.category])) {
+                        index[message.topic].category[message.category] = {
+                            ids: [],
+                            subcategory: { }
+                        }
+                    }
+
+                    if (!exists(index[message.topic].category[message.category].subcategory[message.subcategory])) {
+                        index[message.topic].category[message.category].subcategory[message.subcategory] = {
+                            ids: []
+                        }
+                    }
+
+
+                    if (!exists(message.category) && !exists(message.subcategory)) {
+                        index[message.topic].ids.push(id);
+                    }
+
+                    if (exists(message.category) && !exists(message.subcategory)) {
+                        index[message.topic].category[message.category].ids.push(id);
+                    }
+
+                    if (exists(message.category) && exists(message.subcategory)) {
+                        index[message.topic].category[message.category].subcategory[message.subcategory].ids.push(id);
+                    }
+
+                    index_count++;
+
+                    return id;
+                }
+                return undefined;
+            },
+            delete: function(id) {
+                if (exists(id) && exists(id_to_message[id])) {
+                    var message = id_to_message[id];
+
+                    removeFromArray(index[message.topic].ids, id);
+                    removeFromArray(index[message.topic].category[message.category].ids, id);
+                    removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].ids, id);
+
+                    delete id_to_message[id];
+                    index_count--;
+
+                    return true;
+                }
+                return false;
+            },
+            query: function(message) {
+                var result = [];
+                if (exists(message) && exists(message.topic) && exists(index[message.topic])) {
+                    var indexTopic = index[message.topic];
+                    var indexTopicCategory = ((indexTopic || { }).category || { })[message.category];
+                    var indexTopicCategorySubcategory = ((indexTopicCategory || { }).subcategory || { })[message.subcategory];
+
+                    result = result.concat(indexTopic.ids || []);
+                    result = result.concat((indexTopicCategory || { }).ids || []);
+                    result = result.concat((indexTopicCategorySubcategory || { }).ids || []);
+                }
+
+                return external.deDupeArray(result);
+            },
+            clear: function() {
+                // Index for id to message objects
+                id_to_message = {};
+
+                // Direct index (no partials) for message
+                index = { };
+
+                index_count = 0;
+
+                return true;
+            }
+        };
+
+        Object.defineProperty(mem, "count", {
+            get: function() {
+                return index_count;
+            }
+        });
+
+        return mem;
+    };
+}));
+
+/*
+    ./messaging/message.js
+
+    The primary object of msngr; handles all message sending, receiving and binding.
+*/
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    internal.option = function(opt, handler) {
+        internal.option[opt] = handler;
+    };
+
+    var messageIndex = internal.memory();
+    var payloadIndex = internal.memory();
+
+    var handlers = {};
+    var handlerCount = 0;
+
+    var payloads = {};
+    var payloadCount = 0;
+
+    Object.defineProperty(internal, "handlerCount", {
+        get: function() {
+            return handlerCount;
+        }
+    });
+
+    Object.defineProperty(internal, "payloadCount", {
+        get: function() {
+            return payloadCount;
+        }
+    });
+
+    internal.reset = function() {
+        handlers = {};
+        handlerCount = 0;
+        messageIndex.clear();
+        payloadIndex.clear();
+        payloads = {};
+        payloadCount = 0;
+    };
+
+    internal.processOpts = function (opts, message, payload, callback) {
+        var optProcessors = [];
+        for (var key in opts) {
+            if (opts.hasOwnProperty(key) && external.is(internal.option[key]).there) {
+                optProcessors.push({
+                    method: internal.option[key],
+                    params: [message, payload, opts]
+                });
+            }
+        }
+
+        // Short circuit for no options
+        if (optProcessors.length === 0) {
+            return callback.apply(this, [payload]);
+        }
+
+        // Long circuit to do stuff (du'h)
+        var execs = internal.executer(optProcessors);
+
+        execs.parallel(function(results) {
+            var result = payload;
+            if (external.is(results).there && results.length > 0) {
+                for (var i = 0; i < results.length; ++i) {
+                    if (external.is(results[i]).there) {
+                        result = external.merge(results[i], result);
+                    }
+                }
+            }
+            callback.apply(this, [result]);
+        });
+    };
+
+    internal.message = function (topic, category, subcategory) {
+        var isTopic = external.is(topic);
+        var isCategory = external.is(category);
+        var isSubcategory = external.is(subcategory);
+        if (!isTopic.there) {
+            throw internal.InvalidParametersException("msngr()");
+        }
+
+        if (!isTopic.object && !isTopic.string) {
+            throw internal.InvalidParametersException("msngr()");
+        }
+
+        if (isTopic.empty) {
+            throw internal.InvalidParametersException("msngr()");
+        }
+
+        var msg;
+        if (isTopic.object) {
+            msg = external.copy(topic);
+        } else {
+            msg = {};
+            msg.topic = topic;
+
+            if (!isCategory.empty) {
+                msg.category = category;
+            }
+
+            if (!isSubcategory.empty) {
+                msg.subcategory = subcategory;
+            }
+        }
+
+        // Normalize message to lowercase
+        for (var prop in msg) {
+            if (msg.hasOwnProperty(prop)) {
+                msg[prop] = msg[prop].toLowerCase();
+            }
+        }
+
+        var options = { };
+        var counts = {
+            emits: 0,
+            persists: 0,
+            options: 0,
+            ons: 0,
+            onces: 0
+        };
+
+        var explicitEmit = function (payload, ids, callback) {
+            var ids = ids || messageIndex.query(msg) || [];
+
+            internal.processOpts(options, msg, payload, function (result) {
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < ids.length; ++i) {
+                    var obj = handlers[ids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [result, msg]
+                    });
+
+                    if (obj.once === true) {
+                        toDrop.push(obj.handler);
+                    }
+                }
+
+                var execs = internal.executer(methods);
+
+                for (var i = 0; i < toDrop.length; ++i) {
+                    msgObj.drop(toDrop[i]);
+                }
+
+                execs.parallel(callback);
+
+            });
+        };
+
+        var fetchPersisted = function () {
+            var ids = payloadIndex.query(msg);
+
+            var fpay;
+
+            if (ids.length === 0) {
+                return undefined;
+            }
+
+            if (ids.length === 1) {
+                return payloads[ids[0]];
+            }
+
+            for (var i = 0; i < ids.length; ++i) {
+                fpay = external.merge(innerPay, fpay);
+            }
+
+            return fpay;
+        };
+
+        var msgObj = {
+            option: function (key, value) {
+                var isKey = external.is(key);
+                if (!isKey.there || !isKey.string) {
+                    throw internal.InvalidParametersException("option");
+                }
+
+                options[key] = value;
+                counts.options = counts.options + 1;
+
+                return msgObj;
+            },
+            emit: function (payload, callback) {
+                var isPayload = external.is(payload);
+                if (isPayload.function) {
+                    callback = payload;
+                    payload = undefined;
+                }
+                explicitEmit(payload, undefined, callback);
+                counts.emits = counts.emits + 1;
+
+                return msgObj;
+            },
+            persist: function (payload) {
+                if (payload === undefined) {
+                    payload = null;
+                }
+
+                var ids = payloadIndex.query(msg);
+                if (ids.length === 0) {
+                    var id = payloadIndex.index(msg);
+                    payloads[id] = payload;
+                    ids = [id];
+                } else {
+                    for (var i = 0; i < ids.length; ++i) {
+                        payloads[ids[i]] = external.merge(payload, payloads[ids[i]]);
+                    }
+                }
+
+                var fpay = fetchPersisted();
+
+                ++payloadCount;
+
+                counts.persists = counts.persists + 1;
+
+                return msgObj.emit(fpay);
+            },
+            cease: function() {
+                var ids = payloadIndex.query(msg);
+
+                for (var i = 0; i < ids.length; ++i) {
+                    delete payloads[ids[i]];
+                    --payloadCount;
+                }
+
+                return msgObj;
+            },
+            on: function(handler) {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
+                    handler: handler,
+                    context: (msg.context || this),
+                    once: false
+                };
+                handlerCount++;
+
+                var payload = fetchPersisted();
+                if (payload !== undefined) {
+                    explicitEmit(payload, [id], undefined);
+                }
+                counts.ons = counts.ons + 1;
+
+                return msgObj;
+            },
+            once: function(handler) {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
+                    handler: handler,
+                    context: (msg.context || this),
+                    once: true
+                };
+                handlerCount++;
+
+                var payload = fetchPersisted();
+                if (payload !== undefined) {
+                    explicitEmit(payload, [id], undefined);
+                }
+                counts.onces = counts.onces + 1;
+
+                return msgObj;
+            },
+            drop: function(handler) {
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        if (handlers[id].handler === handler) {
+                            delete handlers[id];
+                            handlerCount--;
+
+                            messageIndex.delete(id);
+                        }
+                    }
+                }
+
+                return msgObj;
+            },
+            dropAll: function() {
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        delete handlers[id];
+                        handlerCount--;
+
+                        messageIndex.delete(id);
+                    }
+                }
+
+                return msgObj;
+            }
+        };
+
+        // Expose the raw message object itself via a message property.
+        // Do not allow modification.
+        Object.defineProperty(msgObj, "message", {
+            get: function() {
+                return msg;
+            }
+        });
+
+        Object.defineProperty(msgObj, "topic", {
+            get: function() {
+                return msg.topic;
+            }
+        });
+
+        Object.defineProperty(msgObj, "category", {
+            get: function() {
+                return msg.category;
+            }
+        });
+
+        Object.defineProperty(msgObj, "subcategory", {
+            get: function() {
+                return msg.subcategory;
+            }
+        });
+
+        // Setup a property to get subscribers
+        Object.defineProperty(msgObj, "subscribers", {
+            get: function() {
+                return messageIndex.query(msg).length;
+            }
+        });
+
+        // If debug mode is enabled then let's expose the internal method hit counts.
+        // These counts are only good if a method is called and succeeds.
+        if (external.debug === true) {
+            Object.defineProperty(msgObj, "counts", {
+                get: function() {
+                    return counts;
+                }
+            });
+        }
+
+        return msgObj;
+    };
+
+    // This is an internal extension; do not export explicitly.
+    return {};
+}));
 
 /*
 	module.exports.js

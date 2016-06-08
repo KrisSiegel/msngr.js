@@ -1,34 +1,40 @@
-msngr.extend((function(external, internal) {
+/*
+    ./src/messaging/executer.js
+
+    Executer provides asynchronous execution of indexed methods
+*/
+
+msngr.extend((function (external, internal) {
     "use strict";
 
-    internal.objects = internal.objects || {};
-    internal.objects.executer = function(methods) {
-
-        if (!external.exist(methods) || !external.isArray(methods)) {
+    internal.executer = function (methods) {
+        var isMethods = external.is(methods);
+        if (!isMethods.there || !isMethods.array) {
             throw internal.InvalidParametersException("executor");
         }
 
         // Support passing in just methods
         for (var i = 0; i < methods.length; ++i) {
-            if (external.isFunction(methods[i])) {
+            if (external.is(methods[i]).function) {
                 methods[i] = {
                     method: methods[i]
                 };
             }
         }
 
-        var exec = function(method, params, ctx, done) {
-            external.immediate(function() {
+        var exec = function (method, params, ctx, done) {
+            var isParams = external.is(params);
+            external.immediate(function () {
                 var asyncFlag = false;
-                var asyncFunc = function() {
+                var asyncFunc = function () {
                     asyncFlag = true;
-                    return function(result) {
+                    return function (result) {
                         done.apply(ctx, [result]);
                     };
                 }
 
-                if (!external.isArray(params)) {
-                    if (external.exist(params)) {
+                if (!isParams.array) {
+                    if (isParams.there) {
                         params = [params];
                     } else {
                         params = [];
@@ -43,14 +49,13 @@ msngr.extend((function(external, internal) {
         };
 
         return {
-            parallel: function(done) {
+            parallel: function (done) {
+                var isDone = external.is(done);
                 var results = [];
                 var executed = 0;
 
-                if (methods.length === 0 && external.exist(done)) {
-                    return done.apply(context, [
-                        []
-                    ]);
+                if (methods.length === 0 && isDone.there) {
+                    return done.apply(context, [ [] ]);
                 }
 
                 for (var i = 0; i < methods.length; ++i) {
@@ -58,15 +63,15 @@ msngr.extend((function(external, internal) {
                     var params = methods[i].params;
                     var context = methods[i].context;
 
-                    (function(m, p, c) {
+                    (function (m, p, c) {
                         exec(m, p, c, function(result) {
-                            if (external.exist(result)) {
+                            if (external.is(result).there) {
                                 results.push(result);
                             }
 
                             ++executed;
 
-                            if (executed === methods.length && external.exist(done)) {
+                            if (executed === methods.length && isDone.there) {
                                 done.apply(context, [results]);
                             }
                         });
@@ -74,10 +79,5 @@ msngr.extend((function(external, internal) {
                 }
             }
         };
-    };
-
-    // This is an internal extension; do not export explicitly.
-    return {
-        executer: internal.objects.executer
     };
 }));

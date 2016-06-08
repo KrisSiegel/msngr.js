@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./objects/executer.js", function() {
+describe("./src/messaging/executer.js", function() {
     "use strict";
 
     before(function() {
@@ -21,15 +21,15 @@ describe("./objects/executer.js", function() {
         msngr.debug = false;
     });
 
-    it("msngr.internal.objects.executer(methodsAndParams, context).parallel(done) - done is executed even with no methods", function(done) {
-        msngr.internal.objects.executer([]).parallel(function(result) {
+    it("msngr.internal.executer(methodsAndParams, context).parallel(done) - done is executed even with no methods", function(done) {
+        msngr.internal.executer([]).parallel(function(result) {
             expect(result).to.exist;
             expect(result.length).to.equal(0);
             done();
         });
     });
 
-    it("msngr.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
+    it("msngr.internal.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
         var func1 = function(payload, async) {
             expect(payload.t).to.exist;
             expect(payload.t).to.equal(false);
@@ -74,7 +74,7 @@ describe("./objects/executer.js", function() {
             };
         }
 
-        var executer = msngr.executer([makeObj(func1), makeObj(func2), makeObj(func3), makeObj(func4), makeObj(func5), makeObj(func6)], {
+        var executer = msngr.internal.executer([makeObj(func1), makeObj(func2), makeObj(func3), makeObj(func4), makeObj(func5), makeObj(func6)], {
             t: false
         }, this);
         executer.parallel(function(results) {
@@ -91,17 +91,17 @@ describe("./objects/executer.js", function() {
         });
     });
 
-    it("msngr.executer(methods, payload, context) - executer is exposed for anyone to access", function() {
-        expect(msngr.executer).to.exist;
-        expect(msngr.executer([], {}, undefined)).to.exist;
-        expect(msngr.executer([], {}, undefined).parallel).to.exist;
+    it("msngr.internal.executer(methods, payload, context) - executer is exposed for anyone to access", function() {
+        expect(msngr.internal.executer).to.exist;
+        expect(msngr.internal.executer([], {}, undefined)).to.exist;
+        expect(msngr.internal.executer([], {}, undefined).parallel).to.exist;
     });
 
-    it("msngr.executer(funcs).parallel() - With no parameters specified async is the first parameter", function(done) {
-        var executer = msngr.executer([
+    it("msngr.internal.executer(funcs).parallel() - With no parameters specified async is the first parameter", function(done) {
+        var executer = msngr.internal.executer([
             function(async) {
                 expect(async).to.exist;
-                expect(msngr.isFunction(async)).to.equal(true);
+                expect(msngr.is(async).function).to.equal(true);
             }
         ]).parallel(function() {
             done();
