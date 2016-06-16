@@ -14,7 +14,7 @@ var msngr = msngr || (function () {
     var external = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
 
-        return internal.message.apply(this, inputs);
+        return external.message.apply(this, inputs);
     };
 
     // Built version of msngr.js for programatic access; this is auto generated

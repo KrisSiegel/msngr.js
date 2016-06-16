@@ -57,4 +57,8 @@ describe("./mutators/safe.js", function () {
         expect(msngr.safe(obj, "something.for.nothing.sfjsldfj.are.fun.toys", "goofs")).to.equal("goofs");
     });
 
+    it("msngr.safe() - Correctly returns a false value instead of a default value", function () {
+        expect(msngr.safe({ something: false }, "something", 15)).to.equal(false);
+    });
+
 });

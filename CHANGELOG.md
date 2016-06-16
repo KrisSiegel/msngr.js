@@ -1,6 +1,25 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 5.0.0 - June XX, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.0.0)
+Version 5.0 brings in some major changes, the first LTS version and huge improvements over previous versions.
+
+***What's new?***
+- A new way to validate is here! ```msngr.is(input,...)``` allows any amount of parameters to validate. The object returned with ```msngr.is()``` provides multiple ways to checking the type(s) of objects supplied through familiar properties. For instance:
+```javascript
+msngr.is("My String").string; // Returns true
+msngr.is("    ").empty; // Returns true
+msngr.is(undefined).there; // Returns false
+msngr.is("one", "another", "weee").string; // Returns true
+```
+
+***Breaking changes***
+- All previously used type, existence and empty checking methods are now removed in favor of the new ```msngr.is()``` way.
+- ```msngr(msg).subscribers``` has been renamed to ```msngr(msg).handlers``` to better reflect the msngr terminology.
+- ```msngr(msg).options``` has been axed in favor of the new middleware concept outlined in the above section.
+
+***Misc changes***
+
 ## [Release 4.0.1 - March 23, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.1)
 This update brings an additional benchmark for mache and a bug fix where mache's ```getDeep()``` would fail to return false boolean values.
 
@@ -22,7 +41,6 @@ Version 4.0 brings along many performance improvements (20% faster! ha!), API ch
 - Upgraded all development dependencies to latest versions
 - Removed documentation for ```msngr.getDomPath()```; unless the element contains an ID this method is unreliable but I want to later improve upon it so for now it's considered part of the "private API" aka don't use it.
 - Re-ordered the files that are included in the build process and made them explicit instead of wildcards so I can explicitly tune them to the correct ordering.
-
 
 ## [Release 3.2.2 - December 2, 2015](https://github.com/KrisSiegel/msngr.js/releases/tag/3.2.2)
 - Ugh, forgot to add new bower and npm ignores for the test-resources directory so there are added here

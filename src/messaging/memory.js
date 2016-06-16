@@ -7,10 +7,14 @@
 msngr.extend((function (external, internal) {
     "use strict";
 
+    // Wait, why are you re-implementing the functionality of msngr.is().there?
+    // Listen there boyscout. The memory indexer needs to be fast. Like very fast.
+    // So this simplifies and imlpements only what we need. This is slightly faster.
     var exists = function (input) {
         return (input !== undefined && input !== null);
     };
 
+    // A more efficient element removal from an array in cases where the array is large
     var removeFromArray = function(arr, value) {
         var inx = arr.indexOf(value);
         var endIndex = arr.length - 1;
@@ -78,6 +82,9 @@ msngr.extend((function (external, internal) {
                     return id;
                 }
                 return undefined;
+            },
+            getById: function (id) {
+                return id_to_message[id];
             },
             delete: function(id) {
                 if (exists(id) && exists(id_to_message[id])) {

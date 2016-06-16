@@ -21,7 +21,7 @@ describe("./messaging/memory.js", function() {
         msngr.debug = false;
     });
 
-    it("msngr.internal.store.index(message) - indexes a message with only a topic", function() {
+    it("msngr.internal.memory.index(message) - indexes a message with only a topic", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -34,7 +34,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(1);
     });
 
-    it("msngr.internal.store.index(message) - indexes a message with a topic and category", function() {
+    it("msngr.internal.memory.index(message) - indexes a message with a topic and category", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -48,7 +48,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(1);
     });
 
-    it("msngr.internal.store.index(message) - indexes a message with a topic and subcategory", function() {
+    it("msngr.internal.memory.index(message) - indexes a message with a topic and subcategory", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -62,7 +62,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(1);
     });
 
-    it("msngr.internal.store.index(message) - indexes a message with a topic, category and subcategory", function() {
+    it("msngr.internal.memory.index(message) - indexes a message with a topic, category and subcategory", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -77,7 +77,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(1);
     });
 
-    it("msngr.internal.store.index(message) - invalid message shouldn't index", function() {
+    it("msngr.internal.memory.index(message) - invalid message shouldn't index", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -90,7 +90,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(0);
     });
 
-    it("msngr.internal.store.delete(uuid) - deletes a valid uuid", function() {
+    it("msngr.internal.memory.delete(uuid) - deletes a valid uuid", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -108,7 +108,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(0);
     });
 
-    it("msngr.internal.store.delete(uuid) - doesn't delete an invalid uuid", function() {
+    it("msngr.internal.memory.delete(uuid) - doesn't delete an invalid uuid", function() {
         var memory = msngr.internal.memory();
 
         var result = memory.delete("sldfjslkfjlwrjlskdfjs");
@@ -117,7 +117,7 @@ describe("./messaging/memory.js", function() {
         expect(memory.count).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets one result for a query on a topic", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets one result for a query on a topic", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -135,7 +135,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(1);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic that doesn't exist", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets zero results for a query on a topic that doesn't exist", function() {
         var memory = msngr.internal.memory();
 
         var result = memory.query({
@@ -146,7 +146,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets one result for a query on a topic and category", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets one result for a query on a topic and category", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -166,7 +166,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(1);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic and category that doesn't exist", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets zero results for a query on a topic and category that doesn't exist", function() {
         var memory = msngr.internal.memory();
 
         var result = memory.query({
@@ -178,7 +178,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets one result for a query on a topic, category and subcategory", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets one result for a query on a topic, category and subcategory", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -200,7 +200,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(1);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory that doesn't exist", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets zero results for a query on a topic, category and subcategory that doesn't exist", function() {
         var memory = msngr.internal.memory();
 
         var result = memory.query({
@@ -213,7 +213,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where category doesn't exist", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where category doesn't exist", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -235,7 +235,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where subcategory doesn't exist", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where subcategory doesn't exist", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -257,7 +257,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where topic doesn't exist", function() {
+    it("msngr.internal.memory.query(message) - Correctly gets zero results for a query on a topic, category and subcategory where topic doesn't exist", function() {
         var memory = msngr.internal.memory();
 
         var message = {
@@ -279,7 +279,7 @@ describe("./messaging/memory.js", function() {
         expect(result.length).to.equal(0);
     });
 
-    it("msngr.internal.store.clear() - Clears all indexed messages", function() {
+    it("msngr.internal.memory.clear() - Clears all indexed messages", function() {
         var memory = msngr.internal.memory();
 
         var ids = [];
@@ -312,7 +312,7 @@ describe("./messaging/memory.js", function() {
         }).length).to.equal(0);
     });
 
-    it("msngr.internal.store.count - Returns a correct count", function() {
+    it("msngr.internal.memory.count - Returns a correct count", function() {
         var memory = msngr.internal.memory();
 
         expect(memory.count).to.equal(0);
@@ -338,6 +338,17 @@ describe("./messaging/memory.js", function() {
             subcategory: "punk"
         });
         expect(memory.count).to.equal(1);
+    });
 
+    it("msngr.internal.memory.getById() - Returns a message by specified id", function () {
+        var memory = msngr.internal.memory();
+
+        var id = memory.index({
+            topic: "myTopicalTopic"
+        });
+
+        expect(id).to.exist;
+        expect(memory.getById(id)).to.exist;
+        expect(memory.getById(id).topic).to.equal("myTopicalTopic");
     });
 });

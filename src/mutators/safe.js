@@ -7,6 +7,13 @@
 msngr.extend(function (external, internal) {
     "use strict";
 
+    /*
+        msngr.safe() accepts 2 required parameters and 1 optional.
+
+        obj -> the object to inspect.
+        path -> the json path to a specific property separated by dots; note that this will fail if an object key actually contains a dot.
+        def (optional) -> the default value to return should the requested property not exist.
+    */
     external.safe = function (obj, path, def) {
         if (!external.is(obj).object || !external.is(path).string) {
             throw internal.InvalidParametersException("msngr.safe");
@@ -21,7 +28,7 @@ msngr.extend(function (external, internal) {
             }
         }
 
-        return (position || def);
+        return (external.is(position).there) ? position : def;
     };
 
 });

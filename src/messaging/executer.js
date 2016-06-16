@@ -8,11 +8,6 @@ msngr.extend((function (external, internal) {
     "use strict";
 
     internal.executer = function (methods) {
-        var isMethods = external.is(methods);
-        if (!isMethods.there || !isMethods.array) {
-            throw internal.InvalidParametersException("executor");
-        }
-
         // Support passing in just methods
         for (var i = 0; i < methods.length; ++i) {
             if (external.is(methods[i]).function) {

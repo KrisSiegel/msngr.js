@@ -6,10 +6,6 @@
 msngr.extend((function (external, internal) {
     "use strict";
 
-    internal.option = function(opt, handler) {
-        internal.option[opt] = handler;
-    };
-
     var messageIndex = internal.memory();
     var payloadIndex = internal.memory();
 
@@ -19,6 +15,9 @@ msngr.extend((function (external, internal) {
     var payloads = {};
     var payloadCount = 0;
 
+    /*
+        Internal APIs
+    */
     Object.defineProperty(internal, "handlerCount", {
         get: function() {
             return handlerCount;
@@ -40,39 +39,63 @@ msngr.extend((function (external, internal) {
         payloadCount = 0;
     };
 
-    internal.processOpts = function (opts, message, payload, callback) {
-        var optProcessors = [];
-        for (var key in opts) {
-            if (opts.hasOwnProperty(key) && external.is(internal.option[key]).there) {
-                optProcessors.push({
-                    method: internal.option[key],
-                    params: [message, payload, opts]
-                });
+    /*
+        Private APIs
+    */
+    var fetchPersistedPayload = function (msg) {
+        var ids = payloadIndex.query(msg);
+
+        if (ids.length === 0) {
+            return undefined;
+        }
+
+        var payload = payloads[ids[0]];
+
+        if (ids.length > 1) {
+            for (var i = 1; i < ids.length; ++i) {
+                payload = external.merge(innerPay, fpay);
             }
         }
 
-        // Short circuit for no options
-        if (optProcessors.length === 0) {
-            return callback.apply(this, [payload]);
-        }
-
-        // Long circuit to do stuff (du'h)
-        var execs = internal.executer(optProcessors);
-
-        execs.parallel(function(results) {
-            var result = payload;
-            if (external.is(results).there && results.length > 0) {
-                for (var i = 0; i < results.length; ++i) {
-                    if (external.is(results[i]).there) {
-                        result = external.merge(results[i], result);
-                    }
-                }
-            }
-            callback.apply(this, [result]);
-        });
+        return payload;
     };
 
-    internal.message = function (topic, category, subcategory) {
+    var explicitEmit = function (msgOrIds, payload, callback) {
+        var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
+
+        if (ids.length > 0) {
+            var methods = [];
+            var toDrop = [];
+            for (var i = 0; i < ids.length; ++i) {
+                var msg = (external.is(msgOrIds).object) ? external.copy(msgOrIds) : external.copy(messageIndex.query(ids[i]));
+                var obj = handlers[ids[i]];
+                methods.push({
+                    method: obj.handler,
+                    params: [payload, msg]
+                });
+
+                if (obj.once === true) {
+                    toDrop.push({
+                        msg: msg,
+                        handler: obj.handler
+                    });
+                }
+            }
+
+            var execs = internal.executer(methods);
+
+            for (var i = 0; i < toDrop.length; ++i) {
+                external(toDrop[i].msg).drop(toDrop[i].handler);
+            }
+
+            execs.parallel(callback);
+        }
+    };
+
+    /*
+        msngr() / msngr.message() returns a set of chainable methods for handling messaging
+    */
+    external.message = function (topic, category, subcategory) {
         var isTopic = external.is(topic);
         var isCategory = external.is(category);
         var isSubcategory = external.is(subcategory);
@@ -111,84 +134,15 @@ msngr.extend((function (external, internal) {
             }
         }
 
-        var options = { };
-        var counts = {
-            emits: 0,
-            persists: 0,
-            options: 0,
-            ons: 0,
-            onces: 0
-        };
-
-        var explicitEmit = function (payload, ids, callback) {
-            var ids = ids || messageIndex.query(msg) || [];
-
-            internal.processOpts(options, msg, payload, function (result) {
-                var methods = [];
-                var toDrop = [];
-                for (var i = 0; i < ids.length; ++i) {
-                    var obj = handlers[ids[i]];
-                    methods.push({
-                        method: obj.handler,
-                        params: [result, msg]
-                    });
-
-                    if (obj.once === true) {
-                        toDrop.push(obj.handler);
-                    }
-                }
-
-                var execs = internal.executer(methods);
-
-                for (var i = 0; i < toDrop.length; ++i) {
-                    msgObj.drop(toDrop[i]);
-                }
-
-                execs.parallel(callback);
-
-            });
-        };
-
-        var fetchPersisted = function () {
-            var ids = payloadIndex.query(msg);
-
-            var fpay;
-
-            if (ids.length === 0) {
-                return undefined;
-            }
-
-            if (ids.length === 1) {
-                return payloads[ids[0]];
-            }
-
-            for (var i = 0; i < ids.length; ++i) {
-                fpay = external.merge(innerPay, fpay);
-            }
-
-            return fpay;
-        };
-
         var msgObj = {
-            option: function (key, value) {
-                var isKey = external.is(key);
-                if (!isKey.there || !isKey.string) {
-                    throw internal.InvalidParametersException("option");
-                }
-
-                options[key] = value;
-                counts.options = counts.options + 1;
-
-                return msgObj;
-            },
             emit: function (payload, callback) {
                 var isPayload = external.is(payload);
                 if (isPayload.function) {
                     callback = payload;
                     payload = undefined;
                 }
-                explicitEmit(payload, undefined, callback);
-                counts.emits = counts.emits + 1;
+
+                explicitEmit(msg, payload, callback);
 
                 return msgObj;
             },
@@ -207,14 +161,9 @@ msngr.extend((function (external, internal) {
                         payloads[ids[i]] = external.merge(payload, payloads[ids[i]]);
                     }
                 }
-
-                var fpay = fetchPersisted();
-
                 ++payloadCount;
 
-                counts.persists = counts.persists + 1;
-
-                return msgObj.emit(fpay);
+                return msgObj.emit(fetchPersistedPayload(msg));
             },
             cease: function() {
                 var ids = payloadIndex.query(msg);
@@ -235,11 +184,10 @@ msngr.extend((function (external, internal) {
                 };
                 handlerCount++;
 
-                var payload = fetchPersisted();
+                var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    explicitEmit(payload, [id], undefined);
+                    explicitEmit([id], payload, undefined);
                 }
-                counts.ons = counts.ons + 1;
 
                 return msgObj;
             },
@@ -252,11 +200,10 @@ msngr.extend((function (external, internal) {
                 };
                 handlerCount++;
 
-                var payload = fetchPersisted();
+                var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    explicitEmit(payload, [id], undefined);
+                    explicitEmit([id], payload, undefined);
                 }
-                counts.onces = counts.onces + 1;
 
                 return msgObj;
             },
@@ -318,26 +265,13 @@ msngr.extend((function (external, internal) {
             }
         });
 
-        // Setup a property to get subscribers
-        Object.defineProperty(msgObj, "subscribers", {
+        // Setup a property to get the handlers count
+        Object.defineProperty(msgObj, "handlers", {
             get: function() {
                 return messageIndex.query(msg).length;
             }
         });
 
-        // If debug mode is enabled then let's expose the internal method hit counts.
-        // These counts are only good if a method is called and succeeds.
-        if (external.debug === true) {
-            Object.defineProperty(msgObj, "counts", {
-                get: function() {
-                    return counts;
-                }
-            });
-        }
-
         return msgObj;
     };
-
-    // This is an internal extension; do not export explicitly.
-    return {};
 }));

@@ -29,7 +29,7 @@ msngr.extend(function (external, internal) {
         var result = obj1;
 
         // If we're in the weird spot of getting only arrays then concat and return
-        // Seriously though, Mr or Mrs or Ms dev, but just use Array.prototype.concat()!
+        // Seriously though, Mr or Mrs or Ms dev, just use Array.prototype.concat()!
         if (obj1Type === internal.types.array && obj2Type === internal.types.array) {
             return obj1.concat(obj2);
         }

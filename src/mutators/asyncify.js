@@ -7,6 +7,11 @@
 msngr.extend(function (external, internal) {
     "use strict";
 
+    /*
+        msngr.asyncify() accepts a single parameter and returns it with a new, async method.
+
+        fn -> the function, which should be synchronous, to add an async() method to.
+    */
     external.asyncify = function(fn) {
         if (external.is(fn).function) {
             fn.async = function () {

@@ -111,36 +111,6 @@ describe("./src/messaging/message.js", function() {
         expect(m3.message.subcategory).to.not.equal(m4.message.subcategory);
     });
 
-    it("msngr().option() - handles invalid input correctly", function() {
-        expect(msngr("TestTopic").option.bind({})).to.throw;
-        expect(msngr("TestTopic").option.bind(7)).to.throw;
-        expect(msngr("TestTopic").option.bind()).to.throw;
-    });
-
-    it("msngr().option() - custom option processor works as expected", function(done) {
-        msngr.internal.option("testsync", function(message, payload, options, async) {
-            return "synced!";
-        });
-
-        var msg = msngr("MyTopic").option("testsync").on(function(payload) {
-            expect(payload).to.exist;
-            expect(payload).to.equal("synced!");
-
-            msngr.internal.option("testasync", function(message, payload, options, masync) {
-                var d = masync();
-                d({
-                    words: "asynced!"
-                });
-            });
-
-            var msg2 = msngr("AnotherTopic").option("testasync").on(function(payload2) {
-                expect(payload2).to.exist;
-                expect(payload2.words).to.equal("asynced!");
-                done();
-            }).emit();
-        }).emit();
-    });
-
     it("msngr().emit() / on() - Successfully emits specific message to generic handler and gets the emitted message object", function(done) {
         msngr("HighlyTopical").on(function(payload, message) {
             expect(payload).to.exist;
@@ -439,7 +409,6 @@ describe("./src/messaging/message.js", function() {
         msngr("Server", "Ready").persist();
 
         var calls = 0;
-
         msngr("Server", "Ready").on(function() {
             ++calls;
         });
@@ -458,28 +427,13 @@ describe("./src/messaging/message.js", function() {
         }, 250);
     });
 
-    it("msngr().counts - when debug mode is enabled returns a counts object otherwise is undefined", function() {
-        msngr.debug = true;
-        var msg = msngr("test");
-        expect(msg.counts).to.exist;
-        expect(msg.counts.emits).to.equal(0);
-        msg.emit();
-        expect(msg.counts.emits).to.equal(1);
-
-        msngr.debug = false;
-        var msg2 = msngr("another");
-        expect(msg2.counts).to.not.exist;
-
-        msngr.debug = true;
-    });
-
-    it("msngr().subscribers - returns a correct subscriber count", function() {
+    it("msngr().handlers - returns a correct subscriber count", function() {
         var msg = msngr("test", "whateves");
-        expect(msg.subscribers).to.equal(0);
+        expect(msg.handlers).to.equal(0);
         msg.on(function() { });
-        expect(msg.subscribers).to.equal(1);
+        expect(msg.handlers).to.equal(1);
         msg.dropAll();
-        expect(msg.subscribers).to.equal(0);
+        expect(msg.handlers).to.equal(0);
     });
 
     it("msngr().on() / emit() - messages are case insensitive", function(done) {
