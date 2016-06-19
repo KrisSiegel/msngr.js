@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./src/messaging/executer.js", function() {
+describe("./src/messaging/executer.js", function () {
     "use strict";
 
     before(function() {
@@ -21,7 +21,7 @@ describe("./src/messaging/executer.js", function() {
         msngr.debug = false;
     });
 
-    it("msngr.internal.executer(methodsAndParams, context).parallel(done) - done is executed even with no methods", function(done) {
+    it("msngr.internal.executer(methodsAndParams, context).parallel(done) - done is executed even with no methods", function (done) {
         msngr.internal.executer([]).parallel(function(result) {
             expect(result).to.exist;
             expect(result.length).to.equal(0);
@@ -29,7 +29,7 @@ describe("./src/messaging/executer.js", function() {
         });
     });
 
-    it("msngr.internal.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function(done) {
+    it("msngr.internal.executer(methods, payload, context).parallel(done) - executes multiple methods and aggregates results", function (done) {
         var func1 = function(payload, async) {
             expect(payload.t).to.exist;
             expect(payload.t).to.equal(false);
@@ -91,21 +91,41 @@ describe("./src/messaging/executer.js", function() {
         });
     });
 
-    it("msngr.internal.executer(methods, payload, context) - executer is exposed for anyone to access", function() {
-        expect(msngr.internal.executer).to.exist;
-        expect(msngr.internal.executer([], {}, undefined)).to.exist;
-        expect(msngr.internal.executer([], {}, undefined).parallel).to.exist;
-    });
-
-    it("msngr.internal.executer(funcs).parallel() - With no parameters specified async is the first parameter", function(done) {
+    it("msngr.internal.executer(funcs).parallel() - With no parameters specified async is the first parameter", function (done) {
         var executer = msngr.internal.executer([
-            function(async) {
+            function (async) {
                 expect(async).to.exist;
                 expect(msngr.is(async).function).to.equal(true);
             }
-        ]).parallel(function() {
+        ]).parallel(function () {
             done();
         });
     });
 
+    it("msngr.internal.executer(funcs).series() - Executes methods in a series", function (done) {
+        var executer = msngr.internal.executer([
+            function (async) {
+                return "a";
+            },
+            function (async) {
+                var d = async();
+                d("b");
+            },
+            function (async) {
+                return "c";
+            },
+            function (async) {
+                var d = async();
+                d("d");
+            },
+            function (async) {
+                return "e";
+            }
+        ]).series(function (results) {
+            expect(results).to.exist;
+            expect(results.length).to.equal(5);
+            expect(results.join("")).to.equal("abcde");
+            done();
+        });
+    });
 });

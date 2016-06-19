@@ -72,6 +72,32 @@ msngr.extend((function (external, internal) {
                         });
                     }(method, params, context));
                 }
+            },
+            series: function (done) {
+                var isDone = external.is(done);
+                var results = [];
+
+                if (methods.length === 0 && isDone.there) {
+                    return done.apply(context, [ [] ]);
+                }
+
+                var again = function () {
+                    var method = methods.shift();
+                    (function (m, p, c) {
+                        exec(m, p, c, function (result) {
+                            if (external.is(result).there) {
+                                results.push(result);
+                            }
+
+                            if (methods.length === 0 && isDone.there) {
+                                done.apply(context, [results]);
+                            } else {
+                                again();
+                            }
+                        });
+                    }(method.method, method.params, method.context));
+                };
+                again();
             }
         };
     };
