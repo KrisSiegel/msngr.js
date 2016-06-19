@@ -61,7 +61,7 @@ var msngr = msngr || (function () {
 msngr.extend(function (external, internal) {
     "use strict";
 
-    internal.InvalidParametersException = function(str, reason) {
+    internal.InvalidParametersException = function (str, reason) {
         var m = {
             name: "InvalidParametersException",
             severity: "unrecoverable",
@@ -73,7 +73,15 @@ msngr.extend(function (external, internal) {
         return m;
     };
 
-    internal.ReservedKeywordsException = function(keyword) {
+    internal.DuplicateException = function (str) {
+        return {
+            name: "DuplicateException",
+            severity: "unrecoverable",
+            message: ("Duplicate input provided to {method} where duplicates are not allowed.".replace("{method}", str))
+        };
+    };
+
+    internal.ReservedKeywordsException = function (keyword) {
         return {
             name: "ReservedKeywordsException",
             severity: "unrecoverable",
@@ -81,7 +89,7 @@ msngr.extend(function (external, internal) {
         };
     };
 
-    internal.MangledException = function(variable, method) {
+    internal.MangledException = function (variable, method) {
         return {
             name: "MangledException",
             severity: "unrecoverable",
@@ -693,6 +701,32 @@ msngr.extend((function (external, internal) {
                         });
                     }(method, params, context));
                 }
+            },
+            series: function (done) {
+                var isDone = external.is(done);
+                var results = [];
+
+                if (methods.length === 0 && isDone.there) {
+                    return done.apply(context, [ [] ]);
+                }
+
+                var again = function () {
+                    var method = methods.shift();
+                    (function (m, p, c) {
+                        exec(m, p, c, function (result) {
+                            if (external.is(result).there) {
+                                results.push(result);
+                            }
+
+                            if (methods.length === 0 && isDone.there) {
+                                done.apply(context, [results]);
+                            } else {
+                                again();
+                            }
+                        });
+                    }(method.method, method.params, method.context));
+                };
+                again();
             }
         };
     };
@@ -1114,6 +1148,54 @@ msngr.extend((function (external, internal) {
 
         return msgObj;
     };
+}));
+
+/*
+    ./src/messaging/middleware.js
+
+    Supports executing middleware during message delegation
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    var middlewares = { };
+    var forced = [];
+
+    internal.getMiddleware = function (uses) {
+        var results = [];
+        var keys = uses.concat(forced);
+        for (var i = 0; i < keys.length; ++i) {
+            results.push(middlewares[key]);
+        }
+
+        return results;
+    };
+
+    /*
+        msngr.middleware(key, fn, force) provides a way to execute code during each message delegation
+
+        key -> identifier for the middleware (think unique name or id)
+        fn -> the function to execute for the middleware.
+        force (optional) -> a boolean to force whether the middleware is always executed or only when explicitly specified
+    */
+    external.middleware = function (key, fn, force) {
+        var isKey = external.is(key);
+        var isFn = external.is(fn);
+        if (!isKey.there || !isKey.string || isKey.empty || !isFn.there || !isFn.function) {
+            throw internal.InvalidParametersException("msngr.middleware()");
+        }
+
+        if (external.is(middlewares[key]).there) {
+            throw internal.DuplicateException("msngr.middleware()");
+        }
+
+        middlewares[key] = fn;
+        if (force === true) {
+            forced.push(key);
+        }
+    };
+
 }));
 
 /*
