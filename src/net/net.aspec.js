@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./objects/net.js", function() {
+describe("./net/net.js", function() {
     "use strict";
     var HOST_PROTOCOL = "http";
     var HOST_NAME = "localhost";
@@ -197,7 +197,7 @@ describe("./objects/net.js", function() {
         }, function(err, result) {
             expect(err).to.not.exist;
             expect(result).to.exist;
-            expect(msngr.isString(result)).to.equal(true);
+            expect(msngr.is(result).string).to.equal(true);
             done();
         });
     });

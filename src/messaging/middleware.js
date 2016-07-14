@@ -10,24 +10,29 @@ msngr.extend((function (external, internal) {
     var middlewares = { };
     var forced = [];
 
-    var getMiddleware = function (uses) {
+    /*
+        Internal APIs
+    */
+    internal.getMiddlewares = function (uses, payload) {
         var results = [];
-        var keys = uses.concat(forced);
+        var keys = (uses || []).concat(forced);
         for (var i = 0; i < keys.length; ++i) {
-            results.push(middlewares[key]);
+            if (middlewares[keys[i]] !== undefined) {
+                results.push({
+                    method: middlewares[keys[i]],
+                    params: payload
+                });
+            }
         }
 
         return results;
     };
 
-    /*
-        Internal APIs
-    */
-    internal.executeMiddlewares = function (uses, callback) {
-        var middles = getMiddleware(uses);
+    internal.executeMiddlewares = function (uses, payload, callback) {
+        var middles = internal.getMiddlewares(uses, payload);
 
         var execute = internal.executer(middles).series(function (result) {
-            callback(external.merge.apply(this, result));
+            return callback(internal.merge.apply(this, [payload].concat(result)));
         });
     };
 
@@ -49,9 +54,10 @@ msngr.extend((function (external, internal) {
             throw internal.DuplicateException("msngr.middleware()");
         }
 
-        middlewares[key] = fn;
+        var normalizedKey = key.toLowerCase();
+        middlewares[normalizedKey] = fn;
         if (force === true) {
-            forced.push(key);
+            forced.push(normalizedKey);
         }
     };
 
@@ -66,13 +72,14 @@ msngr.extend((function (external, internal) {
             throw internal.InvalidParametersException("msngr.unmiddleware()");
         }
 
-        var forcedInx = forced.indexOf(key);
+        var normalizedKey = key.toLowerCase();
+        var forcedInx = forced.indexOf(normalizedKey);
         if (forcedInx !== -1) {
             forced.splice(forcedInx, 1);
         }
 
-        if (middlewares[key] !== undefined) {
-            delete middlewares[key];
+        if (middlewares[normalizedKey] !== undefined) {
+            delete middlewares[normalizedKey];
         }
     };
 

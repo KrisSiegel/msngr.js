@@ -1,8 +1,13 @@
-msngr.extend((function(external, internal) {
+/*
+    ./src/mache/mache.js
+
+    A merge cache
+*/
+
+msngr.extend((function (external, internal) {
     "use strict";
 
-    internal.objects = internal.objects || {};
-    internal.objects.mache = function (opts) {
+    external.mache = function (opts) {
         opts = opts || { };
         var meta = {
             events: {
@@ -22,13 +27,6 @@ msngr.extend((function(external, internal) {
         var transRemovals = undefined;
         var transacting = false;
 
-        var objMerge = function (input1, input2) {
-            if (external.isObject(input1) && external.isObject(input2)) {
-                return external.merge(input1, input2);
-            }
-            return input2;
-        };
-
         var normalGet = function (id) {
             if (data[id] === undefined) {
                 return undefined;
@@ -45,7 +43,7 @@ msngr.extend((function(external, internal) {
                 data[id] = [];
             }
 
-            data[id].push(objMerge(api.get(id), external.copy(value)));
+            data[id].push(internal.merge(external.copy(api.get(id)), external.copy(value)));
             flatCache[id] = api.get(id);
 
             if (data[id].length > meta.revisions.toKeep) {
@@ -53,7 +51,7 @@ msngr.extend((function(external, internal) {
             }
 
             if (meta.events.onChange.emit) {
-                var msg = internal.objects.message(meta.events.onChange.topic, meta.events.onChange.category, id);
+                var msg = external.message(meta.events.onChange.topic, meta.events.onChange.category, id);
                 msg.emit({
                     id: id,
                     oldValue: data[id][data[id].length - 2],
@@ -65,7 +63,7 @@ msngr.extend((function(external, internal) {
         };
 
         var transSet = function (id, value) {
-            transData[id] = objMerge((transData[id] || normalGet(id)), external.copy(value));
+            transData[id] = internal.merge((transData[id] || normalGet(id)), external.copy(value));
             return true;
         };
 
@@ -105,6 +103,7 @@ msngr.extend((function(external, internal) {
 
             data[id].pop();
             flatCache[id] = api.get(id);
+            
             return true;
         };
 
@@ -114,7 +113,7 @@ msngr.extend((function(external, internal) {
             },
             getDeep: function (id, property, defaultValue) {
                 var obj = api.get(id);
-                if (obj === undefined || external.isEmptyString(property)) {
+                if (obj === undefined || external.is(property).empty) {
                     return defaultValue;
                 }
 
@@ -127,7 +126,7 @@ msngr.extend((function(external, internal) {
                     currentObj = currentObj[keys[i]];
                 }
 
-                return (external.exist(currentObj)) ? currentObj : defaultValue;
+                return (external.is(currentObj).there) ? currentObj : defaultValue;
             },
             set: function (id, value) {
                 return (transacting) ? transSet(id, value) : normalSet(id, value);
@@ -190,7 +189,7 @@ msngr.extend((function(external, internal) {
 
         Object.defineProperty(api, "data", {
             get: function () {
-                return (transacting) ? objMerge(flatCache, transData) : flatCache;
+                return (transacting) ? internal.merge(flatCache, transData) : flatCache;
             }
         });
 
@@ -198,9 +197,5 @@ msngr.extend((function(external, internal) {
     };
 
     // Provide a mache instance for msngr.config.
-    external.config = internal.objects.mache();
-
-    return {
-        mache: internal.objects.mache
-    };
+    external.config = external.mache();
 }));

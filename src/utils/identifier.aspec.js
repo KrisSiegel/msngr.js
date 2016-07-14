@@ -13,6 +13,8 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
 describe("./utils/identifier.js", function () {
     "use strict";
 
+    this.timeout(5000);
+
     it("msngr.id() - generate 1 id", function () {
         expect(msngr.id()).to.not.equal(undefined);
     });

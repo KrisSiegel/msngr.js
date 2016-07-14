@@ -6,11 +6,11 @@
 
 msngr.extend(function (external, internal) {
     "use strict";
+    var postMessageChannel = "__msngr_immediate";
     var immediateFn;
 
     // This chunk of code is only for the browser as a setImmediate workaround
     if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-        var postMessageChannel = "__msngr_immediate";
         var immediateQueue = [];
 
         window.addEventListener("message", function(event) {
@@ -30,7 +30,7 @@ msngr.extend(function (external, internal) {
             } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
                 immediateFn = function(f) {
                     immediateQueue.push(f);
-                    window.postMessage(external.config.get("msngr.immediate").channel, "*");
+                    window.postMessage(postMessageChannel, "*");
                 };
             } else {
                 immediateFn = function(f) {

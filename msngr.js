@@ -127,7 +127,7 @@ msngr.extend(function (external, internal) {
         promise: "[object Promise]", // node.js 4.x returns [object Object] for promises so limited testing possible
 
         // HTML DOM Types
-        nodelist: "[object NodeList]"
+        nodeList: "[object NodeList]"
     };
 
     // Harder type checking here; requires custom methods
@@ -321,11 +321,11 @@ msngr.extend(function (external, internal) {
 
 msngr.extend(function (external, internal) {
     "use strict";
+    var postMessageChannel = "__msngr_immediate";
     var immediateFn;
 
     // This chunk of code is only for the browser as a setImmediate workaround
     if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-        var postMessageChannel = "__msngr_immediate";
         var immediateQueue = [];
 
         window.addEventListener("message", function(event) {
@@ -345,7 +345,7 @@ msngr.extend(function (external, internal) {
             } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
                 immediateFn = function(f) {
                     immediateQueue.push(f);
-                    window.postMessage(external.config.get("msngr.immediate").channel, "*");
+                    window.postMessage(postMessageChannel, "*");
                 };
             } else {
                 immediateFn = function(f) {
@@ -528,23 +528,31 @@ msngr.extend(function (external, internal) {
 msngr.extend(function (external, internal) {
     "use strict";
 
+    var acceptableForObj1 = [internal.types.object, internal.types.function, internal.types.array];
+    var acceptableForObj2 = [internal.types.object, internal.types.array];
+
     // Merge two items together and return the result
-    var twoMerge = function (obj1, obj2) {
+    var twoMerge = function (obj1, obj2, overwrite) {
         if (obj1 === undefined || obj1 === null) { return obj2; };
         if (obj2 === undefined || obj2 === null) { return obj1; };
 
         var obj1Type = external.is(obj1).getType();
         var obj2Type = external.is(obj2).getType();
 
-        var acceptableForObj1 = [internal.types.object, internal.types.function, internal.types.array];
-        var acceptableForObj2 = [internal.types.object, internal.types.array];
-
+        var exceptional = undefined;
         if (acceptableForObj1.indexOf(obj1Type) === -1 || acceptableForObj2.indexOf(obj2Type) === -1) {
-            throw internal.InvalidParametersException("msngr.merge()", "Only objects, arrays or a single function followed by objects can be merged!");
+            exceptional = internal.InvalidParametersException("msngr.merge()", "Only objects, arrays or a single function followed by objects can be merged!");
         }
 
         if ([obj1Type, obj2Type].indexOf(internal.types.array) !== -1 && (obj1Type !== internal.types.array || obj2Type !== internal.types.array)) {
-            throw internal.InvalidParametersException("msngr.merge()", "Arrays cannot be merged with objects or functions!");
+            exceptional = internal.InvalidParametersException("msngr.merge()", "Arrays cannot be merged with objects or functions!");
+        }
+
+        if (exceptional !== undefined) {
+            if (overwrite === true) {
+                return obj2;
+            }
+            throw exceptional;
         }
 
         var result = obj1;
@@ -572,6 +580,29 @@ msngr.extend(function (external, internal) {
 
         return result;
     };
+
+    /*
+        Internal API
+    */
+    // Same as external merge except if an unmerge-able type is passed it
+    // it is simply overwritten with each subsequent value.
+    internal.merge = function () {
+        var inputs = Array.prototype.slice.call(arguments, 0);
+
+        if (inputs.length <= 1) {
+            return inputs[0];
+        }
+
+        var result = inputs.shift();
+        while (inputs.length > 0) {
+            result = twoMerge(result, inputs.shift(), true);
+        }
+        return result;
+    };
+
+    /*
+        External API
+    */
 
     // Takes N number of inputs and merges them together
     // The next parameter always wins over the previous one
@@ -934,36 +965,40 @@ msngr.extend((function (external, internal) {
         return payload;
     };
 
-    var explicitEmit = function (msgOrIds, payload, callback) {
-        var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
+    var explicitEmit = function (msgOrIds, middlewares, payload, callback) {
 
-        if (ids.length > 0) {
-            var methods = [];
-            var toDrop = [];
-            for (var i = 0; i < ids.length; ++i) {
-                var msg = (external.is(msgOrIds).object) ? external.copy(msgOrIds) : external.copy(messageIndex.query(ids[i]));
-                var obj = handlers[ids[i]];
-                methods.push({
-                    method: obj.handler,
-                    params: [payload, msg]
-                });
+        // Execute middlewares if any
+        internal.executeMiddlewares(middlewares, payload, function (newPayload) {
+            var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
 
-                if (obj.once === true) {
-                    toDrop.push({
-                        msg: msg,
-                        handler: obj.handler
+            if (ids.length > 0) {
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < ids.length; ++i) {
+                    var msg = (external.is(msgOrIds).object) ? external.copy(msgOrIds) : external.copy(messageIndex.query(ids[i]));
+                    var obj = handlers[ids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [newPayload, msg]
                     });
+
+                    if (obj.once === true) {
+                        toDrop.push({
+                            msg: msg,
+                            handler: obj.handler
+                        });
+                    }
                 }
+
+                var execs = internal.executer(methods);
+
+                for (var i = 0; i < toDrop.length; ++i) {
+                    external(toDrop[i].msg).drop(toDrop[i].handler);
+                }
+
+                execs.parallel(callback);
             }
-
-            var execs = internal.executer(methods);
-
-            for (var i = 0; i < toDrop.length; ++i) {
-                external(toDrop[i].msg).drop(toDrop[i].handler);
-            }
-
-            execs.parallel(callback);
-        }
+        });
     };
 
     /*
@@ -992,11 +1027,11 @@ msngr.extend((function (external, internal) {
             msg = {};
             msg.topic = topic;
 
-            if (!isCategory.empty) {
+            if (!isCategory.empty && isCategory.string) {
                 msg.category = category;
             }
 
-            if (!isSubcategory.empty) {
+            if (!isSubcategory.empty && isSubcategory.string) {
                 msg.subcategory = subcategory;
             }
         }
@@ -1008,7 +1043,16 @@ msngr.extend((function (external, internal) {
             }
         }
 
+        var uses = [];
+
         var msgObj = {
+            use: function (middleware) {
+                if (!external.is(middleware).empty) {
+                    uses.push(middleware.toLowerCase());
+                }
+
+                return msgObj;
+            },
             emit: function (payload, callback) {
                 var isPayload = external.is(payload);
                 if (isPayload.function) {
@@ -1016,7 +1060,7 @@ msngr.extend((function (external, internal) {
                     payload = undefined;
                 }
 
-                explicitEmit(msg, payload, callback);
+                explicitEmit(msg, uses, payload, callback);
 
                 return msgObj;
             },
@@ -1060,7 +1104,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    explicitEmit([id], payload, undefined);
+                    explicitEmit([id], uses, payload, undefined);
                 }
 
                 return msgObj;
@@ -1076,7 +1120,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    explicitEmit([id], payload, undefined);
+                    explicitEmit([id], uses, payload, undefined);
                 }
 
                 return msgObj;
@@ -1162,22 +1206,38 @@ msngr.extend((function (external, internal) {
     var middlewares = { };
     var forced = [];
 
-    internal.getMiddleware = function (uses) {
+    /*
+        Internal APIs
+    */
+    internal.getMiddlewares = function (uses, payload) {
         var results = [];
-        var keys = uses.concat(forced);
+        var keys = (uses || []).concat(forced);
         for (var i = 0; i < keys.length; ++i) {
-            results.push(middlewares[key]);
+            if (middlewares[keys[i]] !== undefined) {
+                results.push({
+                    method: middlewares[keys[i]],
+                    params: payload
+                });
+            }
         }
 
         return results;
     };
 
+    internal.executeMiddlewares = function (uses, payload, callback) {
+        var middles = internal.getMiddlewares(uses, payload);
+
+        var execute = internal.executer(middles).series(function (result) {
+            return callback(internal.merge.apply(this, [payload].concat(result)));
+        });
+    };
+
     /*
         msngr.middleware(key, fn, force) provides a way to execute code during each message delegation
 
-        key -> identifier for the middleware (think unique name or id)
+        key -> identifier for the middleware (think unique name or id).
         fn -> the function to execute for the middleware.
-        force (optional) -> a boolean to force whether the middleware is always executed or only when explicitly specified
+        force (optional) -> a boolean to force whether the middleware is always executed or only when explicitly specified.
     */
     external.middleware = function (key, fn, force) {
         var isKey = external.is(key);
@@ -1190,12 +1250,555 @@ msngr.extend((function (external, internal) {
             throw internal.DuplicateException("msngr.middleware()");
         }
 
-        middlewares[key] = fn;
+        var normalizedKey = key.toLowerCase();
+        middlewares[normalizedKey] = fn;
         if (force === true) {
-            forced.push(key);
+            forced.push(normalizedKey);
         }
     };
 
+    /*
+        msngr.unmiddleware(key) removes a middleware
+
+        key -> identifier for the middleware to remove.
+    */
+    external.unmiddleware = function (key) {
+        var isKey = external.is(key);
+        if (!isKey.there || !isKey.string || isKey.empty) {
+            throw internal.InvalidParametersException("msngr.unmiddleware()");
+        }
+
+        var normalizedKey = key.toLowerCase();
+        var forcedInx = forced.indexOf(normalizedKey);
+        if (forcedInx !== -1) {
+            forced.splice(forcedInx, 1);
+        }
+
+        if (middlewares[normalizedKey] !== undefined) {
+            delete middlewares[normalizedKey];
+        }
+    };
+
+}));
+
+/*
+    ./src/mache/mache.js
+
+    A merge cache
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    external.mache = function (opts) {
+        opts = opts || { };
+        var meta = {
+            events: {
+                onChange: {
+                    topic: "msngr.mache",
+                    category: "change",
+                    emit: opts.emitChanges || false
+                }
+            },
+            revisions: {
+                toKeep: (opts.revisions || 3)
+            }
+        }
+        var flatCache = { };
+        var data = { };
+        var transData = undefined;
+        var transRemovals = undefined;
+        var transacting = false;
+
+        var normalGet = function (id) {
+            if (data[id] === undefined) {
+                return undefined;
+            }
+            return data[id][data[id].length - 1];
+        };
+
+        var transGet = function (id) {
+            return (transRemovals[id] === true) ? undefined : (transData[id] || normalGet(id));
+        };
+
+        var normalSet = function (id, value) {
+            if (data[id] === undefined) {
+                data[id] = [];
+            }
+
+            data[id].push(internal.merge(external.copy(api.get(id)), external.copy(value)));
+            flatCache[id] = api.get(id);
+
+            if (data[id].length > meta.revisions.toKeep) {
+                data[id].shift();
+            }
+
+            if (meta.events.onChange.emit) {
+                var msg = external.message(meta.events.onChange.topic, meta.events.onChange.category, id);
+                msg.emit({
+                    id: id,
+                    oldValue: data[id][data[id].length - 2],
+                    newValue: data[id][data[id].length - 1]
+                });
+            }
+
+            return true;
+        };
+
+        var transSet = function (id, value) {
+            transData[id] = internal.merge((transData[id] || normalGet(id)), external.copy(value));
+            return true;
+        };
+
+        var normalRemove = function (id) {
+            if (data[id] === undefined) {
+                return false;
+            }
+
+            delete data[id];
+            delete flatCache[id];
+            return true;
+        };
+
+        var transRemove = function (id) {
+            if (transData[id] === undefined && data[id] === undefined) {
+                return false;
+            }
+
+            if (transData[id] !== undefined) {
+                delete transData[id];
+            }
+
+            transRemovals[id] = true;
+            return true;
+        };
+
+        var normalRevert = function (id) {
+            if (data[id] === undefined) {
+                return false;
+            }
+
+            if (data[id].length === 1) {
+                delete data[id];
+                delete flatCache[id];
+                return true;
+            }
+
+            data[id].pop();
+            flatCache[id] = api.get(id);
+            
+            return true;
+        };
+
+        var api = {
+            get: function (id) {
+                return (transacting) ? transGet(id) : normalGet(id);
+            },
+            getDeep: function (id, property, defaultValue) {
+                var obj = api.get(id);
+                if (obj === undefined || external.is(property).empty) {
+                    return defaultValue;
+                }
+
+                var keys = property.trim().split(".");
+                var currentObj = obj;
+                for (var i = 0; i < keys.length; ++i) {
+                    if (currentObj[keys[i]] === undefined) {
+                        return defaultValue;
+                    }
+                    currentObj = currentObj[keys[i]];
+                }
+
+                return (external.is(currentObj).there) ? currentObj : defaultValue;
+            },
+            set: function (id, value) {
+                return (transacting) ? transSet(id, value) : normalSet(id, value);
+            },
+            remove: function (id) {
+                return (transacting) ? transRemove(id) : normalRemove(id);
+            },
+            revert: function (id) {
+                return (transacting) ? false : normalRevert(id);
+            },
+            begin: function () {
+                if (transacting) {
+                    // Shit we're already transacting!
+                    return false;
+                }
+                transacting = true;
+                transData = { };
+                transRemovals = { };
+                return true;
+            },
+            rollback: function () {
+                if (!transacting) {
+                    // How can we rollback outside of a transaction? ugh
+                    return false;
+                }
+
+                transacting = false;
+                transData = undefined;
+                transRemovals = undefined;
+                return true;
+            },
+            commit: function () {
+                if (!transacting) {
+                    // How can we commit outside of a transaction? ugh
+                    return false;
+                }
+
+                transacting = false;
+                for (var key in transData) {
+                    if (transData.hasOwnProperty(key)) {
+                        normalSet(key, transData[key]);
+                    }
+                }
+                for (var key in transRemovals) {
+                    if (transRemovals.hasOwnProperty(key)) {
+                        normalRemove(key);
+                    }
+                }
+                transData = undefined;
+                transRemovals = undefined;
+                return true;
+            }
+        };
+
+        Object.defineProperty(api, "meta", {
+            get: function () {
+                return meta;
+            }
+        });
+
+        Object.defineProperty(api, "data", {
+            get: function () {
+                return (transacting) ? internal.merge(flatCache, transData) : flatCache;
+            }
+        });
+
+        return api;
+    };
+
+    // Provide a mache instance for msngr.config.
+    external.config = external.mache();
+}));
+
+msngr.extend((function(external, internal) {
+    "use strict";
+
+    // Setup constants
+    var defaults = {
+        path: "/",
+        protocol: "http",
+        port: {
+            http: "80",
+            https: "443"
+        },
+        autoJson: true
+    };
+
+    // This method handles requests when msngr is running within a semi-modern net browser
+    var browser = function(server, options, callback) {
+        try {
+            var xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200 || xhr.status === 201) {
+                        var obj;
+                        if (options.autoJson === true && this.getResponseHeader("content-type") === "application/json") {
+                            try {
+                                obj = JSON.parse(xhr.response);
+                            } catch (ex) {
+                                // Don't do anything; probably wasn't JSON anyway
+                                // Set obj to undefined just incase it contains something awful
+                                obj = undefined;
+                            }
+                        }
+                        callback.apply(undefined, [null, (obj || xhr.response)]);
+                    } else {
+                        var errObj = {
+                            status: xhr.status,
+                            response: xhr.response
+                        };
+                        callback.apply(undefined, [errObj, null]);
+                    }
+                }
+            };
+
+            var url = server.protocol + "://" + server.host;
+            if (server.canOmitPort === true) {
+                url = url + options.path;
+            } else {
+                url = url + ":" + server.port + options.path;
+            }
+
+            var datum;
+            if (external.is(options.payload).there) {
+                if (external.is(options.payload).object) {
+                    try {
+                        datum = JSON.stringify(options.payload);
+                    } catch (ex) {
+                        // Really couldn't give a shit about this exception
+                    }
+                }
+
+                // undefined has no meaning in JSON but null does; so let's only
+                // and explicitly set anything if it's still undefined (so no null checks)
+                if (datum === undefined) {
+                    datum = options.payload;
+                }
+            }
+
+            xhr.open(options.method, url);
+            if (external.is(options.headers).there) {
+                for (var key in options.headers) {
+                    if (options.headers.hasOwnProperty(key)) {
+                        xhr.setRequestHeader(key, options.headers[key]);
+                    }
+                }
+            }
+            xhr.send(datum);
+        } catch (ex) {
+            callback.apply(undefined, [ex, null]);
+        }
+    };
+
+    // This method handles requests when msngr is running within node.js
+    var node = function(server, options, callback) {
+        var http = require("http");
+        var request = http.request({
+            method: options.method,
+            host: server.host,
+            port: server.port,
+            path: options.path,
+            headers: options.headers
+        }, function(response) {
+            response.setEncoding("utf8");
+            var body = "";
+            response.on("data", function(chunk) {
+                body = body + chunk;
+            });
+
+            response.on("end", function() {
+                var obj;
+                if (options.autoJson === true && response.headers["content-type"] === "application/json") {
+                    try {
+                        obj = JSON.parse(body);
+                    } catch (ex) {
+                        // Don't do anything; probably wasn't JSON anyway
+                        // Set obj to undefined just incase it contains something awful
+                        obj = undefined;
+                    }
+                }
+                obj = obj || body;
+                var errObj;
+                if (request.statusCode >= 400) {
+                        errObj = {
+                        status: request.statusCode,
+                        response: (obj || body)
+                    };
+                    obj = null;
+                }
+                callback.apply(undefined, [errObj, obj]);
+            });
+        });
+
+        if (external.is(options.payload).there) {
+            var datum;
+            if (external.is(options.payload).object) {
+                try {
+                    datum = JSON.stringify(options.payload);
+                } catch (ex) {
+                    // Really couldn't give a shit about this exception
+                }
+            }
+
+            // undefined has no meaning in JSON but null does; so let's only
+            // and explicitly set anything if it's still undefined (so no null checks)
+            if (datum === undefined) {
+                datum = options.payload;
+            }
+
+            request.write(datum);
+        }
+
+        request.end();
+    };
+
+    var request = function(server, opts, callback) {
+        if (external.is(opts.query).there) {
+            if (external.is(opts.query).string) {
+                opts.queryString = opts.query;
+            }
+
+            if (external.is(opts.query).object) {
+                opts.queryString = "?";
+                for (var key in opts.query) {
+                    if (opts.query.hasOwnProperty(key)) {
+                        if (opts.queryString !== "?") {
+                            opts.queryString = opts.queryString + "&";
+                        }
+                        opts.queryString = opts.queryString + encodeURIComponent(key) + "=" + encodeURIComponent(opts.query[key]);
+                    }
+                }
+            }
+        }
+
+        opts.path = opts.path + (opts.queryString || "");
+
+        if (external.is.browser) {
+            browser(server, opts, callback);
+        } else {
+            node(server, opts, callback);
+        }
+    };
+
+    // This method is crazy; tries to figure out what the developer sent to
+    // the net() method to allow maximum flexibility. Normalization is important here.
+    var figureOutServer = function(protocol, host, port) {
+        var server = { protocol: undefined, host: undefined, port: undefined, canOmitPort: false };
+        var handled = false;
+        var invalid = false;
+        var invalidReason;
+
+        if (external.is(protocol).empty) {
+            invalid = true;
+            invalidReason = "Protocol or host not provided";
+        }
+
+        if (!invalid && !external.is(protocol).empty && external.is(host).empty && external.is(port).empty) {
+            // Only one argument was provided; must be whole host.
+            var split = protocol.split("://");
+            if (split.length == 2) {
+                server.protocol = split[0];
+                server.host = split[1];
+            } else {
+                // Must have omitted protocol.
+                server.host = protocol;
+                server.protocol = defaults.protocol;
+            }
+
+            var lastColon = server.host.lastIndexOf(":");
+            if (lastColon !== -1) {
+                // There is a port; let's grab it!
+                server.port = server.host.substring(lastColon + 1, server.host.length);
+                server.host = server.host.substring(0, lastColon);
+            } else {
+                // There ain't no port!
+                server.port = defaults.port[server.protocol];
+            }
+
+            handled = true;
+        }
+
+        if (!invalid && !handled && !external.is(protocol).empty && !external.is(host).empty && external.is(port).empty) {
+            // Okay, protocol and host are provided. Figure out port!
+            server.protocol = protocol;
+            server.host = host;
+
+            var lastColon = server.host.lastIndexOf(":");
+            if (lastColon !== -1) {
+                // There is a port; let's grab it!
+                server.port = server.host.substring(lastColon + 1, server.host.length);
+                server.host = server.host.substring(0, lastColon);
+            } else {
+                // There ain't no port!
+                server.port = defaults.port[server.protocol];
+            }
+
+            handled = true;
+        }
+
+        if (!invalid && !handled && !external.is(protocol).empty && !external.is(host).empty && !external.is(port).empty) {
+            // Everything is provided. Holy shit, does that ever happen!?
+            server.protocol = protocol;
+            server.host = host;
+            server.port = port;
+
+            handled = true;
+        }
+
+        // Port explicitness can be omitted for some protocols where the port is their default
+        // so let's mark them as can be omitted. This will make output less confusing for
+        // more inexperienced developers plus it looks prettier :).
+        if (!invalid && handled && defaults.port[server.protocol] === server.port) {
+            server.canOmitPort = true;
+        }
+
+        if (!invalid && !handled) {
+            // Well we didn't handle the input but also didn't think it was invalid. Crap!
+            invalid = true;
+            invalidReason = "Unable to handle input into method. Please open a GitHub issue with your input :)";
+        }
+
+        if (invalid === true) {
+            throw internal.InvalidParametersException("net", invalidReason);
+        }
+
+        // Strip any supplied paths
+        var stripPath = function(input) {
+            var index = input.indexOf("/");
+            return input.substring(0, ((index === -1) ? input.length : index));
+        };
+
+        server.host = stripPath(server.host);
+        server.port = stripPath(server.port);
+
+        return server;
+    };
+
+    external.net = function(protocol, host, port) {
+        var server = figureOutServer(protocol, host, port);
+
+        var netObj = {
+            get: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "get";
+                request(server, opts, callback);
+            },
+            post: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "post";
+                request(server, opts, callback);
+            },
+            put: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "put";
+                request(server, opts, callback);
+            },
+            delete: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "delete";
+                request(server, opts, callback);
+            },
+            options: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "options";
+                request(server, opts, callback);
+            }
+        };
+
+        Object.defineProperty(netObj, "protocol", {
+            get: function() {
+                return server.protocol;
+            }
+        });
+
+        Object.defineProperty(netObj, "host", {
+            get: function() {
+                return server.host;
+            }
+        });
+
+        Object.defineProperty(netObj, "port", {
+            get: function() {
+                return server.port;
+            }
+        });
+
+        return netObj;
+    };
 }));
 
 /*

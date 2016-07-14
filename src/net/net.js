@@ -2,16 +2,15 @@ msngr.extend((function(external, internal) {
     "use strict";
 
     // Setup constants
-    external.config.set("msngr.net", {
-        defaults: {
-            protocol: "http",
-            port: {
-                http: "80",
-                https: "443"
-            },
-            autoJson: true
-        }
-    });
+    var defaults = {
+        path: "/",
+        protocol: "http",
+        port: {
+            http: "80",
+            https: "443"
+        },
+        autoJson: true
+    };
 
     // This method handles requests when msngr is running within a semi-modern net browser
     var browser = function(server, options, callback) {
@@ -50,8 +49,8 @@ msngr.extend((function(external, internal) {
             }
 
             var datum;
-            if (external.exist(options.payload)) {
-                if (external.isObject(options.payload)) {
+            if (external.is(options.payload).there) {
+                if (external.is(options.payload).object) {
                     try {
                         datum = JSON.stringify(options.payload);
                     } catch (ex) {
@@ -67,7 +66,7 @@ msngr.extend((function(external, internal) {
             }
 
             xhr.open(options.method, url);
-            if (external.exist(options.headers)) {
+            if (external.is(options.headers).there) {
                 for (var key in options.headers) {
                     if (options.headers.hasOwnProperty(key)) {
                         xhr.setRequestHeader(key, options.headers[key]);
@@ -120,9 +119,9 @@ msngr.extend((function(external, internal) {
             });
         });
 
-        if (external.exist(options.payload)) {
+        if (external.is(options.payload).there) {
             var datum;
-            if (external.isObject(options.payload)) {
+            if (external.is(options.payload).object) {
                 try {
                     datum = JSON.stringify(options.payload);
                 } catch (ex) {
@@ -143,15 +142,12 @@ msngr.extend((function(external, internal) {
     };
 
     var request = function(server, opts, callback) {
-        opts.path = opts.path || "/";
-        opts.autoJson = opts.autoJson || external.config.get("msngr.net").defaults.autoJson;
-
-        if (external.exist(opts.query)) {
-            if (external.isString(opts.query)) {
+        if (external.is(opts.query).there) {
+            if (external.is(opts.query).string) {
                 opts.queryString = opts.query;
             }
 
-            if (external.isObject(opts.query)) {
+            if (external.is(opts.query).object) {
                 opts.queryString = "?";
                 for (var key in opts.query) {
                     if (opts.query.hasOwnProperty(key)) {
@@ -166,7 +162,7 @@ msngr.extend((function(external, internal) {
 
         opts.path = opts.path + (opts.queryString || "");
 
-        if (external.isBrowser()) {
+        if (external.is.browser) {
             browser(server, opts, callback);
         } else {
             node(server, opts, callback);
@@ -181,12 +177,12 @@ msngr.extend((function(external, internal) {
         var invalid = false;
         var invalidReason;
 
-        if (external.isEmptyString(protocol)) {
+        if (external.is(protocol).empty) {
             invalid = true;
             invalidReason = "Protocol or host not provided";
         }
 
-        if (!invalid && !external.isEmptyString(protocol) && external.isEmptyString(host) && external.isEmptyString(port)) {
+        if (!invalid && !external.is(protocol).empty && external.is(host).empty && external.is(port).empty) {
             // Only one argument was provided; must be whole host.
             var split = protocol.split("://");
             if (split.length == 2) {
@@ -195,7 +191,7 @@ msngr.extend((function(external, internal) {
             } else {
                 // Must have omitted protocol.
                 server.host = protocol;
-                server.protocol = external.config.get("msngr.net").defaults.protocol;
+                server.protocol = defaults.protocol;
             }
 
             var lastColon = server.host.lastIndexOf(":");
@@ -205,13 +201,13 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
+                server.port = defaults.port[server.protocol];
             }
 
             handled = true;
         }
 
-        if (!invalid && !handled && !external.isEmptyString(protocol) && !external.isEmptyString(host) && external.isEmptyString(port)) {
+        if (!invalid && !handled && !external.is(protocol).empty && !external.is(host).empty && external.is(port).empty) {
             // Okay, protocol and host are provided. Figure out port!
             server.protocol = protocol;
             server.host = host;
@@ -223,13 +219,13 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
+                server.port = defaults.port[server.protocol];
             }
 
             handled = true;
         }
 
-        if (!invalid && !handled && !external.isEmptyString(protocol) && !external.isEmptyString(host) && !external.isEmptyString(port)) {
+        if (!invalid && !handled && !external.is(protocol).empty && !external.is(host).empty && !external.is(port).empty) {
             // Everything is provided. Holy shit, does that ever happen!?
             server.protocol = protocol;
             server.host = host;
@@ -241,7 +237,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && external.config.get("msngr.net").defaults.port[server.protocol] === server.port) {
+        if (!invalid && handled && defaults.port[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 
@@ -267,57 +263,55 @@ msngr.extend((function(external, internal) {
         return server;
     };
 
-    return {
-        net: function(protocol, host, port) {
-            var server = figureOutServer(protocol, host, port);
+    external.net = function(protocol, host, port) {
+        var server = figureOutServer(protocol, host, port);
 
-            var netObj = {
-                get: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "get";
-                    request(server, opts, callback);
-                },
-                post: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "post";
-                    request(server, opts, callback);
-                },
-                put: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "put";
-                    request(server, opts, callback);
-                },
-                delete: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "delete";
-                    request(server, opts, callback);
-                },
-                options: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "options";
-                    request(server, opts, callback);
-                }
-            };
+        var netObj = {
+            get: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "get";
+                request(server, opts, callback);
+            },
+            post: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "post";
+                request(server, opts, callback);
+            },
+            put: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "put";
+                request(server, opts, callback);
+            },
+            delete: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "delete";
+                request(server, opts, callback);
+            },
+            options: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "options";
+                request(server, opts, callback);
+            }
+        };
 
-            Object.defineProperty(netObj, "protocol", {
-                get: function() {
-                    return server.protocol;
-                }
-            });
+        Object.defineProperty(netObj, "protocol", {
+            get: function() {
+                return server.protocol;
+            }
+        });
 
-            Object.defineProperty(netObj, "host", {
-                get: function() {
-                    return server.host;
-                }
-            });
+        Object.defineProperty(netObj, "host", {
+            get: function() {
+                return server.host;
+            }
+        });
 
-            Object.defineProperty(netObj, "port", {
-                get: function() {
-                    return server.port;
-                }
-            });
+        Object.defineProperty(netObj, "port", {
+            get: function() {
+                return server.port;
+            }
+        });
 
-            return netObj;
-        }
+        return netObj;
     };
 }));

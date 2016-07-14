@@ -26,7 +26,7 @@ msngr.extend(function (external, internal) {
         promise: "[object Promise]", // node.js 4.x returns [object Object] for promises so limited testing possible
 
         // HTML DOM Types
-        nodelist: "[object NodeList]"
+        nodeList: "[object NodeList]"
     };
 
     // Harder type checking here; requires custom methods

@@ -60,36 +60,40 @@ msngr.extend((function (external, internal) {
         return payload;
     };
 
-    var explicitEmit = function (msgOrIds, payload, callback) {
-        var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
+    var explicitEmit = function (msgOrIds, middlewares, payload, callback) {
 
-        if (ids.length > 0) {
-            var methods = [];
-            var toDrop = [];
-            for (var i = 0; i < ids.length; ++i) {
-                var msg = (external.is(msgOrIds).object) ? external.copy(msgOrIds) : external.copy(messageIndex.query(ids[i]));
-                var obj = handlers[ids[i]];
-                methods.push({
-                    method: obj.handler,
-                    params: [payload, msg]
-                });
+        // Execute middlewares if any
+        internal.executeMiddlewares(middlewares, payload, function (newPayload) {
+            var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
 
-                if (obj.once === true) {
-                    toDrop.push({
-                        msg: msg,
-                        handler: obj.handler
+            if (ids.length > 0) {
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < ids.length; ++i) {
+                    var msg = (external.is(msgOrIds).object) ? external.copy(msgOrIds) : external.copy(messageIndex.query(ids[i]));
+                    var obj = handlers[ids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [newPayload, msg]
                     });
+
+                    if (obj.once === true) {
+                        toDrop.push({
+                            msg: msg,
+                            handler: obj.handler
+                        });
+                    }
                 }
+
+                var execs = internal.executer(methods);
+
+                for (var i = 0; i < toDrop.length; ++i) {
+                    external(toDrop[i].msg).drop(toDrop[i].handler);
+                }
+
+                execs.parallel(callback);
             }
-
-            var execs = internal.executer(methods);
-
-            for (var i = 0; i < toDrop.length; ++i) {
-                external(toDrop[i].msg).drop(toDrop[i].handler);
-            }
-
-            execs.parallel(callback);
-        }
+        });
     };
 
     /*
@@ -118,11 +122,11 @@ msngr.extend((function (external, internal) {
             msg = {};
             msg.topic = topic;
 
-            if (!isCategory.empty) {
+            if (!isCategory.empty && isCategory.string) {
                 msg.category = category;
             }
 
-            if (!isSubcategory.empty) {
+            if (!isSubcategory.empty && isSubcategory.string) {
                 msg.subcategory = subcategory;
             }
         }
@@ -134,7 +138,16 @@ msngr.extend((function (external, internal) {
             }
         }
 
+        var uses = [];
+
         var msgObj = {
+            use: function (middleware) {
+                if (!external.is(middleware).empty) {
+                    uses.push(middleware.toLowerCase());
+                }
+
+                return msgObj;
+            },
             emit: function (payload, callback) {
                 var isPayload = external.is(payload);
                 if (isPayload.function) {
@@ -142,7 +155,7 @@ msngr.extend((function (external, internal) {
                     payload = undefined;
                 }
 
-                explicitEmit(msg, payload, callback);
+                explicitEmit(msg, uses, payload, callback);
 
                 return msgObj;
             },
@@ -186,7 +199,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    explicitEmit([id], payload, undefined);
+                    explicitEmit([id], uses, payload, undefined);
                 }
 
                 return msgObj;
@@ -202,7 +215,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    explicitEmit([id], payload, undefined);
+                    explicitEmit([id], uses, payload, undefined);
                 }
 
                 return msgObj;

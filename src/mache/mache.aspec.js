@@ -10,7 +10,7 @@ if (typeof msngr === "undefined" && typeof window === "undefined") {
     var msngr = require("../../msngr");
 }
 
-describe("./objects/mache.js", function() {
+describe("./mache/mache.js", function() {
     "use strict";
 
     it("msngr.mache() - Creates a new merge cache object", function () {
@@ -163,8 +163,8 @@ describe("./objects/mache.js", function() {
             }
         });
 
-        expect(msngr.isObject(mache.getDeep("config", "this"))).to.equal(true);
-        expect(msngr.isObject(mache.getDeep("config", "this.is"))).to.equal(true);
+        expect(msngr.is(mache.getDeep("config", "this")).object).to.equal(true);
+        expect(msngr.is(mache.getDeep("config", "this.is")).object).to.equal(true);
         expect(mache.getDeep("config", "this.is.super.deep")).to.equal("yup");
         expect(mache.getDeep("config", "this.is.super.bool")).to.equal(true);
         expect(mache.getDeep("config", "this.is.not.a.real.path")).to.not.exist;

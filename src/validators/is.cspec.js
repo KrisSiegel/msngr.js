@@ -40,12 +40,6 @@ describe("./validators/is.js", function () {
         expect(msngr.is(document.createElement("canvas")).htmlElement).to.equal(true);
     });
 
-    it("msngr.is(obj).nodeList - obj is a single div element", function() {
-        var div = document.createElement("div");
-
-        expect(msngr.is(div).nodeList).to.equal(false);
-    });
-
     it("msngr.is(obj).nodeList - obj is a nodelist", function() {
         var div1 = document.createElement("div");
         var div2 = document.createElement("div");
@@ -53,7 +47,7 @@ describe("./validators/is.js", function () {
 
         div1.appendChild(div2);
         div1.appendChild(div3);
-
+        
         expect(msngr.is(div1.childNodes).nodeList).to.equal(true);
     });
 
