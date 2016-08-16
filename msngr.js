@@ -231,7 +231,7 @@ msngr.extend(function (external, internal) {
     // The external `is` interface that supports N number of arguments.
     external.is = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
-
+        inputs = inputs || [undefined];
         var props = buildProps(inputs);
 
         // Returns the first input's type
@@ -1506,7 +1506,7 @@ msngr.extend((function(external, internal) {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200 || xhr.status === 201) {
                         var obj;
-                        if (options.autoJson === true && this.getResponseHeader("content-type") === "application/json") {
+                        if (options.autoJson === true && (this.getResponseHeader("content-type") || "").toLowerCase() === "application/json") {
                             try {
                                 obj = JSON.parse(xhr.response);
                             } catch (ex) {
@@ -1550,7 +1550,7 @@ msngr.extend((function(external, internal) {
                 }
             }
 
-            xhr.open(options.method, url);
+            xhr.open(options.method, url, true);
             if (external.is(options.headers).there) {
                 for (var key in options.headers) {
                     if (options.headers.hasOwnProperty(key)) {
@@ -1582,7 +1582,7 @@ msngr.extend((function(external, internal) {
 
             response.on("end", function() {
                 var obj;
-                if (options.autoJson === true && response.headers["content-type"] === "application/json") {
+                if (options.autoJson === true && (response.headers["content-type"] || "").toLowerCase() === "application/json") {
                     try {
                         obj = JSON.parse(body);
                     } catch (ex) {

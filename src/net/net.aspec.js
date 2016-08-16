@@ -144,7 +144,7 @@ describe("./net/net.js", function() {
             expect(err).to.not.exist;
             expect(result).to.exist;
             expect(result.path).to.equal("/users");
-            result.body = JSON.parse(result.body);
+            result.body = JSON.parse(result.body); // This is because the reflective server returns as string;
             expect(result.body.username).to.equal("kris");
             expect(result.body.email).to.equal("redacted@redacted.com");
             done();
@@ -165,7 +165,7 @@ describe("./net/net.js", function() {
             expect(err).to.not.exist;
             expect(result).to.exist;
             expect(result.path).to.equal("/user/394859");
-            result.body = JSON.parse(result.body);
+            result.body = JSON.parse(result.body); // This is because the reflective server returns as string;
             expect(result.body.username).to.equal("kris");
             done();
         });

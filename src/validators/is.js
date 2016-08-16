@@ -130,7 +130,7 @@ msngr.extend(function (external, internal) {
     // The external `is` interface that supports N number of arguments.
     external.is = function () {
         var inputs = Array.prototype.slice.call(arguments, 0);
-
+        inputs = inputs || [undefined];
         var props = buildProps(inputs);
 
         // Returns the first input's type
