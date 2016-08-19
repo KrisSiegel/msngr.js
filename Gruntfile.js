@@ -24,6 +24,7 @@ module.exports = (function(grunt) {
         "src/messaging/*.js",
         "src/mache/*.js",
         "src/net/*.js",
+        "src/middlewares/*.js",
         "src/module.exports.js",
         "!**/*.aspec.js",
         "!**/*.cspec.js",
