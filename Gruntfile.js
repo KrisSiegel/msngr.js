@@ -126,7 +126,7 @@ module.exports = (function(grunt) {
         grunt.log.subhead("Client-side unit testing with phantom.js");
     });
 
-    var jsPaths = ["./", "./src/", "./docs/"];
+    var jsPaths = ["./", "./src/"];
     var fetchJsFiles = function(filters) {
         var fs = require("fs");
         var path = require("path");
