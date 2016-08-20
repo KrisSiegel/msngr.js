@@ -1,7 +1,7 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
-## [Release 5.0.0 - June XX, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.0.0)
+## [Release 5.0.0 - August 20, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.0.0)
 Version 5.0 brings in some major changes, the first LTS version and huge improvements over previous versions.
 
 ***What's new?***
@@ -12,13 +12,19 @@ msngr.is("    ").empty; // Returns true
 msngr.is(undefined).there; // Returns false
 msngr.is("one", "another", "weee").string; // Returns true
 ```
+- A new way to setup middleware now exists and replaces the previous options.
+- A new ```msngr.safe(obj, prop, default)``` method was added for accessing deep properties, safely.
 
 ***Breaking changes***
 - All previously used type, existence and empty checking methods are now removed in favor of the new ```msngr.is()``` way.
 - ```msngr(msg).subscribers``` has been renamed to ```msngr(msg).handlers``` to better reflect the msngr terminology.
 - ```msngr(msg).options``` has been axed in favor of the new middleware concept outlined in the above section.
+- Options have been removed entirely along with their specific implementations. This has been replaced by a middleware setup with currently no default middlewares.
+- ```msngr.merge()``` now has different, better behavior. No longer tries to merge strings and has a very strict set of rules easy to see in the source code
 
 ***Misc changes***
+- Highly revised documentation. This is still ongoing.
+- Vastly refactored
 
 ## [Release 4.0.1 - March 23, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.1)
 This update brings an additional benchmark for mache and a bug fix where mache's ```getDeep()``` would fail to return false boolean values.
