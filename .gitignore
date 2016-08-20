@@ -43,7 +43,3 @@ node_modules
 # msngr.js specific
 test/specRunner.html
 test/specRunner.min.html
-test/crossWindowVerifier.html
-test/crossWindowVerifier.min.html
-test/benchRunner.html
-test/benchRunner.min.html

@@ -16,6 +16,7 @@
         "docs",
         "src",
         "node_modules",
-        "CHANGELOG.md"
+        "CHANGELOG.md",
+        "resources"
     ]
 }

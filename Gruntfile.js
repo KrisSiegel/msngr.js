@@ -13,21 +13,18 @@ module.exports = (function(grunt) {
 
     /*
     	These are the paths to include or exclude in concatenation and minification steps.
+        The order here is important at some code references other code in other files.
     */
     var paths = [
         "src/main.js",
-        "src/utils/validation.js",
-        "src/objects/mache.js",
-        "src/utils/exceptional.js",
-        "src/utils/converters.js",
-        "src/utils/dom.js",
-        "src/utils/misc.js",
-        "src/objects/executer.js",
-        "src/objects/memory.js",
-        "src/objects/message.js",
-        "src/objects/net.js",
-        "src/options/cross-window.js",
-        "src/options/dom.js",
+        "src/exceptional.js",
+        "src/validators/*.js",
+        "src/utils/*.js",
+        "src/mutators/*.js",
+        "src/messaging/*.js",
+        "src/mache/*.js",
+        "src/net/*.js",
+        "src/middlewares/*.js",
         "src/module.exports.js",
         "!**/*.aspec.js",
         "!**/*.cspec.js",
@@ -36,7 +33,7 @@ module.exports = (function(grunt) {
     ];
 
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: grunt.file.readJSON("package.json"),
         clean: ["./msngr.js", "./msngr.min.js"],
         concat: {
             dist: {
@@ -58,13 +55,20 @@ module.exports = (function(grunt) {
                     reporter: "spec"
                 },
                 src: [
-                    "**/*.aspec.js",
-                    "**/*.nspec.js"
+                    "./src/**/*.aspec.js",
+                    "./src/**/*.nspec.js"
                 ]
             }
         },
         mocha_phantomjs: {
-            all: ["test/specRunner.html", "test/specRunner.min.html"]
+            options: {
+                phantomConfig:{
+                    "--web-security": false
+                }
+            },
+            files: {
+                src: ["test/specRunner.html", "test/specRunner.min.html"]
+            }
         },
         availabletasks: {
             tasks: {
@@ -122,7 +126,7 @@ module.exports = (function(grunt) {
         grunt.log.subhead("Client-side unit testing with phantom.js");
     });
 
-    var jsPaths = ["./", "./src/", "./docs/"];
+    var jsPaths = ["./", "./src/"];
     var fetchJsFiles = function(filters) {
         var fs = require("fs");
         var path = require("path");
@@ -256,11 +260,7 @@ module.exports = (function(grunt) {
                     body: body
                 };
 
-                var headers = {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Headers": "origin, content-type, accept, custom-header",
-                    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS,HEAD"
-                };
+                var headers = { };
 
                 try {
                     var objBody = JSON.parse(body);

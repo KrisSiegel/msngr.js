@@ -1,187 +1,50 @@
 /*
-	main.js
+	./src/main.js
 
 	The main entry point for msngr.js. Covers internal and external interface generation,
 	versioning (for programmatic access) and the core extend method.
 */
-var msngr = msngr || (function() {
+var msngr = msngr || (function () {
     "use strict";
 
-    // Defaults for some internal functions
+    // The internal object for holding the internal API
     var internal = { };
 
-    // The main method for msngr uses the message object
-    var external = function(topic, category, subcategory) {
-        return internal.objects.message(topic, category, subcategory);
+    // The external function that holds all external APIs
+    var external = function () {
+        var inputs = Array.prototype.slice.call(arguments, 0);
+
+        return external.message.apply(this, inputs);
     };
 
-    external.version = "4.0.2";
+    // Built version of msngr.js for programatic access; this is auto generated
+    external.version = "5.0.0";
 
-    var getType = function(input) {
-        return Object.prototype.toString.call(input);
-    };
-
-    var extractFunction = function(input) {
-        return input.bind({});
-    };
-
-    // Merge two inputs into one
-    var twoMerge = function(input1, input2) {
-        if (input1 === undefined || input1 === null) {
-            return input2;
+    // Takes a function, executes it passing in the external and internal interfaces
+    external.extend = function (fn) {
+        if (fn === undefined || fn === null) {
+            return undefined;
         }
 
-        if (input2 === undefined || input2 === null) {
-            return input1;
+        var fnType = Object.prototype.toString.call(fn);
+        if (fnType !== "[object Function]") {
+            return undefined;
         }
 
-        var result;
-        var type1 = Object.prototype.toString.call(input1);
-        var type2 = Object.prototype.toString.call(input2);
-
-        if (type1 === "[object Object]" && type2 === "[object Object]") {
-            // Object merging time!
-            result = {};
-            // Copy input1 into result
-            for (var key in input1) {
-                if (input1.hasOwnProperty(key)) {
-                    result[key] = input1[key];
-                }
-            }
-            for (var key in input2) {
-                if (input2.hasOwnProperty(key)) {
-                    if (Object.prototype.toString.call(input2[key]) === "[object Object]") {
-                        if (result[key] === undefined) {
-                            result[key] = {};
-                        }
-                        result[key] = external.merge(input1[key], input2[key]);
-                    } else if (Object.prototype.toString.call(input1[key]) === "[object Array]" && Object.prototype.toString.call(input2[key]) === "[object Array]") {
-                        result[key] = (input1[key] || []);
-                        for (var i = 0; i < input2[key].length; ++i) {
-                            if (result[key].indexOf(input2[key][i]) === -1) {
-                                result[key].push(input2[key][i]);
-                            }
-                        }
-                    } else {
-                        result[key] = input2[key];
-                    }
-                }
-            }
-            return result;
-        }
-
-        if (type1 === "[object String]" && type2 === "[object String]") {
-            result = input1 + input2;
-            return result;
-        }
-
-        if (type1 === "[object Array]" && type2 === "[object Array]") {
-            result = input1;
-            for (var i = 0; i < input2.length; ++i) {
-                if (result.indexOf(input2[i]) === -1) {
-                    result.push(input2[i]);
-                }
-            }
-            return result;
-        }
-
-        if (type1 === "[object Function]" && type2 === "[object Function]") {
-            return (function(i1, i2, args) {
-                return function() {
-                    return external.merge(i1.apply(this, args), i2.apply(this, args));
-                };
-            }(input1, input2, arguments));
-        }
-
-        var similarObjectTypes = ["[object Function]", "[object Object]"];
-
-        if (similarObjectTypes.indexOf(type1) !== -1 && similarObjectTypes.indexOf(type2) !== -1) {
-            var method = (type1 === "[object Function]") ? input1 : input2;
-            var props = (type1 === "[object Object]") ? input1 : input2;
-
-            if (method !== undefined && props !== undefined) {
-                for (var key in props) {
-                    if (props.hasOwnProperty(key)) {
-                        method[key] = props[key];
-                    }
-                }
-            }
-            result = method;
-            return result;
-        }
-
-        return result;
-    };
-
-    external.extend = function(obj, target) {
-        target = (target || external);
-
-        if (Object.prototype.toString.call(obj) === "[object Function]") {
-            obj = obj.apply(this, [external, internal]);
-        }
-
-        target = external.merge(obj, target);
-
-        return target;
-    };
-
-    external.merge = function() {
-        var result = arguments[0];
-        if (arguments.length > 1) {
-            for (var i = 1; i < arguments.length; ++i) {
-                result = twoMerge(result, arguments[i]);
-            }
-        }
-
-        return result;
-    };
-
-    external.copy = function(obj) {
-        if (obj === undefined || obj === null) {
-            return obj;
-        }
-        var objType = getType(obj);
-        if (["[object Object]", "[object Function]"].indexOf(objType) === -1) {
-            return obj;
-        }
-
-        var result;
-        if (getType(obj) === "[object Object]") {
-            result = {};
-        } else if (getType(obj) === "[object Function]") {
-            result = extractFunction(obj)
-        }
-
-        for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                var keyType = getType(obj[key]);
-                if (["[object Object]", "[object Function]"].indexOf(keyType) !== -1) {
-                    result[key] = external.copy(obj[key]);
-                } else if ("[object Array]" === keyType) {
-                    result[key] = [];
-                    for (var i = 0; i < obj[key].length; ++i) {
-                        result[key][i] = external.copy(obj[key][i]);
-                    }
-                } else {
-                    result[key] = obj[key];
-                }
-            }
-        }
-
-        return result;
+        return fn.apply(this, [external, internal]);
     };
 
     // Create a debug property to allow explicit exposure to the internal object structure.
     // This should only be used during unit test runs and debugging.
     Object.defineProperty(external, "debug", {
-        set: function(value) {
+        set: function (value) {
             if (value === true) {
                 external.internal = internal;
             } else if (value === false) {
                 delete external.internal;
             }
         },
-        get: function() {
+        get: function () {
             return (external.internal !== undefined)
         }
     });
@@ -189,101 +52,1245 @@ var msngr = msngr || (function() {
     return external;
 }());
 
-msngr.extend((function(external, internal) {
+/*
+    ./src/exceptional.js
+
+    Handles throwing and creating errors and warnings
+*/
+
+msngr.extend(function (external, internal) {
     "use strict";
 
-    internal.reiterativeValidation = function(validationMethod, inputs) {
-        var result = false;
-        if (external.exist(validationMethod) && external.exist(inputs)) {
-            if (!external.isArray(inputs)) {
-                inputs = [inputs];
-            }
-            for (var i = 0; i < inputs.length; ++i) {
-                result = validationMethod.apply(this, [inputs[i]]);
-                if (result === false) {
-                    break;
+    internal.InvalidParametersException = function (str, reason) {
+        var m = {
+            name: "InvalidParametersException",
+            severity: "unrecoverable",
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+        };
+        if (!external.is(reason).empty) {
+            m.message = m.message + " " + reason;
+        }
+        return m;
+    };
+
+    internal.DuplicateException = function (str) {
+        return {
+            name: "DuplicateException",
+            severity: "unrecoverable",
+            message: ("Duplicate input provided to {method} where duplicates are not allowed.".replace("{method}", str))
+        };
+    };
+
+    internal.ReservedKeywordsException = function (keyword) {
+        return {
+            name: "ReservedKeywordsException",
+            severity: "unrecoverable",
+            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
+        };
+    };
+
+    internal.MangledException = function (variable, method) {
+        return {
+            name: "MangledException",
+            severity: "unrecoverable",
+            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
+        };
+    };
+
+});
+
+/*
+    ./src/validators/is.js
+
+    The is function used for validation
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    // A list of built-in JavaScript types and their string representation
+    var simpleTypes = {
+        // ECMAScript 5 Types
+        arguments: "[object Arguments]",
+        boolean: "[object Boolean]",
+        string: "[object String]",
+        date: "[object Date]",
+        array: "[object Array]",
+        number: "[object Number]",
+        object: "[object Object]",
+        function: "[object Function]",
+        undefined: "[object Undefined]",
+        null: "[object Null]",
+
+        // ECMAScript 6 Types
+        symbol: "[object Symbol]",
+        promise: "[object Promise]", // node.js 4.x returns [object Object] for promises so limited testing possible
+
+        // HTML DOM Types
+        nodeList: "[object NodeList]"
+    };
+
+    // Harder type checking here; requires custom methods
+    var harderTypes = {
+        // HTML DOM Types
+        htmlElement: function (type) {
+            return (type.indexOf("[object HTML") === 0) || (type.indexOf("[object global]") === 0);
+        }
+    };
+
+    var getType = function (item) {
+        return Object.prototype.toString.call(item);
+    };
+
+    // Check a type against an input
+    var checkType = function (type, item, hard) {
+        if (hard) {
+            return harderTypes[type](getType(item));
+        }
+        return (getType(item) === simpleTypes[type]);
+    }
+
+    // Check an object for empiness
+    var checkEmpty = function (type, item) {
+        switch(type) {
+            case simpleTypes.undefined:
+            case simpleTypes.null:
+                return true;
+            case simpleTypes.string:
+                if (item.trim().length === 0) {
+                    return true;
+                }
+                return false;
+            case simpleTypes.object:
+                return (Object.keys(item).length === 0);
+            case simpleTypes.array:
+                return (item.length === 0);
+            default:
+                return false;
+        };
+    };
+
+    // Bulld the properties that the is function returns for testing values
+    var buildProps = function (inputs) {
+        var props = { };
+
+        // Create a function to call with simple and hard types
+        // This is done so simple types don't need to check for hard types
+        var generateProps = function (types, hard) {
+            for (var t in types) {
+                if (types.hasOwnProperty(t)) {
+                    (function (prop) {
+                        Object.defineProperty(props, prop, {
+                            get: function () {
+                                for (var i = 0; i < inputs.length; ++i) {
+                                    if (!checkType(prop, inputs[i], hard)) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            }
+                        });
+                    }(t));
                 }
             }
+        };
+
+        generateProps(simpleTypes, false);
+        generateProps(harderTypes, true);
+
+        // Check whether the specified inputs even exist
+        Object.defineProperty(props, "there", {
+            get: function () {
+                for (var i = 0; i < inputs.length; ++i) {
+                    if (inputs[i] === undefined || inputs[i] === null) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        // Check whether a passed in input is considered empty or not
+        Object.defineProperty(props, "empty", {
+            get: function () {
+                for (var i = 0; i < inputs.length; ++i) {
+                    if (!checkEmpty(getType(inputs[i]), inputs[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        });
+
+        return props;
+    };
+
+    // Add simple types to the internal interface
+    internal.types = simpleTypes;
+
+    // The external `is` interface that supports N number of arguments.
+    external.is = function () {
+        var inputs = Array.prototype.slice.call(arguments, 0);
+        inputs = inputs || [undefined];
+        var props = buildProps(inputs);
+
+        // Returns the first input's type
+        props.getType = function () {
+            return Object.prototype.toString.call(inputs[0]);
+        };
+
+        // Returns the types for all inputs, in order
+        props.getTypes = function () {
+            var result = [];
+            for (var i = 0; i < inputs.length; ++i) {
+                result.push(Object.prototype.toString.call(inputs[i]));
+            }
+
+            return result;
+        };
+
+        return props;
+    };
+
+    // Returns whether we're in a browser or not
+    external.is.browser = (typeof XMLHttpRequest !== "undefined");
+
+});
+
+/*
+    ./src/utils/deDupeArray.js
+
+    Provides a funtion for de-duping an array
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    external.deDupeArray = function (arr) {
+        var hash = { };
+        var result = [];
+        var arrLength = arr.length;
+        for (var i = 0; i < arrLength; ++i) {
+            if (hash[arr[i]] === undefined) {
+                hash[arr[i]] = true;
+                result.push(arr[i]);
+            }
+        }
+
+        return result;
+    };
+
+});
+
+/*
+    ./src/utils/identifier.js
+
+    Utils for handling and creating identifiers
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    var atomicCount = 0;
+    var seed = "Mxxx".replace(/[x]/g, function () {
+        return Math.floor(Math.random() * 100);
+    });
+
+    external.id = function () {
+        ++atomicCount;
+        return (seed + atomicCount);
+    };
+
+    external.uuid = function () {
+        var d = external.now();
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    };
+
+});
+
+/*
+    ./src/utils/immediate.js
+
+    A cross platform implementation of immediate()
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+    var postMessageChannel = "__msngr_immediate";
+    var immediateFn;
+
+    // This chunk of code is only for the browser as a setImmediate workaround
+    if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
+        var immediateQueue = [];
+
+        window.addEventListener("message", function(event) {
+            if (event.source === window && event.data === postMessageChannel) {
+                event.stopPropagation();
+                if (immediateQueue.length > 0) {
+                    immediateQueue.shift()();
+                }
+            }
+        }, true);
+    }
+
+    external.immediate = function(fn) {
+        if (immediateFn === undefined) {
+            if (typeof setImmediate !== "undefined") {
+                immediateFn = setImmediate;
+            } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
+                immediateFn = function(f) {
+                    immediateQueue.push(f);
+                    window.postMessage(postMessageChannel, "*");
+                };
+            } else {
+                immediateFn = function(f) {
+                    setTimeout(f, 0);
+                };
+            }
+        }
+        immediateFn(fn);
+    };
+
+});
+
+/*
+    ./src/utils/now.js
+
+    An implementation of the best-performing now() available
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    var nowExec = undefined;
+    var nowExecDebugLabel = "";
+    var lastNow = undefined;
+
+    var nowPerformance = function() {
+        return performance.now();
+    };
+
+    var nowNode = function() {
+        return (process.hrtime()[1] / 1000000);
+    };
+
+    var nowLegacy = function() {
+        return Date.now();
+    };
+
+    external.now = function (noDuplicate) {
+        if (nowExec === undefined) {
+            if (typeof performance !== "undefined") {
+                nowExec = nowPerformance;
+                nowExecDebugLabel = "performance";
+            } else if (typeof process !== "undefined") {
+                nowExec = nowNode;
+                nowExecDebugLabel = "node";
+            } else {
+                nowExec = nowLegacy;
+                nowExecDebugLabel = "legacy";
+            }
+        }
+        var now = nowExec();
+        if (noDuplicate === true && lastNow === now) {
+            return external.now(noDuplicate);
+        }
+        lastNow = now;
+        return now;
+    };
+
+});
+
+/*
+    ./src/mutators/asyncify.js
+
+    Takes a synchronous method and makes it work asynchronously
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    /*
+        msngr.asyncify() accepts a single parameter and returns it with a new, async method.
+
+        fn -> the function, which should be synchronous, to add an async() method to.
+    */
+    external.asyncify = function(fn) {
+        if (external.is(fn).function) {
+            fn.async = function () {
+                var args = [].slice.call(arguments);
+                var callback = args.pop();
+                if (external.is(callback).function) {
+                    (function (a, c) {
+                        external.immediate(function () {
+                            try {
+                                c.apply(null, [null, fn.apply(null, a)]);
+                            } catch (e) {
+                                c.apply(null, [e, null]);
+                            }
+                        });
+                    }(args, callback));
+                }
+            };
+        }
+
+        return fn;
+    };
+
+});
+
+/*
+    ./src/mutators/copy.js
+
+    Creates a copy of the passed in object
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    var copyHandlers = { };
+    // Immutable types that can be straight returned
+    copyHandlers[internal.types.string] = function (str) { return str; };
+    copyHandlers[internal.types.number] = function (num) { return num; };
+    copyHandlers[internal.types.boolean] = function (bool) { return bool; };
+
+    // Mutable types that need to be specially handled
+    copyHandlers[internal.types.date] = function (d) {
+        var cdate = new Date();
+        cdate.setTime(d.getTime());
+
+        return cdate;
+    };
+
+    copyHandlers[internal.types.object] = function (obj) {
+        var cobj = { };
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                cobj[key] = external.copy(obj[key]);
+            }
+        }
+
+        return cobj;
+    };
+
+    copyHandlers[internal.types.array] = function (arr) {
+        var carr = [];
+        for (var i = 0; i < arr.length; i++) {
+            carr[i] = external.copy(arr[i]);
+        }
+
+        return carr;
+    };
+
+    copyHandlers[internal.types.function] = function (fn) {
+        var cfn = fn.bind({}); // Pulls the function away from its properties
+        for (var key in fn) {
+            if (fn.hasOwnProperty(key)) {
+                cfn[key] = external.copy(fn[key]);
+            }
+        }
+
+        return cfn;
+    };
+
+    // Accepts any input and attempts to copy it
+    // Unknown input is simply returned as is and is NOT copied
+    // While that sounds incorrect there are custom types that may or may not
+    // be copy-able so this is basically the best case scenario.
+    external.copy = function (input) {
+        if (input === undefined || input === null) {
+            return input;
+        }
+
+        var inputType = external.is(input).getType();
+
+        if (copyHandlers[inputType] !== undefined) {
+            return copyHandlers[inputType](input);
+        }
+
+        // Return the input since we don't know what it is.
+        return input;
+    };
+
+});
+
+/*
+    ./src/mutators/merge.js
+
+    Creates a merged object from the input
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    var acceptableForObj1 = [internal.types.object, internal.types.function, internal.types.array];
+    var acceptableForObj2 = [internal.types.object, internal.types.array];
+
+    // Merge two items together and return the result
+    var twoMerge = function (obj1, obj2, overwrite) {
+        if (obj1 === undefined || obj1 === null) { return obj2; };
+        if (obj2 === undefined || obj2 === null) { return obj1; };
+
+        var obj1Type = external.is(obj1).getType();
+        var obj2Type = external.is(obj2).getType();
+
+        var exceptional = undefined;
+        if (acceptableForObj1.indexOf(obj1Type) === -1 || acceptableForObj2.indexOf(obj2Type) === -1) {
+            exceptional = internal.InvalidParametersException("msngr.merge()", "Only objects, arrays or a single function followed by objects can be merged!");
+        }
+
+        if ([obj1Type, obj2Type].indexOf(internal.types.array) !== -1 && (obj1Type !== internal.types.array || obj2Type !== internal.types.array)) {
+            exceptional = internal.InvalidParametersException("msngr.merge()", "Arrays cannot be merged with objects or functions!");
+        }
+
+        if (exceptional !== undefined) {
+            if (overwrite === true) {
+                return obj2;
+            }
+            throw exceptional;
+        }
+
+        var result = obj1;
+
+        // If we're in the weird spot of getting only arrays then concat and return
+        // Seriously though, Mr or Mrs or Ms dev, just use Array.prototype.concat()!
+        if (obj1Type === internal.types.array && obj2Type === internal.types.array) {
+            return obj1.concat(obj2);
+        }
+
+        for (var key in obj2) {
+            if (obj2.hasOwnProperty(key)) {
+                var is = external.is(obj2[key]);
+                if (is.object) {
+                    result[key] = result[key] || { };
+                    result[key] = twoMerge(result[key], obj2[key]);
+                } else if (is.array) {
+                    result[key] = result[key] || [];
+                    result[key] = result[key].concat(obj2[key]);
+                } else {
+                    result[key] = obj2[key];
+                }
+            }
+        }
+
+        return result;
+    };
+
+    /*
+        Internal API
+    */
+    // Same as external merge except if an unmerge-able type is passed it
+    // it is simply overwritten with each subsequent value.
+    internal.merge = function () {
+        var inputs = Array.prototype.slice.call(arguments, 0);
+
+        if (inputs.length <= 1) {
+            return inputs[0];
+        }
+
+        var result = inputs.shift();
+        while (inputs.length > 0) {
+            result = twoMerge(result, inputs.shift(), true);
         }
         return result;
     };
 
-    return {
-        getType: function(obj) {
-            if (!external.exist(obj)) {
-                return "" + obj;
-            }
-            return Object.prototype.toString.call(obj);
-        },
-        isArguments: function(obj) {
-            return (external.getType(obj) === "[object Arguments]");
-        },
-        areArguments: function() {
-            return internal.reiterativeValidation(external.isArguments, external.argumentsToArray(arguments));
-        },
-        isNullOrUndefined: function(obj) {
-            return (obj === undefined || obj === null);
-        },
-        exist: function(obj) {
-            return !external.isNullOrUndefined(obj);
-        },
-        exists: function() {
-            return internal.reiterativeValidation(external.exist, external.argumentsToArray(arguments));
-        },
-        isString: function(str) {
-            return (external.getType(str) === "[object String]");
-        },
-        areStrings: function() {
-            return internal.reiterativeValidation(external.isString, external.argumentsToArray(arguments));
-        },
-        isDate: function(obj) {
-            return (external.getType(obj) === "[object Date]");
-        },
-        areDates: function() {
-            return internal.reiterativeValidation(external.isDate, external.argumentsToArray(arguments));
-        },
-        isArray: function(obj) {
-            return (external.getType(obj) === "[object Array]");
-        },
-        areArrays: function() {
-            return internal.reiterativeValidation(external.isArray, external.argumentsToArray(arguments));
-        },
-        isNumber: function(obj) {
-            return (external.getType(obj) === "[object Number]");
-        },
-        areNumbers: function() {
-            return internal.reiterativeValidation(external.isNumber, external.argumentsToArray(arguments));
-        },
-        isObject: function(obj) {
-            return (external.getType(obj) === "[object Object]");
-        },
-        areObjects: function() {
-            return internal.reiterativeValidation(external.isObject, external.argumentsToArray(arguments));
-        },
-        isFunction: function(func) {
-            return (external.getType(func) === "[object Function]");
-        },
-        areFunctions: function() {
-            return internal.reiterativeValidation(external.isFunction, external.argumentsToArray(arguments));
-        },
-        isEmptyString: function(str) {
-            var isStr = external.isString(str);
-            if (str === undefined || str === null || (isStr && str.toString().trim().length === 0)) {
-                return true;
-            }
-            return false;
-        },
-        areEmptyStrings: function() {
-            return internal.reiterativeValidation(external.isEmptyString, external.argumentsToArray(arguments));
+    /*
+        External API
+    */
+
+    // Takes N number of inputs and merges them together
+    // The next parameter always wins over the previous one
+    external.merge = function () {
+        var inputs = Array.prototype.slice.call(arguments, 0);
+
+        if (inputs.length <= 1) {
+            return inputs[0];
         }
+
+        var result = inputs.shift();
+        while (inputs.length > 0) {
+            result = twoMerge(result, inputs.shift());
+        }
+
+        return result;
+    };
+
+});
+
+/*
+    ./src/mutators/safe.js
+
+    Provides a safe way to access objects and functions
+*/
+
+msngr.extend(function (external, internal) {
+    "use strict";
+
+    /*
+        msngr.safe() accepts 2 required parameters and 1 optional.
+
+        obj -> the object to inspect.
+        path -> the json path to a specific property separated by dots; note that this will fail if an object key actually contains a dot.
+        def (optional) -> the default value to return should the requested property not exist.
+    */
+    external.safe = function (obj, path, def) {
+        if (!external.is(obj).object || !external.is(path).string) {
+            throw internal.InvalidParametersException("msngr.safe");
+        }
+
+        var props = path.split(".");
+        var position = obj, prop = undefined;
+        while (prop = props.shift()) {
+            position = position[prop];
+            if (position === undefined) {
+                break;
+            }
+        }
+
+        return (external.is(position).there) ? position : def;
+    };
+
+});
+
+/*
+    ./src/messaging/executer.js
+
+    Executer provides asynchronous execution of indexed methods
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    internal.executer = function (methods) {
+        // Support passing in just methods
+        for (var i = 0; i < methods.length; ++i) {
+            if (external.is(methods[i]).function) {
+                methods[i] = {
+                    method: methods[i]
+                };
+            }
+        }
+
+        var exec = function (method, params, ctx, done) {
+            var isParams = external.is(params);
+            external.immediate(function () {
+                var asyncFlag = false;
+                var asyncFunc = function () {
+                    asyncFlag = true;
+                    return function (result) {
+                        done.apply(ctx, [result]);
+                    };
+                }
+
+                if (!isParams.array) {
+                    if (isParams.there) {
+                        params = [params];
+                    } else {
+                        params = [];
+                    }
+                }
+                params.push(asyncFunc);
+                var syncResult = method.apply(ctx || this, params);
+                if (asyncFlag !== true) {
+                    done.apply(ctx, [syncResult]);
+                }
+            });
+        };
+
+        return {
+            parallel: function (done) {
+                var isDone = external.is(done);
+                var results = [];
+                var executed = 0;
+
+                if (methods.length === 0 && isDone.there) {
+                    return done.apply(null, [ [] ]);
+                }
+
+                for (var i = 0; i < methods.length; ++i) {
+                    var method = methods[i].method;
+                    var params = methods[i].params;
+                    var context = methods[i].context;
+
+                    (function (m, p, c) {
+                        exec(m, p, c, function(result) {
+                            if (external.is(result).there) {
+                                results.push(result);
+                            }
+
+                            ++executed;
+
+                            if (executed === methods.length && isDone.there) {
+                                done.apply((c || null), [results]);
+                            }
+                        });
+                    }(method, params, context));
+                }
+            },
+            series: function (done) {
+                var isDone = external.is(done);
+                var results = [];
+
+                if (methods.length === 0 && isDone.there) {
+                    return done.apply(null, [ [] ]);
+                }
+
+                var again = function () {
+                    var method = methods.shift();
+                    (function (m, p, c) {
+                        exec(m, p, c, function (result) {
+                            if (external.is(result).there) {
+                                results.push(result);
+                            }
+
+                            if (methods.length === 0 && isDone.there) {
+                                done.apply((c || null), [results]);
+                            } else {
+                                again();
+                            }
+                        });
+                    }(method.method, method.params, method.context));
+                };
+                again();
+            }
+        };
     };
 }));
 
-msngr.extend((function(external, internal) {
+/*
+    ./src/messaging/memory.js
+
+    An indexer for message objects.
+*/
+
+msngr.extend((function (external, internal) {
     "use strict";
 
-    internal.objects = internal.objects || {};
-    internal.objects.mache = function (opts) {
+    // Wait, why are you re-implementing the functionality of msngr.is().there?
+    // Listen there boyscout. The memory indexer needs to be fast. Like very fast.
+    // So this simplifies and imlpements only what we need. This is slightly faster.
+    var exists = function (input) {
+        return (input !== undefined && input !== null);
+    };
+
+    // A more efficient element removal from an array in cases where the array is large
+    var removeFromArray = function(arr, value) {
+        var inx = arr.indexOf(value);
+        var endIndex = arr.length - 1;
+        if (inx !== endIndex) {
+            var temp = arr[endIndex];
+            arr[endIndex] = arr[inx];
+            arr[inx] = temp;
+        }
+        arr.pop();
+    };
+
+    internal.memory = function () {
+
+        // Index for id to message objects
+        var id_to_message = {};
+
+        // Direct index (no partials) for message
+        var index = { };
+
+        // Message index count
+        var index_count = 0;
+
+        // Memory indexer API
+        var mem = {
+            index: function(message) {
+                if (exists(message) && exists(message.topic)) {
+                    var id = external.id();
+                    id_to_message[id] = external.copy(message);
+
+                    if (!exists(index[message.topic])) {
+                        index[message.topic] = {
+                            ids: [],
+                            category: { }
+                        };
+                    }
+
+                    if (!exists(index[message.topic].category[message.category])) {
+                        index[message.topic].category[message.category] = {
+                            ids: [],
+                            subcategory: { }
+                        }
+                    }
+
+                    if (!exists(index[message.topic].category[message.category].subcategory[message.subcategory])) {
+                        index[message.topic].category[message.category].subcategory[message.subcategory] = {
+                            ids: []
+                        }
+                    }
+
+
+                    if (!exists(message.category) && !exists(message.subcategory)) {
+                        index[message.topic].ids.push(id);
+                    }
+
+                    if (exists(message.category) && !exists(message.subcategory)) {
+                        index[message.topic].category[message.category].ids.push(id);
+                    }
+
+                    if (exists(message.category) && exists(message.subcategory)) {
+                        index[message.topic].category[message.category].subcategory[message.subcategory].ids.push(id);
+                    }
+
+                    index_count++;
+
+                    return id;
+                }
+                return undefined;
+            },
+            getById: function (id) {
+                return id_to_message[id];
+            },
+            delete: function(id) {
+                if (exists(id) && exists(id_to_message[id])) {
+                    var message = id_to_message[id];
+
+                    removeFromArray(index[message.topic].ids, id);
+                    removeFromArray(index[message.topic].category[message.category].ids, id);
+                    removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].ids, id);
+
+                    delete id_to_message[id];
+                    index_count--;
+
+                    return true;
+                }
+                return false;
+            },
+            query: function(message) {
+                var result = [];
+                if (exists(message) && exists(message.topic) && exists(index[message.topic])) {
+                    var indexTopic = index[message.topic];
+                    var indexTopicCategory = ((indexTopic || { }).category || { })[message.category];
+                    var indexTopicCategorySubcategory = ((indexTopicCategory || { }).subcategory || { })[message.subcategory];
+
+                    result = result.concat(indexTopic.ids || []);
+                    result = result.concat((indexTopicCategory || { }).ids || []);
+                    result = result.concat((indexTopicCategorySubcategory || { }).ids || []);
+                }
+
+                return external.deDupeArray(result);
+            },
+            clear: function() {
+                // Index for id to message objects
+                id_to_message = {};
+
+                // Direct index (no partials) for message
+                index = { };
+
+                index_count = 0;
+
+                return true;
+            }
+        };
+
+        Object.defineProperty(mem, "count", {
+            get: function() {
+                return index_count;
+            }
+        });
+
+        return mem;
+    };
+}));
+
+/*
+    ./messaging/message.js
+
+    The primary object of msngr; handles all message sending, receiving and binding.
+*/
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    var messageIndex = internal.memory();
+    var payloadIndex = internal.memory();
+
+    var handlers = {};
+    var handlerCount = 0;
+
+    var payloads = {};
+    var payloadCount = 0;
+
+    /*
+        Internal APIs
+    */
+    Object.defineProperty(internal, "handlerCount", {
+        get: function() {
+            return handlerCount;
+        }
+    });
+
+    Object.defineProperty(internal, "payloadCount", {
+        get: function() {
+            return payloadCount;
+        }
+    });
+
+    internal.reset = function() {
+        handlers = {};
+        handlerCount = 0;
+        messageIndex.clear();
+        payloadIndex.clear();
+        payloads = {};
+        payloadCount = 0;
+    };
+
+    /*
+        Private APIs
+    */
+    var fetchPersistedPayload = function (msg) {
+        var ids = payloadIndex.query(msg);
+
+        if (ids.length === 0) {
+            return undefined;
+        }
+
+        var payload = payloads[ids[0]];
+
+        if (ids.length > 1) {
+            for (var i = 1; i < ids.length; ++i) {
+                payload = external.merge(innerPay, fpay);
+            }
+        }
+
+        return payload;
+    };
+
+    var explicitEmit = function (msgOrIds, middlewares, payload, callback) {
+
+        // Execute middlewares if any
+        internal.executeMiddlewares(middlewares, payload, function (newPayload) {
+            var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
+
+            if (ids.length > 0) {
+                var methods = [];
+                var toDrop = [];
+                for (var i = 0; i < ids.length; ++i) {
+                    var msg = (external.is(msgOrIds).object) ? external.copy(msgOrIds) : external.copy(messageIndex.query(ids[i]));
+                    var obj = handlers[ids[i]];
+                    methods.push({
+                        method: obj.handler,
+                        params: [newPayload, msg]
+                    });
+
+                    if (obj.once === true) {
+                        toDrop.push({
+                            msg: msg,
+                            handler: obj.handler
+                        });
+                    }
+                }
+
+                var execs = internal.executer(methods);
+
+                for (var i = 0; i < toDrop.length; ++i) {
+                    external(toDrop[i].msg).drop(toDrop[i].handler);
+                }
+
+                execs.parallel(callback);
+            }
+        });
+    };
+
+    /*
+        msngr() / msngr.message() returns a set of chainable methods for handling messaging
+    */
+    external.message = function (topic, category, subcategory) {
+        var isTopic = external.is(topic);
+        var isCategory = external.is(category);
+        var isSubcategory = external.is(subcategory);
+        if (!isTopic.there) {
+            throw internal.InvalidParametersException("msngr()");
+        }
+
+        if (!isTopic.object && !isTopic.string) {
+            throw internal.InvalidParametersException("msngr()");
+        }
+
+        if (isTopic.empty) {
+            throw internal.InvalidParametersException("msngr()");
+        }
+
+        var msg;
+        if (isTopic.object) {
+            msg = external.copy(topic);
+        } else {
+            msg = {};
+            msg.topic = topic;
+
+            if (!isCategory.empty && isCategory.string) {
+                msg.category = category;
+            }
+
+            if (!isSubcategory.empty && isSubcategory.string) {
+                msg.subcategory = subcategory;
+            }
+        }
+
+        // Normalize message to lowercase
+        for (var prop in msg) {
+            if (msg.hasOwnProperty(prop)) {
+                msg[prop] = msg[prop].toLowerCase();
+            }
+        }
+
+        var uses = [];
+
+        var msgObj = {
+            use: function (middleware) {
+                if (!external.is(middleware).empty) {
+                    uses.push(middleware.toLowerCase());
+                }
+
+                return msgObj;
+            },
+            emit: function (payload, callback) {
+                var isPayload = external.is(payload);
+                if (isPayload.function) {
+                    callback = payload;
+                    payload = undefined;
+                }
+
+                explicitEmit(msg, uses, payload, callback);
+
+                return msgObj;
+            },
+            persist: function (payload) {
+                if (payload === undefined) {
+                    payload = null;
+                }
+
+                var ids = payloadIndex.query(msg);
+                if (ids.length === 0) {
+                    var id = payloadIndex.index(msg);
+                    payloads[id] = payload;
+                    ids = [id];
+                } else {
+                    for (var i = 0; i < ids.length; ++i) {
+                        payloads[ids[i]] = external.merge(payload, payloads[ids[i]]);
+                    }
+                }
+                ++payloadCount;
+
+                return msgObj.emit(fetchPersistedPayload(msg));
+            },
+            cease: function() {
+                var ids = payloadIndex.query(msg);
+
+                for (var i = 0; i < ids.length; ++i) {
+                    delete payloads[ids[i]];
+                    --payloadCount;
+                }
+
+                return msgObj;
+            },
+            on: function(handler) {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
+                    handler: handler,
+                    context: (msg.context || this),
+                    once: false
+                };
+                handlerCount++;
+
+                var payload = fetchPersistedPayload(msg);
+                if (payload !== undefined) {
+                    explicitEmit([id], uses, payload, undefined);
+                }
+
+                return msgObj;
+            },
+            once: function(handler) {
+                var id = messageIndex.index(msg);
+                handlers[id] = {
+                    handler: handler,
+                    context: (msg.context || this),
+                    once: true
+                };
+                handlerCount++;
+
+                var payload = fetchPersistedPayload(msg);
+                if (payload !== undefined) {
+                    explicitEmit([id], uses, payload, undefined);
+                }
+
+                return msgObj;
+            },
+            drop: function(handler) {
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        if (handlers[id].handler === handler) {
+                            delete handlers[id];
+                            handlerCount--;
+
+                            messageIndex.delete(id);
+                        }
+                    }
+                }
+
+                return msgObj;
+            },
+            dropAll: function() {
+                var ids = messageIndex.query(msg);
+                if (ids.length > 0) {
+                    for (var i = 0; i < ids.length; ++i) {
+                        var id = ids[i];
+                        delete handlers[id];
+                        handlerCount--;
+
+                        messageIndex.delete(id);
+                    }
+                }
+
+                return msgObj;
+            }
+        };
+
+        // Expose the raw message object itself via a message property.
+        // Do not allow modification.
+        Object.defineProperty(msgObj, "message", {
+            get: function() {
+                return msg;
+            }
+        });
+
+        Object.defineProperty(msgObj, "topic", {
+            get: function() {
+                return msg.topic;
+            }
+        });
+
+        Object.defineProperty(msgObj, "category", {
+            get: function() {
+                return msg.category;
+            }
+        });
+
+        Object.defineProperty(msgObj, "subcategory", {
+            get: function() {
+                return msg.subcategory;
+            }
+        });
+
+        // Setup a property to get the handlers count
+        Object.defineProperty(msgObj, "handlers", {
+            get: function() {
+                return messageIndex.query(msg).length;
+            }
+        });
+
+        return msgObj;
+    };
+}));
+
+/*
+    ./src/messaging/middleware.js
+
+    Supports executing middleware during message delegation
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    var middlewares = { };
+    var forced = [];
+
+    /*
+        Internal APIs
+    */
+    internal.getMiddlewares = function (uses, payload) {
+        var results = [];
+        var keys = (uses || []).concat(forced);
+        for (var i = 0; i < keys.length; ++i) {
+            if (middlewares[keys[i]] !== undefined) {
+                results.push({
+                    method: middlewares[keys[i]],
+                    params: payload
+                });
+            }
+        }
+
+        return results;
+    };
+
+    internal.executeMiddlewares = function (uses, payload, callback) {
+        var middles = internal.getMiddlewares(uses, payload);
+
+        var execute = internal.executer(middles).series(function (result) {
+            return callback(internal.merge.apply(this, [payload].concat(result)));
+        });
+    };
+
+    /*
+        msngr.middleware(key, fn, force) provides a way to execute code during each message delegation
+
+        key -> identifier for the middleware (think unique name or id).
+        fn -> the function to execute for the middleware.
+        force (optional) -> a boolean to force whether the middleware is always executed or only when explicitly specified.
+    */
+    external.middleware = function (key, fn, force) {
+        var isKey = external.is(key);
+        var isFn = external.is(fn);
+        if (!isKey.there || !isKey.string || isKey.empty || !isFn.there || !isFn.function) {
+            throw internal.InvalidParametersException("msngr.middleware()");
+        }
+
+        if (external.is(middlewares[key]).there) {
+            throw internal.DuplicateException("msngr.middleware()");
+        }
+
+        var normalizedKey = key.toLowerCase();
+        middlewares[normalizedKey] = fn;
+        if (force === true) {
+            forced.push(normalizedKey);
+        }
+    };
+
+    /*
+        msngr.unmiddleware(key) removes a middleware
+
+        key -> identifier for the middleware to remove.
+    */
+    external.unmiddleware = function (key) {
+        var isKey = external.is(key);
+        if (!isKey.there || !isKey.string || isKey.empty) {
+            throw internal.InvalidParametersException("msngr.unmiddleware()");
+        }
+
+        var normalizedKey = key.toLowerCase();
+        var forcedInx = forced.indexOf(normalizedKey);
+        if (forcedInx !== -1) {
+            forced.splice(forcedInx, 1);
+        }
+
+        if (middlewares[normalizedKey] !== undefined) {
+            delete middlewares[normalizedKey];
+        }
+    };
+
+}));
+
+/*
+    ./src/mache/mache.js
+
+    A merge cache
+*/
+
+msngr.extend((function (external, internal) {
+    "use strict";
+
+    external.mache = function (opts) {
         opts = opts || { };
         var meta = {
             events: {
@@ -303,13 +1310,6 @@ msngr.extend((function(external, internal) {
         var transRemovals = undefined;
         var transacting = false;
 
-        var objMerge = function (input1, input2) {
-            if (external.isObject(input1) && external.isObject(input2)) {
-                return external.merge(input1, input2);
-            }
-            return input2;
-        };
-
         var normalGet = function (id) {
             if (data[id] === undefined) {
                 return undefined;
@@ -326,7 +1326,7 @@ msngr.extend((function(external, internal) {
                 data[id] = [];
             }
 
-            data[id].push(objMerge(api.get(id), external.copy(value)));
+            data[id].push(internal.merge(external.copy(api.get(id)), external.copy(value)));
             flatCache[id] = api.get(id);
 
             if (data[id].length > meta.revisions.toKeep) {
@@ -334,7 +1334,7 @@ msngr.extend((function(external, internal) {
             }
 
             if (meta.events.onChange.emit) {
-                var msg = internal.objects.message(meta.events.onChange.topic, meta.events.onChange.category, id);
+                var msg = external.message(meta.events.onChange.topic, meta.events.onChange.category, id);
                 msg.emit({
                     id: id,
                     oldValue: data[id][data[id].length - 2],
@@ -346,7 +1346,7 @@ msngr.extend((function(external, internal) {
         };
 
         var transSet = function (id, value) {
-            transData[id] = objMerge((transData[id] || normalGet(id)), external.copy(value));
+            transData[id] = internal.merge((transData[id] || normalGet(id)), external.copy(value));
             return true;
         };
 
@@ -386,6 +1386,7 @@ msngr.extend((function(external, internal) {
 
             data[id].pop();
             flatCache[id] = api.get(id);
+            
             return true;
         };
 
@@ -395,7 +1396,7 @@ msngr.extend((function(external, internal) {
             },
             getDeep: function (id, property, defaultValue) {
                 var obj = api.get(id);
-                if (obj === undefined || external.isEmptyString(property)) {
+                if (obj === undefined || external.is(property).empty) {
                     return defaultValue;
                 }
 
@@ -408,7 +1409,7 @@ msngr.extend((function(external, internal) {
                     currentObj = currentObj[keys[i]];
                 }
 
-                return (external.exist(currentObj)) ? currentObj : defaultValue;
+                return (external.is(currentObj).there) ? currentObj : defaultValue;
             },
             set: function (id, value) {
                 return (transacting) ? transSet(id, value) : normalSet(id, value);
@@ -471,7 +1472,7 @@ msngr.extend((function(external, internal) {
 
         Object.defineProperty(api, "data", {
             get: function () {
-                return (transacting) ? objMerge(flatCache, transData) : flatCache;
+                return (transacting) ? internal.merge(flatCache, transData) : flatCache;
             }
         });
 
@@ -479,951 +1480,22 @@ msngr.extend((function(external, internal) {
     };
 
     // Provide a mache instance for msngr.config.
-    external.config = internal.objects.mache();
-
-    return {
-        mache: internal.objects.mache
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.InvalidParametersException = function(str, reason) {
-        var m = {
-            name: "InvalidParametersException",
-            severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
-        };
-        if (!external.isEmptyString(reason)) {
-            m.message = m.message + " " + reason;
-        }
-        return m;
-    };
-
-    internal.ReservedKeywordsException = function(keyword) {
-        return {
-            name: "ReservedKeywordsException",
-            severity: "unrecoverable",
-            message: ("Reserved keyword {keyword} supplied as action.".replace("{keyword}", keyword))
-        };
-    };
-
-    internal.MangledException = function(variable, method) {
-        return {
-            name: "MangledException",
-            severity: "unrecoverable",
-            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
-        };
-    };
-
-    // This is an internal extension; do not export explicitly.
-    return {};
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    return {
-        argumentsToArray: function(args) {
-            if (external.isArray(args)) {
-                return args;
-            }
-            if (external.isArguments(args)) {
-                return Array.prototype.slice.call(args, 0);
-            }
-            return [args];
-        }
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    return {
-        isHtmlElement: function(obj) {
-            var t = this.getType(obj);
-            return (t.indexOf("[object HTML") === 0) || (t.indexOf("[object global]") === 0);
-        },
-        isNodeList: function(obj) {
-            return (this.getType(obj) === "[object NodeList]");
-        },
-        findElement: function(element, root) {
-            var elms = external.findElements(element, root);
-            if (elms !== undefined && elms.length > 0) {
-                return elms[0];
-            }
-
-            return elms;
-        },
-        findElements: function(selector, root) {
-            var elm;
-            if (external.isHtmlElement(selector)) {
-                elm = selector;
-            }
-
-            if (elm === undefined && external.isString(selector)) {
-                var doc = root || document;
-                var result = external.querySelectorAllWithEq(selector, doc);
-                if (result !== null) {
-                    elm = result;
-                }
-            }
-
-            return elm;
-        },
-        getDomPath: function(element) {
-            var node = external.findElement(element);
-            // User gave us jack shit. What the hell, user? Return undefined!
-            if (node === undefined) {
-                return undefined;
-            }
-
-            // There is an id on a node which, by definition, must be unique. So return that!
-            if (!external.isEmptyString(node.id)) {
-                return "#" + node.id;
-            }
-
-            var path;
-            var currentTag;
-            var next = function(elm) {
-                var parent = elm.parentNode;
-                if (external.exist(parent)) {
-                    currentTag = elm.tagName;
-                    if (parent.childNodes.length > 1) {
-                        for (var i = 0; i < parent.childNodes.length; ++i) {
-                            if (parent.childNodes[i] === elm) {
-                                // Found it!
-                                currentTag = currentTag + ":eq(" + i + ")";
-                                break;
-                            }
-                        }
-                    }
-
-                    if (external.isEmptyString(path)) {
-                        path = currentTag;
-                    } else {
-                        path = currentTag + " > " + path;
-                    }
-
-                    if (external.exist(parent.parentNode)) {
-                        next(parent);
-                    }
-                }
-            };
-
-            next(element);
-            if (external.isEmptyString(path)) {
-                node.id = external.uuid();
-                path = "#" + node.id;
-            }
-
-            return path;
-        },
-        querySelectorAllWithEq: function(selector, root) {
-            if (selector === undefined) {
-                return null;
-            }
-            var doc = root || document;
-            var queue = [];
-            var process = function(input) {
-                if (input.indexOf(":eq(") === -1) {
-                    return undefined;
-                }
-
-                var eqlLoc = input.indexOf(":eq(");
-                var sel = input.substring(0, eqlLoc);
-                var ind = input.substring((eqlLoc + 4), input.indexOf(")", eqlLoc));
-                selector = input.substring(input.indexOf(")", eqlLoc) + 1, input.length).trim();
-
-                if (sel.charAt(0) === ">") {
-                    sel = sel.substring(1, sel.length);
-                }
-
-                if (selector.charAt(0) === ">") {
-                    selector = selector.substring(1, selector.length);
-                }
-
-                queue.push({
-                    selector: sel,
-                    index: parseInt(ind, 10)
-                });
-            }
-            while (selector.indexOf(":eq") !== -1) {
-                process(selector);
-            }
-
-            var result;
-            while (queue.length > 0) {
-                var item = queue.shift();
-                result = (result || doc).querySelectorAll(item.selector)[item.index];
-            }
-
-            if (selector.trim().length > 0) {
-                return (result || doc).querySelectorAll(selector);
-            }
-            return [result];
-        },
-        querySelectorWithEq: function(selector, root) {
-            return external.querySelectorAllWithEq(selector, root)[0];
-        }
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    // This chunk of code is only for the browser as a setImmediate workaround
-    if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-        external.config.set("msngr.immediate", {
-            channel: "__msngr_immediate"
-        });
-
-        var immediateQueue = [];
-
-        window.addEventListener("message", function(event) {
-            if (event.source === window && event.data === external.config.get("msngr.immediate").channel) {
-                event.stopPropagation();
-                if (immediateQueue.length > 0) {
-                    immediateQueue.shift()();
-                }
-            }
-        }, true);
-    }
-
-    var nowPerformance = function() {
-        return performance.now();
-    };
-
-    var nowNode = function() {
-        return (process.hrtime()[1] / 1000000);
-    };
-
-    var nowLegacy = function() {
-        return Date.now();
-    };
-
-    var nowExec = undefined;
-    var nowExecDebugLabel = "";
-    var lastNow = undefined;
-    var isBrowserCached;
-    var immediateFn;
-    var atomicCount = 0;
-    var seed = "Mxx".replace(/[x]/g, function() {
-        return Math.floor(Math.random() * 100);
-    });
-
-    return {
-        id: function() {
-            ++atomicCount;
-            return (seed + atomicCount);
-        },
-        uuid: function() {
-            var d = external.now();
-            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                var r = (d + Math.random() * 16) % 16 | 0;
-                d = Math.floor(d / 16);
-                return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-            });
-            return uuid;
-        },
-        now: function(noDuplicate) {
-            if (nowExec === undefined) {
-                if (typeof performance !== "undefined") {
-                    nowExec = nowPerformance;
-                    nowExecDebugLabel = "performance";
-                } else if (typeof process !== "undefined") {
-                    nowExec = nowNode;
-                    nowExecDebugLabel = "node";
-                } else {
-                    nowExec = nowLegacy;
-                    nowExecDebugLabel = "legacy";
-                }
-            }
-            var now = nowExec();
-            if (noDuplicate === true && lastNow === now) {
-                return external.now(noDuplicate);
-            }
-            lastNow = now;
-            return now;
-        },
-        removeFromArray: function(arr, value) {
-            var inx = arr.indexOf(value);
-            var endIndex = arr.length - 1;
-            if (inx !== endIndex) {
-                var temp = arr[endIndex];
-                arr[endIndex] = arr[inx];
-                arr[inx] = temp;
-            }
-            arr.pop();
-        },
-        deDupeArray: function(arr) {
-            var hash = { };
-            var result = [];
-            var arrLength = arr.length;
-            for (var i = 0; i < arrLength; ++i) {
-                if (hash[arr[i]] === undefined) {
-                    hash[arr[i]] = true;
-                    result.push(arr[i]);
-                }
-            }
-
-            return result;
-        },
-        isBrowser: function() {
-            if (isBrowserCached === undefined) {
-                isBrowserCached = (typeof XMLHttpRequest !== "undefined");
-            }
-            return isBrowserCached;
-        },
-        immediate: function(fn) {
-            if (immediateFn === undefined) {
-                if (typeof setImmediate !== "undefined") {
-                    immediateFn = setImmediate;
-                } else if (typeof window !== "undefined" && typeof window.postMessage !== "undefined") {
-                    immediateFn = function(f) {
-                        immediateQueue.push(f);
-                        window.postMessage(external.config.get("msngr.immediate").channel, "*");
-                    };
-                } else {
-                    immediateFn = function(f) {
-                        setTimeout(f, 0);
-                    };
-                }
-            }
-            immediateFn(fn);
-        },
-        asyncify: function(fn) {
-            if (external.isFunction(fn)) {
-                fn.async = function () {
-                    var args = [].slice.call(arguments);
-                    var callback = args.pop();
-                    if (external.isFunction(callback)) {
-                        (function (a, c) {
-                            external.immediate(function () {
-                                try {
-                                    c.apply(null, [null, fn.apply(null, a)]);
-                                } catch (e) {
-                                    c.apply(null, [e, null]);
-                                }
-                            });
-                        }(args, callback));
-                    }
-                };
-            }
-
-            return fn;
-        }
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.objects = internal.objects || {};
-    internal.objects.executer = function(methods) {
-
-        if (!external.exist(methods) || !external.isArray(methods)) {
-            throw internal.InvalidParametersException("executor");
-        }
-
-        // Support passing in just methods
-        for (var i = 0; i < methods.length; ++i) {
-            if (external.isFunction(methods[i])) {
-                methods[i] = {
-                    method: methods[i]
-                };
-            }
-        }
-
-        var exec = function(method, params, ctx, done) {
-            external.immediate(function() {
-                var asyncFlag = false;
-                var asyncFunc = function() {
-                    asyncFlag = true;
-                    return function(result) {
-                        done.apply(ctx, [result]);
-                    };
-                }
-
-                if (!external.isArray(params)) {
-                    if (external.exist(params)) {
-                        params = [params];
-                    } else {
-                        params = [];
-                    }
-                }
-                params.push(asyncFunc);
-                var syncResult = method.apply(ctx || this, params);
-                if (asyncFlag !== true) {
-                    done.apply(ctx, [syncResult]);
-                }
-            });
-        };
-
-        return {
-            parallel: function(done) {
-                var results = [];
-                var executed = 0;
-
-                if (methods.length === 0 && external.exist(done)) {
-                    return done.apply(context, [
-                        []
-                    ]);
-                }
-
-                for (var i = 0; i < methods.length; ++i) {
-                    var method = methods[i].method;
-                    var params = methods[i].params;
-                    var context = methods[i].context;
-
-                    (function(m, p, c) {
-                        exec(m, p, c, function(result) {
-                            if (external.exist(result)) {
-                                results.push(result);
-                            }
-
-                            ++executed;
-
-                            if (executed === methods.length && external.exist(done)) {
-                                done.apply(context, [results]);
-                            }
-                        });
-                    }(method, params, context));
-                }
-            }
-        };
-    };
-
-    // This is an internal extension; do not export explicitly.
-    return {
-        executer: internal.objects.executer
-    };
-}));
-
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.objects = internal.objects || {};
-    internal.objects.memory = function() {
-
-        // Index for id to message objects
-        var id_to_message = {};
-
-        // Direct index (no partials) for message
-        var index = { };
-
-        // Message index count
-        var index_count = 0;
-
-        var mem = {
-            index: function(message) {
-                if (external.exist(message) && external.exist(message.topic)) {
-                    var id = external.id();
-                    id_to_message[id] = external.copy(message);
-
-                    if (!external.exist(index[message.topic])) {
-                        index[message.topic] = {
-                            ids: [],
-                            category: { }
-                        };
-                    }
-
-                    if (!external.exist(index[message.topic].category[message.category])) {
-                        index[message.topic].category[message.category] = {
-                            ids: [],
-                            subcategory: { }
-                        }
-                    }
-
-                    if (!external.exist(index[message.topic].category[message.category].subcategory[message.subcategory])) {
-                        index[message.topic].category[message.category].subcategory[message.subcategory] = {
-                            ids: []
-                        }
-                    }
-
-
-                    if (!external.exist(message.category) && !external.exist(message.subcategory)) {
-                        index[message.topic].ids.push(id);
-                    }
-
-                    if (external.exist(message.category) && !external.exist(message.subcategory)) {
-                        index[message.topic].category[message.category].ids.push(id);
-                    }
-
-                    if (external.exist(message.category) && external.exist(message.subcategory)) {
-                        index[message.topic].category[message.category].subcategory[message.subcategory].ids.push(id);
-                    }
-
-                    index_count++;
-
-                    return id;
-                }
-                return undefined;
-            },
-            delete: function(id) {
-                if (external.exist(id) && external.exist(id_to_message[id])) {
-                    var message = id_to_message[id];
-
-                    external.removeFromArray(index[message.topic].ids, id);
-                    external.removeFromArray(index[message.topic].category[message.category].ids, id);
-                    external.removeFromArray(index[message.topic].category[message.category].subcategory[message.subcategory].ids, id);
-
-                    delete id_to_message[id];
-                    index_count--;
-
-                    return true;
-                }
-                return false;
-            },
-            query: function(message) {
-                var result = [];
-                if (external.exist(message) && external.exist(message.topic) && external.exist(index[message.topic])) {
-                    var indexTopic = index[message.topic];
-                    var indexTopicCategory = ((indexTopic || { }).category || { })[message.category];
-                    var indexTopicCategorySubcategory = ((indexTopicCategory || { }).subcategory || { })[message.subcategory];
-
-                    result = result.concat(indexTopic.ids || []);
-                    result = result.concat((indexTopicCategory || { }).ids || []);
-                    result = result.concat((indexTopicCategorySubcategory || { }).ids || []);
-                }
-
-                return external.deDupeArray(result);
-            },
-            clear: function() {
-                // Index for id to message objects
-                id_to_message = {};
-
-                // Direct index (no partials) for message
-                index = { };
-
-                index_count = 0;
-
-                return true;
-            }
-        };
-
-        Object.defineProperty(mem, "count", {
-            get: function() {
-                return index_count;
-            }
-        });
-
-        return mem;
-    };
-
-    // This is an internal extension; do not export explicitly.
-    return {};
-}));
-
-/*
-    ./objects/message.js
-
-    The primary object of msngr; handles all message sending, receiving and binding.
-*/
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.objects = internal.objects || {};
-    internal.option = function(opt, handler) {
-        internal.option[opt] = handler;
-    };
-
-    var messageIndex = internal.objects.memory();
-    var payloadIndex = internal.objects.memory();
-
-    var handlers = {};
-    var handlerCount = 0;
-
-    var payloads = {};
-    var payloadCount = 0;
-
-    var boundDOMPaths = {};
-    var boundCount = 0;
-
-    Object.defineProperty(internal, "handlerCount", {
-        get: function() {
-            return handlerCount;
-        }
-    });
-
-    Object.defineProperty(internal, "boundCount", {
-        get: function() {
-            return boundCount;
-        }
-    });
-
-    Object.defineProperty(internal, "payloadCount", {
-        get: function() {
-            return payloadCount;
-        }
-    });
-
-    internal.reset = function() {
-        handlers = {};
-        boundDOMPaths = {};
-        handlerCount = 0;
-        boundCount = 0;
-        messageIndex.clear();
-        payloadIndex.clear();
-        payloads = {};
-        payloadCount = 0;
-    };
-
-    internal.processOpts = function(opts, message, payload, callback) {
-        var optProcessors = [];
-        for (var key in opts) {
-            if (opts.hasOwnProperty(key) && external.exist(internal.option[key])) {
-                optProcessors.push({
-                    method: internal.option[key],
-                    params: [message, payload, opts]
-                });
-            }
-        }
-
-        // Short circuit for no options
-        if (optProcessors.length === 0) {
-            return callback.apply(this, [payload]);
-        }
-
-        // Long circuit to do stuff (du'h)
-        var execs = internal.objects.executer(optProcessors);
-
-        execs.parallel(function(results) {
-            var result = payload;
-            if (external.exist(results) && results.length > 0) {
-                for (var i = 0; i < results.length; ++i) {
-                    if (external.exist(results[i])) {
-                        result = external.merge(results[i], result);
-                    }
-                }
-            }
-            callback.apply(this, [result]);
-        });
-    };
-
-    internal.domListener = function(event) {
-        var node = this;
-        var path = external.getDomPath(node);
-
-        if (external.exist(boundDOMPaths[path])) {
-            if (external.exist(boundDOMPaths[path][event.type])) {
-                return boundDOMPaths[path][event.type].emit();
-            }
-        }
-    };
-
-    internal.objects.message = function(topic, category, subcategory) {
-        var msg = undefined;
-        if (!external.exist(topic)) {
-            throw internal.InvalidParametersException("msngr");
-        }
-
-        if (!external.isObject(topic) && !external.isString(topic)) {
-            throw internal.InvalidParametersException("msngr");
-        }
-
-        if (external.isEmptyString(topic)) {
-            throw internal.InvalidParametersException("msngr");
-        }
-
-        if (external.isObject(topic)) {
-            msg = external.copy(topic);
-        } else {
-            msg = {};
-            msg.topic = topic;
-
-            if (!external.isEmptyString(category)) {
-                msg.category = category;
-            }
-
-            if (!external.isEmptyString(subcategory)) {
-                msg.subcategory = subcategory;
-            }
-        }
-
-        // Normalize message to lowercase
-        msg.topic = (msg.topic) ? msg.topic.toLowerCase() : msg.topic;
-        msg.category = (msg.category) ? msg.category.toLowerCase() : msg.category;
-        msg.subcategory = (msg.subcategory) ? msg.subcategory.toLowerCase() : msg.subcategory;
-
-        var options = {};
-        var counts = {
-            emits: 0,
-            persists: 0,
-            options: 0,
-            ons: 0,
-            onces: 0,
-            binds: 0
-        };
-
-        var explicitEmit = function(payload, ids, callback) {
-            var ids = ids || messageIndex.query(msg) || [];
-
-            internal.processOpts(options, msg, payload, function(result) {
-                var methods = [];
-                var toDrop = [];
-                for (var i = 0; i < ids.length; ++i) {
-                    var obj = handlers[ids[i]];
-                    methods.push({
-                        method: obj.handler,
-                        params: [result, msg]
-                    });
-
-                    if (obj.once === true) {
-                        toDrop.push(obj.handler);
-                    }
-                }
-
-                var execs = internal.objects.executer(methods);
-
-                for (var i = 0; i < toDrop.length; ++i) {
-                    msgObj.drop(toDrop[i]);
-                }
-
-                execs.parallel(callback);
-
-            });
-        };
-
-        var fetchPersisted = function() {
-            var ids = payloadIndex.query(msg);
-
-            var fpay;
-
-            if (ids.length === 0) {
-                return undefined;
-            }
-
-            if (ids.length === 1) {
-                return payloads[ids[0]];
-            }
-
-            for (var i = 0; i < ids.length; ++i) {
-                fpay = external.extend(innerPay, fpay);
-            }
-
-            return fpay;
-        };
-
-        var msgObj = {
-            option: function(key, value) {
-                if (!external.exist(key) || !external.isString(key)) {
-                    throw internal.InvalidParametersException("option");
-                }
-
-                options[key] = value;
-                counts.options = counts.options + 1;
-
-                return msgObj;
-            },
-            emit: function(payload, callback) {
-                if (external.isFunction(payload)) {
-                    callback = payload;
-                    payload = undefined;
-                }
-                explicitEmit(payload, undefined, callback);
-                counts.emits = counts.emits + 1;
-
-                return msgObj;
-            },
-            persist: function(payload) {
-                if (payload === undefined) {
-                    payload = null;
-                }
-
-                var ids = payloadIndex.query(msg);
-                if (ids.length === 0) {
-                    var id = payloadIndex.index(msg);
-                    payloads[id] = payload;
-                    ids = [id];
-                } else {
-                    for (var i = 0; i < ids.length; ++i) {
-                        payloads[ids[i]] = external.merge(payload, payloads[ids[i]]);
-                    }
-                }
-
-                var fpay = fetchPersisted();
-
-                ++payloadCount;
-
-                counts.persists = counts.persists + 1;
-
-                return msgObj.emit(fpay);
-            },
-            cease: function() {
-                var ids = payloadIndex.query(msg);
-
-                for (var i = 0; i < ids.length; ++i) {
-                    delete payloads[ids[i]];
-                    --payloadCount;
-                }
-
-                return msgObj;
-            },
-            on: function(handler) {
-                var id = messageIndex.index(msg);
-                handlers[id] = {
-                    handler: handler,
-                    context: (msg.context || this),
-                    once: false
-                };
-                handlerCount++;
-
-                var payload = fetchPersisted();
-                if (payload !== undefined) {
-                    explicitEmit(payload, [id], undefined);
-                }
-                counts.ons = counts.ons + 1;
-
-                return msgObj;
-            },
-            once: function(handler) {
-                var id = messageIndex.index(msg);
-                handlers[id] = {
-                    handler: handler,
-                    context: (msg.context || this),
-                    once: true
-                };
-                handlerCount++;
-
-                var payload = fetchPersisted();
-                if (payload !== undefined) {
-                    explicitEmit(payload, [id], undefined);
-                }
-                counts.onces = counts.onces + 1;
-
-                return msgObj;
-            },
-            bind: function(element, event) {
-                var node = external.findElement(element);
-                var path = external.getDomPath(node);
-
-                if (!external.exist(boundDOMPaths[path])) {
-                    boundDOMPaths[path] = {};
-                }
-
-                boundDOMPaths[path][event] = msgObj;
-
-                node.addEventListener(event, internal.domListener);
-
-                ++boundCount;
-                counts.binds = counts.binds + 1;
-
-                return msgObj;
-            },
-            drop: function(handler) {
-                var ids = messageIndex.query(msg);
-                if (ids.length > 0) {
-                    for (var i = 0; i < ids.length; ++i) {
-                        var id = ids[i];
-                        if (handlers[id].handler === handler) {
-                            delete handlers[id];
-                            handlerCount--;
-
-                            messageIndex.delete(id);
-                        }
-                    }
-                }
-
-                return msgObj;
-            },
-            unbind: function(element, event) {
-                var node = external.findElement(element);
-                var path = external.getDomPath(node);
-
-                if (external.exist(boundDOMPaths[path])) {
-                    if (external.exist(boundDOMPaths[path][event])) {
-                        node.removeEventListener(event, internal.domListener);
-
-                        delete boundDOMPaths[path][event];
-
-                        --boundCount;
-                    }
-                }
-
-                return msgObj;
-            },
-            dropAll: function() {
-                var ids = messageIndex.query(msg);
-                if (ids.length > 0) {
-                    for (var i = 0; i < ids.length; ++i) {
-                        var id = ids[i];
-                        delete handlers[id];
-                        handlerCount--;
-
-                        messageIndex.delete(id);
-                    }
-                }
-
-                return msgObj;
-            }
-        };
-
-        // Expose the raw message object itself via a message property.
-        // Do not allow modification.
-        Object.defineProperty(msgObj, "message", {
-            get: function() {
-                return msg;
-            }
-        });
-
-        Object.defineProperty(msgObj, "topic", {
-            get: function() {
-                return msg.topic;
-            }
-        });
-
-        Object.defineProperty(msgObj, "category", {
-            get: function() {
-                return msg.category;
-            }
-        });
-
-        Object.defineProperty(msgObj, "subcategory", {
-            get: function() {
-                return msg.subcategory;
-            }
-        });
-
-        // Setup a property to get subscribers
-        Object.defineProperty(msgObj, "subscribers", {
-            get: function() {
-                return messageIndex.query(msg).length;
-            }
-        });
-
-        // If debug mode is enabled then let's expose the internal method hit counts.
-        // These counts are only good if a method is called and succeeds.
-        if (external.debug === true) {
-            Object.defineProperty(msgObj, "counts", {
-                get: function() {
-                    return counts;
-                }
-            });
-        }
-
-        return msgObj;
-    };
-
-    // This is an internal extension; do not export explicitly.
-    return {};
+    external.config = external.mache();
 }));
 
 msngr.extend((function(external, internal) {
     "use strict";
 
     // Setup constants
-    external.config.set("msngr.net", {
-        defaults: {
-            protocol: "http",
-            port: {
-                http: "80",
-                https: "443"
-            },
-            autoJson: true
-        }
-    });
+    var defaults = {
+        path: "/",
+        protocol: "http",
+        port: {
+            http: "80",
+            https: "443"
+        },
+        autoJson: true
+    };
 
     // This method handles requests when msngr is running within a semi-modern net browser
     var browser = function(server, options, callback) {
@@ -1434,7 +1506,7 @@ msngr.extend((function(external, internal) {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200 || xhr.status === 201) {
                         var obj;
-                        if (options.autoJson === true && this.getResponseHeader("content-type") === "application/json") {
+                        if (options.autoJson === true && (this.getResponseHeader("content-type") || "").toLowerCase() === "application/json") {
                             try {
                                 obj = JSON.parse(xhr.response);
                             } catch (ex) {
@@ -1443,13 +1515,17 @@ msngr.extend((function(external, internal) {
                                 obj = undefined;
                             }
                         }
-                        callback.apply(undefined, [null, (obj || xhr.response)]);
+                        if (external.is(callback).there) {
+                            callback.apply(undefined, [null, (obj || xhr.response)]);
+                        }
                     } else {
                         var errObj = {
                             status: xhr.status,
                             response: xhr.response
                         };
-                        callback.apply(undefined, [errObj, null]);
+                        if (external.is(callback).there) {
+                            callback.apply(undefined, [errObj, null]);
+                        }
                     }
                 }
             };
@@ -1462,8 +1538,8 @@ msngr.extend((function(external, internal) {
             }
 
             var datum;
-            if (external.exist(options.payload)) {
-                if (external.isObject(options.payload)) {
+            if (external.is(options.payload).there) {
+                if (external.is(options.payload).object) {
                     try {
                         datum = JSON.stringify(options.payload);
                     } catch (ex) {
@@ -1478,8 +1554,8 @@ msngr.extend((function(external, internal) {
                 }
             }
 
-            xhr.open(options.method, url);
-            if (external.exist(options.headers)) {
+            xhr.open(options.method, url, true);
+            if (external.is(options.headers).there) {
                 for (var key in options.headers) {
                     if (options.headers.hasOwnProperty(key)) {
                         xhr.setRequestHeader(key, options.headers[key]);
@@ -1488,7 +1564,9 @@ msngr.extend((function(external, internal) {
             }
             xhr.send(datum);
         } catch (ex) {
-            callback.apply(undefined, [ex, null]);
+            if (external.is(callback).there) {
+                callback.apply(undefined, [ex, null]);
+            }
         }
     };
 
@@ -1510,7 +1588,7 @@ msngr.extend((function(external, internal) {
 
             response.on("end", function() {
                 var obj;
-                if (options.autoJson === true && response.headers["content-type"] === "application/json") {
+                if (options.autoJson === true && (response.headers["content-type"] || "").toLowerCase() === "application/json") {
                     try {
                         obj = JSON.parse(body);
                     } catch (ex) {
@@ -1528,13 +1606,15 @@ msngr.extend((function(external, internal) {
                     };
                     obj = null;
                 }
-                callback.apply(undefined, [errObj, obj]);
+                if (external.is(callback).there) {
+                    callback.apply(undefined, [errObj, obj]);
+                }
             });
         });
 
-        if (external.exist(options.payload)) {
+        if (external.is(options.payload).there) {
             var datum;
-            if (external.isObject(options.payload)) {
+            if (external.is(options.payload).object) {
                 try {
                     datum = JSON.stringify(options.payload);
                 } catch (ex) {
@@ -1555,15 +1635,12 @@ msngr.extend((function(external, internal) {
     };
 
     var request = function(server, opts, callback) {
-        opts.path = opts.path || "/";
-        opts.autoJson = opts.autoJson || external.config.get("msngr.net").defaults.autoJson;
-
-        if (external.exist(opts.query)) {
-            if (external.isString(opts.query)) {
+        if (external.is(opts.query).there) {
+            if (external.is(opts.query).string) {
                 opts.queryString = opts.query;
             }
 
-            if (external.isObject(opts.query)) {
+            if (external.is(opts.query).object) {
                 opts.queryString = "?";
                 for (var key in opts.query) {
                     if (opts.query.hasOwnProperty(key)) {
@@ -1578,7 +1655,7 @@ msngr.extend((function(external, internal) {
 
         opts.path = opts.path + (opts.queryString || "");
 
-        if (external.isBrowser()) {
+        if (external.is.browser) {
             browser(server, opts, callback);
         } else {
             node(server, opts, callback);
@@ -1593,12 +1670,12 @@ msngr.extend((function(external, internal) {
         var invalid = false;
         var invalidReason;
 
-        if (external.isEmptyString(protocol)) {
+        if (external.is(protocol).empty) {
             invalid = true;
             invalidReason = "Protocol or host not provided";
         }
 
-        if (!invalid && !external.isEmptyString(protocol) && external.isEmptyString(host) && external.isEmptyString(port)) {
+        if (!invalid && !external.is(protocol).empty && external.is(host).empty && external.is(port).empty) {
             // Only one argument was provided; must be whole host.
             var split = protocol.split("://");
             if (split.length == 2) {
@@ -1607,7 +1684,7 @@ msngr.extend((function(external, internal) {
             } else {
                 // Must have omitted protocol.
                 server.host = protocol;
-                server.protocol = external.config.get("msngr.net").defaults.protocol;
+                server.protocol = defaults.protocol;
             }
 
             var lastColon = server.host.lastIndexOf(":");
@@ -1617,13 +1694,13 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
+                server.port = defaults.port[server.protocol];
             }
 
             handled = true;
         }
 
-        if (!invalid && !handled && !external.isEmptyString(protocol) && !external.isEmptyString(host) && external.isEmptyString(port)) {
+        if (!invalid && !handled && !external.is(protocol).empty && !external.is(host).empty && external.is(port).empty) {
             // Okay, protocol and host are provided. Figure out port!
             server.protocol = protocol;
             server.host = host;
@@ -1635,13 +1712,13 @@ msngr.extend((function(external, internal) {
                 server.host = server.host.substring(0, lastColon);
             } else {
                 // There ain't no port!
-                server.port = external.config.get("msngr.net").defaults.port[server.protocol];
+                server.port = defaults.port[server.protocol];
             }
 
             handled = true;
         }
 
-        if (!invalid && !handled && !external.isEmptyString(protocol) && !external.isEmptyString(host) && !external.isEmptyString(port)) {
+        if (!invalid && !handled && !external.is(protocol).empty && !external.is(host).empty && !external.is(port).empty) {
             // Everything is provided. Holy shit, does that ever happen!?
             server.protocol = protocol;
             server.host = host;
@@ -1653,7 +1730,7 @@ msngr.extend((function(external, internal) {
         // Port explicitness can be omitted for some protocols where the port is their default
         // so let's mark them as can be omitted. This will make output less confusing for
         // more inexperienced developers plus it looks prettier :).
-        if (!invalid && handled && external.config.get("msngr.net").defaults.port[server.protocol] === server.port) {
+        if (!invalid && handled && defaults.port[server.protocol] === server.port) {
             server.canOmitPort = true;
         }
 
@@ -1679,194 +1756,57 @@ msngr.extend((function(external, internal) {
         return server;
     };
 
-    return {
-        net: function(protocol, host, port) {
-            var server = figureOutServer(protocol, host, port);
+    external.net = function(protocol, host, port) {
+        var server = figureOutServer(protocol, host, port);
 
-            var netObj = {
-                get: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "get";
-                    request(server, opts, callback);
-                },
-                post: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "post";
-                    request(server, opts, callback);
-                },
-                put: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "put";
-                    request(server, opts, callback);
-                },
-                delete: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "delete";
-                    request(server, opts, callback);
-                },
-                options: function(options, callback) {
-                    var opts = external.merge(options, { });
-                    opts.method = "options";
-                    request(server, opts, callback);
-                }
-            };
-
-            Object.defineProperty(netObj, "protocol", {
-                get: function() {
-                    return server.protocol;
-                }
-            });
-
-            Object.defineProperty(netObj, "host", {
-                get: function() {
-                    return server.host;
-                }
-            });
-
-            Object.defineProperty(netObj, "port", {
-                get: function() {
-                    return server.port;
-                }
-            });
-
-            return netObj;
-        }
-    };
-}));
-
-/*
-    ./options/cross-window.js
-
-    The cross-window option; provides the ability to emit and receive messages across
-    multiple browser tabs / windows within the same web browser.
-*/
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    external.config.set("msngr.cross-window", {
-        channel: "__msngr_cross-window"
-    });
-
-    // Let's check if localStorage is even available. If it isn't we shouldn't register
-    if (typeof localStorage === "undefined" || typeof window === "undefined") {
-        return {};
-    }
-
-    window.addEventListener("storage", function(event) {
-        if (event.key === external.config.get("msngr.cross-window").channel) {
-            // New message data. Respond!
-            var obj;
-            try {
-                obj = JSON.parse(event.newValue);
-            } catch (ex) {
-                throw "msngr was unable to parse the data in its storage channel"
+        var netObj = {
+            get: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "get";
+                request(server, opts, callback);
+            },
+            post: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "post";
+                request(server, opts, callback);
+            },
+            put: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "put";
+                request(server, opts, callback);
+            },
+            delete: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "delete";
+                request(server, opts, callback);
+            },
+            options: function(options, callback) {
+                var opts = internal.merge(external.copy(defaults), options);
+                opts.method = "options";
+                request(server, opts, callback);
             }
-
-            if (obj !== undefined && external.isObject(obj)) {
-                internal.objects.message(obj.message).emit(obj.payload);
-            }
-        }
-    });
-
-    internal.option("cross-window", function(message, payload, options, async) {
-        // Normalize all of the inputs
-        options = options || {};
-        options = options["cross-window"] || {};
-
-        var obj = {
-            message: message,
-            payload: payload
         };
 
-        try {
-            localStorage.setItem(external.config.get("msngr.cross-window").channel, JSON.stringify(obj));
-        } catch (ex) {
-            throw "msngr was unable to store data in its storage channel";
-        }
-
-        return undefined;
-    });
-
-    // This is an internal extension; do not export explicitly.
-    return {};
-}));
-
-/*
-    ./options/dom.js
-
-    The dom option; provides value gathering from supplied selectors
-*/
-msngr.extend((function(external, internal) {
-    "use strict";
-
-    internal.option("dom", function(message, payload, options, async) {
-        // Normalize all of the inputs
-        options = options || {};
-        options = options.dom || {};
-        var doc = options.doc || options.document || document;
-
-        var selectors = undefined;
-        if (external.isObject(options) && external.exist(options.selectors) && external.isString(options.selectors)) {
-            selectors = [options.selectors];
-        } else if (external.isString(options)) {
-            selectors = [options];
-        } else if (external.isArray(options)) {
-            selectors = options;
-        }
-
-        if (!external.exist(doc) || !external.exist(selectors) || selectors.length === 0) {
-            return undefined;
-        }
-
-        // Process all selectors and put them into a single array
-        var elements = [];
-        var selLength = selectors.length;
-        for (var i = 0; i < selLength; ++i) {
-            var found = external.findElements(selectors[i], doc);
-            if (found.length > 0) {
-                elements = elements.concat(Array.prototype.slice.call(found));
+        Object.defineProperty(netObj, "protocol", {
+            get: function() {
+                return server.protocol;
             }
-        }
+        });
 
-        // Short circuit because no elements
-        if (elements.length === 0) {
-            return undefined;
-        }
-
-        // Iterate through found elements and aggregate the results
-        var resultMap = undefined;
-        var elmLength = elements.length;
-        var unnamedTags = 0;
-        for (var i = 0; i < elmLength; ++i) {
-            var key = undefined, value = undefined;
-            var elm = elements[i];
-
-            var nameAttr = elm.getAttribute("name");
-            var idAttr = elm.id;
-            var tagName = elm.tagName.toLowerCase();
-            var val = elm.value;
-
-            if (external.exist(nameAttr) && !external.isEmptyString(nameAttr)) {
-                key = nameAttr;
-            } else if (external.exist(idAttr) && !external.isEmptyString(idAttr)) {
-                key = idAttr;
-            } else {
-                key = (tagName + unnamedTags);
-                unnamedTags++;
+        Object.defineProperty(netObj, "host", {
+            get: function() {
+                return server.host;
             }
+        });
 
-            if (resultMap === undefined) {
-                resultMap = {};
+        Object.defineProperty(netObj, "port", {
+            get: function() {
+                return server.port;
             }
-            resultMap[key] = val;
-        }
+        });
 
-        return resultMap;
-
-    });
-
-    // This is an internal extension; do not export explicitly.
-    return {};
+        return netObj;
+    };
 }));
 
 /*
