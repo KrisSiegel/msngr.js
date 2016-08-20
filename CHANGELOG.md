@@ -20,11 +20,14 @@ msngr.is("one", "another", "weee").string; // Returns true
 - ```msngr(msg).subscribers``` has been renamed to ```msngr(msg).handlers``` to better reflect the msngr terminology.
 - ```msngr(msg).options``` has been axed in favor of the new middleware concept outlined in the above section.
 - Options have been removed entirely along with their specific implementations. This has been replaced by a middleware setup with currently no default middlewares.
-- ```msngr.merge()``` now has different, better behavior. No longer tries to merge strings and has a very strict set of rules easy to see in the source code
+- ```msngr.merge()``` now has different, better behavior. No longer tries to merge strings and has a very strict set of rules easy to see in the source code. ```msngr.copy()``` was changed in a very similar way
 
 ***Misc changes***
 - Highly revised documentation. This is still ongoing.
 - Vastly refactored
+
+## [Release 4.0.2 - May 20, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.2)
+Fixed an issue with ```msngr.copy()``` where values within arrays were not deep copied.
 
 ## [Release 4.0.1 - March 23, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/4.0.1)
 This update brings an additional benchmark for mache and a bug fix where mache's ```getDeep()``` would fail to return false boolean values.
