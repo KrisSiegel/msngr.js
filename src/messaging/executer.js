@@ -50,7 +50,7 @@ msngr.extend((function (external, internal) {
                 var executed = 0;
 
                 if (methods.length === 0 && isDone.there) {
-                    return done.apply(context, [ [] ]);
+                    return done.apply(null, [ [] ]);
                 }
 
                 for (var i = 0; i < methods.length; ++i) {
@@ -67,7 +67,7 @@ msngr.extend((function (external, internal) {
                             ++executed;
 
                             if (executed === methods.length && isDone.there) {
-                                done.apply(context, [results]);
+                                done.apply((c || null), [results]);
                             }
                         });
                     }(method, params, context));
@@ -78,7 +78,7 @@ msngr.extend((function (external, internal) {
                 var results = [];
 
                 if (methods.length === 0 && isDone.there) {
-                    return done.apply(context, [ [] ]);
+                    return done.apply(null, [ [] ]);
                 }
 
                 var again = function () {
@@ -90,7 +90,7 @@ msngr.extend((function (external, internal) {
                             }
 
                             if (methods.length === 0 && isDone.there) {
-                                done.apply(context, [results]);
+                                done.apply((c || null), [results]);
                             } else {
                                 again();
                             }
