@@ -1515,13 +1515,17 @@ msngr.extend((function(external, internal) {
                                 obj = undefined;
                             }
                         }
-                        callback.apply(undefined, [null, (obj || xhr.response)]);
+                        if (external.is(callback).there) {
+                            callback.apply(undefined, [null, (obj || xhr.response)]);
+                        }
                     } else {
                         var errObj = {
                             status: xhr.status,
                             response: xhr.response
                         };
-                        callback.apply(undefined, [errObj, null]);
+                        if (external.is(callback).there) {
+                            callback.apply(undefined, [errObj, null]);
+                        }
                     }
                 }
             };
@@ -1560,7 +1564,9 @@ msngr.extend((function(external, internal) {
             }
             xhr.send(datum);
         } catch (ex) {
-            callback.apply(undefined, [ex, null]);
+            if (external.is(callback).there) {
+                callback.apply(undefined, [ex, null]);
+            }
         }
     };
 
@@ -1600,7 +1606,9 @@ msngr.extend((function(external, internal) {
                     };
                     obj = null;
                 }
-                callback.apply(undefined, [errObj, obj]);
+                if (external.is(callback).there) {
+                    callback.apply(undefined, [errObj, obj]);
+                }
             });
         });
 

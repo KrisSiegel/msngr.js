@@ -106,7 +106,7 @@ net.get({
     }, function (err, result) {
         console.log(result);
     }
-})
+});
 ```
 
 In the simple ```msngr().net()``` example above the query object is translated into proper query strings and sent to the "/endpoint". Simple, right? You can also provide a ```header``` object that will get sent as proper HTTP headers and a ```payload``` object that can contain whatever you're sending to the server.
