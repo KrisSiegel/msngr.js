@@ -1,4 +1,4 @@
-![msngr.js](https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png "msngr.js logo")
+<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: right" />
 
 Messaging is a powerful development pattern that makes decoupling components and providing internal APIs incredibly easy. The primary goal of msngr is to provide a high quality, asynchronous method of consuming and emitting messages that work in both node and the web browser.
 
@@ -149,7 +149,13 @@ msngr.immediate(function () {
 
 ```
 
-#### Getting in contact
+### Sponsor
+<p>
+<img src="https://github.com/KrisSiegel/msngr.js/raw/5.0.1/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: left; height: 60px;" />
+
+msngr.js development is sponsored by [Simex](https://www.simex.io/). Simex is a small company that provides a personal A.I. to handle asynchronous tasks over traditional communication channels (email, sms, etc). Check it out and say thanks!</p>
+
+#### Contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
 Copyright © 2014-2016 Kris Siegel
