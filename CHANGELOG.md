@@ -1,6 +1,9 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 5.0.1 - August 28, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.0.1)
+Minor updates to documentation to include better msngr.js logo placement, simex logo and simex sponsorship.
+
 ## [Release 5.0.0 - August 20, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.0.0)
 Version 5.0 brings in some major changes, the first LTS version and huge improvements over previous versions.
 
