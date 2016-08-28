@@ -140,7 +140,7 @@ var mache = msngr.mache({
 ```
 
 ### msngr.immediate()
-So if you want to create an asynchronous process many developers turn to ```setTimeout(fn, 0);``` but that's actually rather slow to execute in web browsers (typically values less than 10 or so are ignored). Using ```setImmediate(fn)``` is a far better choice but it's mostly in node and IE. This is where ```msngr.immediate(fn)``` comes in. There is a way to simulate ```setImmediate(fn)``` when it doesn't exist in a web browser so ```msngr.immediate(fn)``` will use whatever the fastest solution that exists on the platform it is running on to execute something asynchronously.
+So if you want to create an asynchronous process many developers turn to ```setTimeout(fn, 0);``` but that's actually rather slow to execute in web browsers (typically values less than 10 or so are ignored and even 0 isn't guaranteed to execute immediately). Using ```setImmediate(fn)``` is a far better choice but it's almost exclusively available in node and IE. This is where ```msngr.immediate(fn)``` comes in. There is a way to simulate ```setImmediate(fn)``` when it doesn't exist in a web browser so ```msngr.immediate(fn)``` will use whatever the fastest solution that exists on the platform it is running on to execute something asynchronously.
 
 ```javascript
 msngr.immediate(function () {
@@ -151,9 +151,9 @@ msngr.immediate(function () {
 
 ### Sponsor
 <p>
-<img src="https://github.com/KrisSiegel/msngr.js/raw/5.0.1/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: left; height: 60px;" />
+<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: right; height: 60px;" />
 
-msngr.js development is sponsored by [Simex](https://www.simex.io/). Simex is a small company that provides a personal A.I. to handle asynchronous tasks over traditional communication channels (email, sms, etc). Check it out and say thanks!</p>
+msngr.js development is sponsored by [Simex](https://www.simex.io/), an aspiring start-up looking to make a dent in artificial intelligence and data aggregation. Follow [@HeySimex](https://twitter.com/heysimex) on Twitter!</p>
 
 #### Contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
