@@ -1,4 +1,4 @@
-<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: right" />
+<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png" alt="msngr.js logo" title="msngr.js logo" />
 
 Messaging is a powerful development pattern that makes decoupling components and providing internal APIs incredibly easy. The primary goal of msngr is to provide a high quality, asynchronous method of consuming and emitting messages that work in both node and the web browser.
 
@@ -151,9 +151,9 @@ msngr.immediate(function () {
 
 ### Sponsor
 <p>
-<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: right; height: 60px;" />
+<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" align="right" />
 
-msngr.js development is sponsored by [Simex](https://www.simex.io/), an aspiring start-up looking to make a dent in artificial intelligence and data aggregation. Follow [@HeySimex](https://twitter.com/heysimex) on Twitter!</p>
+msngr.js development is sponsored by <a href="https://www.simex.io/">Simex</a>, an aspiring start-up looking to make a dent in artificial intelligence and data aggregation. Follow <a href="https://twitter.com/heysimex">@HeySimex</a> on Twitter!</p>
 
 #### Contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
