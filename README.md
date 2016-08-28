@@ -1,4 +1,4 @@
-![msngr.js](https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png "msngr.js logo")
+<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: right" />
 
 Messaging is a powerful development pattern that makes decoupling components and providing internal APIs incredibly easy. The primary goal of msngr is to provide a high quality, asynchronous method of consuming and emitting messages that work in both node and the web browser.
 
@@ -140,7 +140,7 @@ var mache = msngr.mache({
 ```
 
 ### msngr.immediate()
-So if you want to create an asynchronous process many developers turn to ```setTimeout(fn, 0);``` but that's actually rather slow to execute in web browsers (typically values less than 10 or so are ignored). Using ```setImmediate(fn)``` is a far better choice but it's mostly in node and IE. This is where ```msngr.immediate(fn)``` comes in. There is a way to simulate ```setImmediate(fn)``` when it doesn't exist in a web browser so ```msngr.immediate(fn)``` will use whatever the fastest solution that exists on the platform it is running on to execute something asynchronously.
+So if you want to create an asynchronous process many developers turn to ```setTimeout(fn, 0);``` but that's actually rather slow to execute in web browsers (typically values less than 10 or so are ignored and even 0 isn't guaranteed to execute immediately). Using ```setImmediate(fn)``` is a far better choice but it's almost exclusively available in node and IE. This is where ```msngr.immediate(fn)``` comes in. There is a way to simulate ```setImmediate(fn)``` when it doesn't exist in a web browser so ```msngr.immediate(fn)``` will use whatever the fastest solution that exists on the platform it is running on to execute something asynchronously.
 
 ```javascript
 msngr.immediate(function () {
@@ -149,7 +149,13 @@ msngr.immediate(function () {
 
 ```
 
-#### Getting in contact
+### Sponsor
+<p>
+<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" style="float: right; height: 60px;" />
+
+msngr.js development is sponsored by [Simex](https://www.simex.io/), an aspiring start-up looking to make a dent in artificial intelligence and data aggregation. Follow [@HeySimex](https://twitter.com/heysimex) on Twitter!</p>
+
+#### Contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
 Copyright © 2014-2016 Kris Siegel
