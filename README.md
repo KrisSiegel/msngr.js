@@ -125,9 +125,11 @@ mache.set("mykey", {
     test: "anothertest"
 });
 
+mache.get("mykey"); // returns { test: "anothertest" }
+
 mache.revert("mykey");
 
-mache.get("mykey"); // returns { test: "mykey" }
+mache.get("mykey"); // returns { test: "mytest" }
 ```
 
 Mache transactions work similar to SQL transactions; when you want to start simply call ```.begin()``` on your mache instance, then get and set whatever you want. Once you're finished either call ```.rollback()``` to end the transaction and eliminate all changes done during that time or ```.commit()``` to commit all of the changes made. You can even create a mache instance with some configuration options to change the level of revisions to store outside of transactions along with emitting all changes through messages so as data changes your components can react to said changes.
