@@ -43,3 +43,4 @@ node_modules
 # msngr.js specific
 test/specRunner.html
 test/specRunner.min.html
+yarn.lock
