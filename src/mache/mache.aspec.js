@@ -36,6 +36,13 @@ describe("./mache/mache.js", function() {
 
         expect(mache.revert("something")).to.equal(true);
         expect(mache.data.something).to.not.exist;
+
+        mache.begin();
+        mache.set("anotherthing", 42);
+        expect(mache.data.anotherthing).to.exist;
+
+        mache.rollback();
+        expect(mache.data.anotherthing).to.not.exist;
     });
 
     it("msngr.mache().meta - Provides correct meta data", function () {
@@ -49,6 +56,34 @@ describe("./mache/mache.js", function() {
         });
         expect(mache2.meta.revisions.toKeep).to.exist;
         expect(mache2.meta.revisions.toKeep).to.equal(15);
+    });
+
+    it("msngr.mache().count - Provides a correct count of currently stored data", function () {
+        var mache = msngr.mache();
+        expect(mache.count).to.exist;
+        expect(mache.count).to.equal(0);
+        mache.set("wut", 15);
+        mache.set("dsf", "daffs");
+        mache.set("gdfg", false);
+        mache.set("gfh", true);
+        expect(mache.count).to.equal(4);
+
+        mache.remove("gfh");
+        expect(mache.count).to.equal(3);
+
+        mache.begin();
+        mache.set("qqqq", 42);
+        expect(mache.count).to.equal(4);
+
+        mache.rollback();
+        expect(mache.count).to.equal(3);
+
+        mache.begin();
+        mache.set("oirtu", "dsfsf");
+        expect(mache.count).to.equal(4);
+
+        mache.commit();
+        expect(mache.count).to.equal(4);
     });
 
     it("msngr.mache() - Respects the revisions to keep", function () {

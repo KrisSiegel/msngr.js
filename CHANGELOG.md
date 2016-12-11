@@ -1,6 +1,16 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 5.1.0 - December 11, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.1.0)
+Version 5.1.0 brings some minor improvements and changes
+
+***What's new?***
+- Added ```msngr.parallel()``` and ```msngr.series()```. These are handy for asynchronous patterns and already existed, internally, to msngr.js. This simply exposes them but in a more simplified way.
+
+***Misc changes***
+- ```msngr.is(Promise)``` should now work in cases where Promise is pollyfilled.
+- Fixed issue in mache where calling ```.data``` property would set a transaction to the baseline dataset
+
 ## [Release 5.0.1 - August 28, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.0.1)
 Minor updates to documentation to include better msngr.js logo placement, simex logo and simex sponsorship.
 

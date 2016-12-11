@@ -58,8 +58,8 @@ msngr.extend((function (external, internal) {
                     var params = methods[i].params;
                     var context = methods[i].context;
 
-                    (function (m, p, c) {
-                        exec(m, p, c, function(result) {
+                    (function (_method, _params, _context) {
+                        exec(_method, _params, _context, function(result) {
                             if (external.is(result).there) {
                                 results.push(result);
                             }
@@ -67,7 +67,7 @@ msngr.extend((function (external, internal) {
                             ++executed;
 
                             if (executed === methods.length && isDone.there) {
-                                done.apply((c || null), [results]);
+                                done.apply((_context || null), [results]);
                             }
                         });
                     }(method, params, context));
@@ -83,14 +83,14 @@ msngr.extend((function (external, internal) {
 
                 var again = function () {
                     var method = methods.shift();
-                    (function (m, p, c) {
-                        exec(m, p, c, function (result) {
+                    (function (_method, _params, _context) {
+                        exec(_method, _params, _context, function (result) {
                             if (external.is(result).there) {
                                 results.push(result);
                             }
 
                             if (methods.length === 0 && isDone.there) {
-                                done.apply((c || null), [results]);
+                                done.apply((_context || null), [results]);
                             } else {
                                 again();
                             }
@@ -101,4 +101,13 @@ msngr.extend((function (external, internal) {
             }
         };
     };
+
+    external.parallel = function (methods, handler) {
+        internal.executer(methods).parallel.apply(this, [handler]);
+    };
+
+    external.series = function (methods, handler) {
+        internal.executer(methods).series.apply(this, [handler]);
+    };
+
 }));

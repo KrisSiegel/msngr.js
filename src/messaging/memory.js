@@ -27,7 +27,6 @@ msngr.extend((function (external, internal) {
     };
 
     internal.memory = function () {
-
         // Index for id to message objects
         var id_to_message = {};
 

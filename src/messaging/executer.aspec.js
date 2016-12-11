@@ -104,27 +104,59 @@ describe("./src/messaging/executer.js", function () {
 
     it("msngr.internal.executer(funcs).series() - Executes methods in a series", function (done) {
         var executer = msngr.internal.executer([
-            function (async) {
-                return "a";
-            },
-            function (async) {
-                var d = async();
-                d("b");
-            },
-            function (async) {
-                return "c";
-            },
-            function (async) {
-                var d = async();
-                d("d");
-            },
-            function (async) {
-                return "e";
-            }
+            function (async) { return "a"; },
+            function (async) { async()("b"); },
+            function (async) { return "c"; },
+            function (async) { async()("d"); },
+            function (async) { return "e"; }
         ]).series(function (results) {
             expect(results).to.exist;
             expect(results.length).to.equal(5);
             expect(results.join("")).to.equal("abcde");
+            done();
+        });
+    });
+
+    it("msngr.parallel(methods, handler) - Executes a set of methods, in parallel", function (done) {
+        var bag = { };
+        var funcs = [
+            function (async) { bag.neato = "yes"; },
+            function (async) { bag.stuff = 42; },
+            function (async) { bag.what = { }; bag.what.uhhuh = true; async()(); },
+            function (async) { bag.nooooo = "vader"; async()(); },
+            function (async) { bag.mombo = 12345; async()(); },
+            function (async) { bag.nczvjsjdfk = "lkjalsdkjad"; }
+        ];
+        msngr.parallel(funcs, function (results) {
+            expect(bag).to.exist;
+            expect(bag.neato).to.equal("yes");
+            expect(bag.stuff).to.equal(42);
+            expect(bag.what.uhhuh).to.equal(true);
+            expect(bag.nooooo).to.equal("vader");
+            expect(bag.mombo).to.equal(12345);
+            expect(bag.nczvjsjdfk).to.equal("lkjalsdkjad");
+            done();
+        });
+    });
+
+    it("msngr.series(methods, handler) - Executes a set of methods, in series", function (done) {
+        var funcs = [
+            function (async) { return "h"; },
+            function (async) { async()("e"); },
+            function (async) { return "l"; },
+            function (async) { async()("l"); },
+            function (async) { async()("o"); },
+            function (async) { async()(" "); },
+            function (async) { return "w"; },
+            function (async) { async()("o"); },
+            function (async) { return "r"; },
+            function (async) { return "l"; },
+            function (async) { return "d"; }
+        ];
+        msngr.series(funcs, function (results) {
+            expect(results).to.exist;
+            expect(results.length).to.equal(11);
+            expect(results.join("")).to.equal("hello world");
             done();
         });
     });

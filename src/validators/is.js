@@ -23,10 +23,13 @@ msngr.extend(function (external, internal) {
 
         // ECMAScript 6 Types
         symbol: "[object Symbol]",
-        promise: "[object Promise]", // node.js 4.x returns [object Object] for promises so limited testing possible
 
         // HTML DOM Types
         nodeList: "[object NodeList]"
+    };
+
+    var getType = function (item) {
+        return Object.prototype.toString.call(item);
     };
 
     // Harder type checking here; requires custom methods
@@ -34,17 +37,24 @@ msngr.extend(function (external, internal) {
         // HTML DOM Types
         htmlElement: function (type) {
             return (type.indexOf("[object HTML") === 0) || (type.indexOf("[object global]") === 0);
+        },
+        promise: function (type, obj) {
+            // Easy check, node.js 4.x / non-native promises returns [object Object] so limited
+            if (type === "[object Promise]") {
+                return true;
+            }
+            // May have a non-promise or a platform where promises are not native, check harder
+            if (type === simpleTypes.object || type === simpleTypes.function) {
+                return (item.then !== undefined && getType(item.then) === simpleTypes.function);
+            }
+            return false;
         }
-    };
-
-    var getType = function (item) {
-        return Object.prototype.toString.call(item);
     };
 
     // Check a type against an input
     var checkType = function (type, item, hard) {
         if (hard) {
-            return harderTypes[type](getType(item));
+            return harderTypes[type](getType(item), item);
         }
         return (getType(item) === simpleTypes[type]);
     }
