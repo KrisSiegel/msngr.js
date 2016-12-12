@@ -13,11 +13,31 @@ Reference msngr directly [from cdnjs](https://cdnjs.com/libraries/msngr)
 
 ### Hello, World!
 ```javascript
-msngr("SayIt").on(function (words) {
-    console.log(words); // Outputs 'Hello, World!'
+// I can call a function when I receive a specific message!
+msngr("Output").on(function (words) {
+    console.log(words); // Outputs 'Hello, World!', 'I'm chainable!' and 'Weee'
 });
 
-msngr("SayIt").emit("Hello, World!");
+// I can emit messages of any type. I can even chain almost anything.
+msngr("Output")
+  .emit("Hello, World!")
+  .emit("I'm chainable!")
+  .emit("Weee");
+
+// I can emit and persist a message, too so future handlers can receive it
+msngr("Important", "Message").persist("I am persisted!");
+
+// See?
+msngr("Important", "Message").on(function (text) {
+	console.log(text); // Outputs 'I am persisted!'
+});
+
+// I can even guarantee a handler is called once
+msngr("Once").once(function (str) {
+	console.log(str); // Only outputs 'Just once'
+});
+
+msngr("Once").emit("Just once").emit("asdljadlka").emit("sadjkhada");
 ```
 
 ### Anatomy of a message
@@ -151,13 +171,34 @@ msngr.immediate(function () {
 
 ```
 
-### Sponsor
-<p>
-<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/simex-logo.png" alt="msngr.js logo" title="msngr.js logo" align="right" />
+### msngr.parallel(methods, callback) / msngr.series(methods, callback)
+Handling asynchronous behaviors can be difficult and there are many libraries (async.js) and techniques (promises, async & await) for handling such issues. But sometimes you just need a simple way to take multiple methods and combine them. Msngr uses this capability internally for handling message delegation and processing of middleware so these two methods are the public version of the very same API.
 
-msngr.js development is sponsored by <a href="https://www.simex.io/">Simex</a>, an aspiring start-up looking to make a dent in artificial intelligence and data aggregation. Follow <a href="https://twitter.com/heysimex">@HeySimex</a> on Twitter!</p>
+```javascript
+var props = { };
+msngr.parallel([
+    function () { props.value1 = 42; },
+    function () { props.value2 = "forty two"; },
+    function () { props.value3 = true; },
+], function () {
+    console.log(props.value1); // Prints 42
+    console.log(props.value2); // Prints 'forty two'
+    console.log(props.value3); // Prints true
+});
+
+msngr.series([
+    function () { return "s" },
+    function () { return "e" },
+    function (async) { async()("r") },
+    function (async) { async()("i") },
+    function (async) { async()("e") },
+    function () { return "s" }
+], function (results) {
+    console.log(results.join("")); // Prints "series"
+});
+```
 
 #### Contact
-For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
+For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@BinaryIdiot](https://twitter.com/BinaryIdiot)
 
 Copyright © 2014-2016 Kris Siegel
