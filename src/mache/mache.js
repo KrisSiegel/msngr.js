@@ -103,7 +103,7 @@ msngr.extend((function (external, internal) {
 
             data[id].pop();
             flatCache[id] = api.get(id);
-            
+
             return true;
         };
 
@@ -152,7 +152,6 @@ msngr.extend((function (external, internal) {
                     // How can we rollback outside of a transaction? ugh
                     return false;
                 }
-
                 transacting = false;
                 transData = undefined;
                 transRemovals = undefined;
@@ -182,14 +181,26 @@ msngr.extend((function (external, internal) {
         };
 
         Object.defineProperty(api, "meta", {
+            configurable: false,
+            enumerable: false,
             get: function () {
                 return meta;
             }
         });
 
         Object.defineProperty(api, "data", {
+            configurable: false,
+            enumerable: false,
             get: function () {
-                return (transacting) ? internal.merge(flatCache, transData) : flatCache;
+                return (transacting) ? internal.merge(external.copy(flatCache), transData) : flatCache;
+            }
+        });
+
+        Object.defineProperty(api, "count", {
+            configurable: false,
+            enumerable: false,
+            get: function () {
+                return Object.keys(api.data).length;
             }
         });
 

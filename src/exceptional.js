@@ -7,11 +7,11 @@
 msngr.extend(function (external, internal) {
     "use strict";
 
-    internal.InvalidParametersException = function (str, reason) {
+    internal.InvalidParametersException = function (methodName, reason) {
         var m = {
             name: "InvalidParametersException",
             severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", methodName))
         };
         if (!external.is(reason).empty) {
             m.message = m.message + " " + reason;
@@ -19,11 +19,11 @@ msngr.extend(function (external, internal) {
         return m;
     };
 
-    internal.DuplicateException = function (str) {
+    internal.DuplicateException = function (methodName) {
         return {
             name: "DuplicateException",
             severity: "unrecoverable",
-            message: ("Duplicate input provided to {method} where duplicates are not allowed.".replace("{method}", str))
+            message: ("Duplicate input provided to {method} where duplicates are not allowed.".replace("{method}", methodName))
         };
     };
 
@@ -35,11 +35,11 @@ msngr.extend(function (external, internal) {
         };
     };
 
-    internal.MangledException = function (variable, method) {
+    internal.MangledException = function (variable, methodName) {
         return {
             name: "MangledException",
             severity: "unrecoverable",
-            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
+            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", methodName))
         };
     };
 

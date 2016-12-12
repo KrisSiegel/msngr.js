@@ -18,7 +18,7 @@ var msngr = msngr || (function () {
     };
 
     // Built version of msngr.js for programatic access; this is auto generated
-    external.version = "5.0.1";
+    external.version = "5.1.0";
 
     // Takes a function, executes it passing in the external and internal interfaces
     external.extend = function (fn) {
@@ -61,11 +61,11 @@ var msngr = msngr || (function () {
 msngr.extend(function (external, internal) {
     "use strict";
 
-    internal.InvalidParametersException = function (str, reason) {
+    internal.InvalidParametersException = function (methodName, reason) {
         var m = {
             name: "InvalidParametersException",
             severity: "unrecoverable",
-            message: ("Invalid parameters supplied to the {method} method".replace("{method}", str))
+            message: ("Invalid parameters supplied to the {method} method".replace("{method}", methodName))
         };
         if (!external.is(reason).empty) {
             m.message = m.message + " " + reason;
@@ -73,11 +73,11 @@ msngr.extend(function (external, internal) {
         return m;
     };
 
-    internal.DuplicateException = function (str) {
+    internal.DuplicateException = function (methodName) {
         return {
             name: "DuplicateException",
             severity: "unrecoverable",
-            message: ("Duplicate input provided to {method} where duplicates are not allowed.".replace("{method}", str))
+            message: ("Duplicate input provided to {method} where duplicates are not allowed.".replace("{method}", methodName))
         };
     };
 
@@ -89,11 +89,11 @@ msngr.extend(function (external, internal) {
         };
     };
 
-    internal.MangledException = function (variable, method) {
+    internal.MangledException = function (variable, methodName) {
         return {
             name: "MangledException",
             severity: "unrecoverable",
-            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", method))
+            message: ("The {variable} was unexpectedly mangled in {method}.".replace("{variable}", variable).replace("{method}", methodName))
         };
     };
 
@@ -124,10 +124,13 @@ msngr.extend(function (external, internal) {
 
         // ECMAScript 6 Types
         symbol: "[object Symbol]",
-        promise: "[object Promise]", // node.js 4.x returns [object Object] for promises so limited testing possible
 
         // HTML DOM Types
         nodeList: "[object NodeList]"
+    };
+
+    var getType = function (item) {
+        return Object.prototype.toString.call(item);
     };
 
     // Harder type checking here; requires custom methods
@@ -135,17 +138,24 @@ msngr.extend(function (external, internal) {
         // HTML DOM Types
         htmlElement: function (type) {
             return (type.indexOf("[object HTML") === 0) || (type.indexOf("[object global]") === 0);
+        },
+        promise: function (type, obj) {
+            // Easy check, node.js 4.x / non-native promises returns [object Object] so limited
+            if (type === "[object Promise]") {
+                return true;
+            }
+            // May have a non-promise or a platform where promises are not native, check harder
+            if (type === simpleTypes.object || type === simpleTypes.function) {
+                return (item.then !== undefined && getType(item.then) === simpleTypes.function);
+            }
+            return false;
         }
-    };
-
-    var getType = function (item) {
-        return Object.prototype.toString.call(item);
     };
 
     // Check a type against an input
     var checkType = function (type, item, hard) {
         if (hard) {
-            return harderTypes[type](getType(item));
+            return harderTypes[type](getType(item), item);
         }
         return (getType(item) === simpleTypes[type]);
     }
@@ -718,8 +728,8 @@ msngr.extend((function (external, internal) {
                     var params = methods[i].params;
                     var context = methods[i].context;
 
-                    (function (m, p, c) {
-                        exec(m, p, c, function(result) {
+                    (function (_method, _params, _context) {
+                        exec(_method, _params, _context, function(result) {
                             if (external.is(result).there) {
                                 results.push(result);
                             }
@@ -727,7 +737,7 @@ msngr.extend((function (external, internal) {
                             ++executed;
 
                             if (executed === methods.length && isDone.there) {
-                                done.apply((c || null), [results]);
+                                done.apply((_context || null), [results]);
                             }
                         });
                     }(method, params, context));
@@ -743,14 +753,14 @@ msngr.extend((function (external, internal) {
 
                 var again = function () {
                     var method = methods.shift();
-                    (function (m, p, c) {
-                        exec(m, p, c, function (result) {
+                    (function (_method, _params, _context) {
+                        exec(_method, _params, _context, function (result) {
                             if (external.is(result).there) {
                                 results.push(result);
                             }
 
                             if (methods.length === 0 && isDone.there) {
-                                done.apply((c || null), [results]);
+                                done.apply((_context || null), [results]);
                             } else {
                                 again();
                             }
@@ -761,6 +771,15 @@ msngr.extend((function (external, internal) {
             }
         };
     };
+
+    external.parallel = function (methods, handler) {
+        internal.executer(methods).parallel.apply(this, [handler]);
+    };
+
+    external.series = function (methods, handler) {
+        internal.executer(methods).series.apply(this, [handler]);
+    };
+
 }));
 
 /*
@@ -792,7 +811,6 @@ msngr.extend((function (external, internal) {
     };
 
     internal.memory = function () {
-
         // Index for id to message objects
         var id_to_message = {};
 
@@ -1386,7 +1404,7 @@ msngr.extend((function (external, internal) {
 
             data[id].pop();
             flatCache[id] = api.get(id);
-            
+
             return true;
         };
 
@@ -1435,7 +1453,6 @@ msngr.extend((function (external, internal) {
                     // How can we rollback outside of a transaction? ugh
                     return false;
                 }
-
                 transacting = false;
                 transData = undefined;
                 transRemovals = undefined;
@@ -1465,14 +1482,26 @@ msngr.extend((function (external, internal) {
         };
 
         Object.defineProperty(api, "meta", {
+            configurable: false,
+            enumerable: false,
             get: function () {
                 return meta;
             }
         });
 
         Object.defineProperty(api, "data", {
+            configurable: false,
+            enumerable: false,
             get: function () {
-                return (transacting) ? internal.merge(flatCache, transData) : flatCache;
+                return (transacting) ? internal.merge(external.copy(flatCache), transData) : flatCache;
+            }
+        });
+
+        Object.defineProperty(api, "count", {
+            configurable: false,
+            enumerable: false,
+            get: function () {
+                return Object.keys(api.data).length;
             }
         });
 
@@ -1485,20 +1514,10 @@ msngr.extend((function (external, internal) {
 
 msngr.extend((function(external, internal) {
     "use strict";
-
-    // Setup constants
-    var defaults = {
-        path: "/",
-        protocol: "http",
-        port: {
-            http: "80",
-            https: "443"
-        },
-        autoJson: true
-    };
-
+    
+    internal.net = internal.net || { };
     // This method handles requests when msngr is running within a semi-modern net browser
-    var browser = function(server, options, callback) {
+    internal.net.browser = function(server, options, callback) {
         try {
             var xhr = new XMLHttpRequest();
 
@@ -1569,69 +1588,21 @@ msngr.extend((function(external, internal) {
             }
         }
     };
+}));
 
-    // This method handles requests when msngr is running within node.js
-    var node = function(server, options, callback) {
-        var http = require("http");
-        var request = http.request({
-            method: options.method,
-            host: server.host,
-            port: server.port,
-            path: options.path,
-            headers: options.headers
-        }, function(response) {
-            response.setEncoding("utf8");
-            var body = "";
-            response.on("data", function(chunk) {
-                body = body + chunk;
-            });
+msngr.extend((function(external, internal) {
+    "use strict";
 
-            response.on("end", function() {
-                var obj;
-                if (options.autoJson === true && (response.headers["content-type"] || "").toLowerCase() === "application/json") {
-                    try {
-                        obj = JSON.parse(body);
-                    } catch (ex) {
-                        // Don't do anything; probably wasn't JSON anyway
-                        // Set obj to undefined just incase it contains something awful
-                        obj = undefined;
-                    }
-                }
-                obj = obj || body;
-                var errObj;
-                if (request.statusCode >= 400) {
-                        errObj = {
-                        status: request.statusCode,
-                        response: (obj || body)
-                    };
-                    obj = null;
-                }
-                if (external.is(callback).there) {
-                    callback.apply(undefined, [errObj, obj]);
-                }
-            });
-        });
-
-        if (external.is(options.payload).there) {
-            var datum;
-            if (external.is(options.payload).object) {
-                try {
-                    datum = JSON.stringify(options.payload);
-                } catch (ex) {
-                    // Really couldn't give a shit about this exception
-                }
-            }
-
-            // undefined has no meaning in JSON but null does; so let's only
-            // and explicitly set anything if it's still undefined (so no null checks)
-            if (datum === undefined) {
-                datum = options.payload;
-            }
-
-            request.write(datum);
-        }
-
-        request.end();
+    internal.net = internal.net || { };
+    // Setup constants
+    var defaults = {
+        path: "/",
+        protocol: "http",
+        port: {
+            http: "80",
+            https: "443"
+        },
+        autoJson: true
     };
 
     var request = function(server, opts, callback) {
@@ -1656,9 +1627,9 @@ msngr.extend((function(external, internal) {
         opts.path = opts.path + (opts.queryString || "");
 
         if (external.is.browser) {
-            browser(server, opts, callback);
+            internal.net.browser(server, opts, callback);
         } else {
-            node(server, opts, callback);
+            internal.net.node(server, opts, callback);
         }
     };
 
@@ -1806,6 +1777,75 @@ msngr.extend((function(external, internal) {
         });
 
         return netObj;
+    };
+}));
+
+msngr.extend((function(external, internal) {
+    "use strict";
+    
+    internal.net = internal.net || { };
+    // This method handles requests when msngr is running within node.js
+    internal.net.node = function(server, options, callback) {
+        var http = require("http");
+        var request = http.request({
+            method: options.method,
+            host: server.host,
+            port: server.port,
+            path: options.path,
+            headers: options.headers
+        }, function(response) {
+            response.setEncoding("utf8");
+            var body = "";
+            response.on("data", function(chunk) {
+                body = body + chunk;
+            });
+
+            response.on("end", function() {
+                var obj;
+                if (options.autoJson === true && (response.headers["content-type"] || "").toLowerCase() === "application/json") {
+                    try {
+                        obj = JSON.parse(body);
+                    } catch (ex) {
+                        // Don't do anything; probably wasn't JSON anyway
+                        // Set obj to undefined just incase it contains something awful
+                        obj = undefined;
+                    }
+                }
+                obj = obj || body;
+                var errObj;
+                if (request.statusCode >= 400) {
+                        errObj = {
+                        status: request.statusCode,
+                        response: (obj || body)
+                    };
+                    obj = null;
+                }
+                if (external.is(callback).there) {
+                    callback.apply(undefined, [errObj, obj]);
+                }
+            });
+        });
+
+        if (external.is(options.payload).there) {
+            var datum;
+            if (external.is(options.payload).object) {
+                try {
+                    datum = JSON.stringify(options.payload);
+                } catch (ex) {
+                    // Really couldn't give a shit about this exception
+                }
+            }
+
+            // undefined has no meaning in JSON but null does; so let's only
+            // and explicitly set anything if it's still undefined (so no null checks)
+            if (datum === undefined) {
+                datum = options.payload;
+            }
+
+            request.write(datum);
+        }
+
+        request.end();
     };
 }));
 
