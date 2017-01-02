@@ -36,7 +36,7 @@ msngr.extend((function (external, internal) {
                     }
                 }
                 params.push(asyncFunc);
-                var syncResult = method.apply(ctx || this, params);
+                var syncResult = method.apply(ctx || undefined, params);
                 if (asyncFlag !== true) {
                     done.apply(ctx, [syncResult]);
                 }

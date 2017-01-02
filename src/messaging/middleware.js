@@ -13,14 +13,14 @@ msngr.extend((function (external, internal) {
     /*
         Internal APIs
     */
-    internal.getMiddlewares = function (uses, payload) {
+    internal.getMiddlewares = function (uses, payload, message) {
         var results = [];
         var keys = (uses || []).concat(forced);
         for (var i = 0; i < keys.length; ++i) {
             if (middlewares[keys[i]] !== undefined) {
                 results.push({
                     method: middlewares[keys[i]],
-                    params: payload
+                    params: [payload, message]
                 });
             }
         }
@@ -28,8 +28,8 @@ msngr.extend((function (external, internal) {
         return results;
     };
 
-    internal.executeMiddlewares = function (uses, payload, callback) {
-        var middles = internal.getMiddlewares(uses, payload);
+    internal.executeMiddlewares = function (uses, payload, message, callback) {
+        var middles = internal.getMiddlewares(uses, payload, message);
 
         var execute = internal.executer(middles).series(function (result) {
             return callback(internal.merge.apply(this, [payload].concat(result)));
