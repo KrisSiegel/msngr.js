@@ -18,7 +18,7 @@ var msngr = msngr || (function () {
     };
 
     // Built version of msngr.js for programatic access; this is auto generated
-    external.version = "5.1.0";
+    external.version = "5.2.0";
 
     // Takes a function, executes it passing in the external and internal interfaces
     external.extend = function (fn) {

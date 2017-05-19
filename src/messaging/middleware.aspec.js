@@ -41,7 +41,7 @@ describe("./messaging/middleware.js", function() {
     });
 
     it("msngr.middleware() - Executes forced middleware over all messages", function (done) {
-        msngr.middleware("forcedTest", function (payload, async) {
+        msngr.middleware("forcedTest", function (payload, message, async) {
             return "middle";
         }, true);
 
@@ -52,8 +52,20 @@ describe("./messaging/middleware.js", function() {
         }).emit("test");
     });
 
+    it("msngr.middleware() - Executes async, forced middleware over all messages", function (done) {
+        msngr.middleware("forcedTest", function (payload, message, async) {
+            async()("midd");
+        }, true);
+
+        msngr("mytopic").on(function (payload, message) {
+            expect(payload).to.equal("midd");
+            msngr.unmiddleware("forcedTest");
+            done();
+        }).emit("test");
+    });
+
     it("msngr.middleware() - Doesn't execute non-forced middleware over all messages", function (done) {
-        msngr.middleware("nonforcedTest", function (payload, async) {
+        msngr.middleware("nonforcedTest", function (payload, message, async) {
             return "middle";
         }, false);
 
@@ -64,8 +76,20 @@ describe("./messaging/middleware.js", function() {
         }).emit("test");
     });
 
+    it("msngr.middleware() - Doesn't execute async, non-forced middleware over all messages", function (done) {
+        msngr.middleware("nonforcedTest", function (payload, message, async) {
+            async()("wut");
+        }, false);
+
+        msngr("mytopic").on(function (payload, message) {
+            expect(payload).to.equal("test");
+            msngr.unmiddleware("nonforcedTest");
+            done();
+        }).emit("test");
+    });
+
     it("msngr.middleware() - Executes optional middleware over specified message", function (done) {
-        msngr.middleware("middleTest", function (payload, async) {
+        msngr.middleware("middleTest", function (payload, message, async) {
             return "middle";
         }, false);
 
@@ -76,4 +100,15 @@ describe("./messaging/middleware.js", function() {
         }).emit("test");
     });
 
+    it("msngr.middleware() - Executes optional, async middleware over specified message", function (done) {
+        msngr.middleware("middleTest", function (payload, message, async) {
+            async()("wutwut");
+        }, false);
+
+        msngr("mytopic").use("middleTest").on(function (payload, message) {
+            expect(payload).to.equal("wutwut");
+            msngr.unmiddleware("middleTest");
+            done();
+        }).emit("test");
+    });
 });

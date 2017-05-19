@@ -472,4 +472,47 @@ describe("./src/messaging/message.js", function() {
         }, 250);
     });
 
+    it("msngr().on() / msngr().once() - correctly handles executing and dropping bound method", function (done) {
+        expect(msngr.internal.handlerCount).to.equal(0);
+        var funcCalls1 = 0;
+        var funcCalls2 = 0;
+        var funcCalls3 = 0;
+        var func1 = function () {
+            funcCalls1++;
+        }.bind(this);
+
+        var func2 = function () {
+            funcCalls2++;
+        }.bind(this);
+
+        var func3 = function () {
+            funcCalls3++;
+        }.bind(this);
+
+        msngr("WhatUp", "YesThisIsDog").on(func1);
+        msngr("WhatUp", "YesThisIsDog").on(func2);
+        msngr("WhatUp", "YesThisIsDog").once(func3);
+
+        expect(msngr.internal.handlerCount).to.equal(3);
+
+        msngr("WhatUp", "YesThisIsDog").emit("test", function () {
+            expect(funcCalls1).to.equal(1);
+            expect(funcCalls2).to.equal(1);
+            expect(funcCalls3).to.equal(1);
+            expect(msngr.internal.handlerCount).to.equal(2);
+
+            msngr("WhatUp", "YesThisIsDog").drop(func1);
+            expect(msngr.internal.handlerCount).to.equal(1);
+
+            msngr("WhatUp", "YesThisIsDog").emit("test", function () {
+                expect(funcCalls1).to.equal(1);
+                expect(funcCalls2).to.equal(2);
+                expect(funcCalls3).to.equal(1);
+                expect(msngr.internal.handlerCount).to.equal(1);
+
+                done();
+            });
+        });
+    });
+
 });
