@@ -1,6 +1,16 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
+## [Release 5.2.0 - May 18, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.2.0)
+Minor, non-breaking API additions
+
+***What's new?***
+- Updated middleware signature to add an additional parameter to the handler that includes the calling message object
+
+***Misc changes***
+- Changed build targets
+- Tweaks to documentation
+
 ## [Release 5.1.0 - December 11, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.1.0)
 Version 5.1.0 brings some minor improvements and changes
 

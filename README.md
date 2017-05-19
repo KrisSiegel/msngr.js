@@ -72,7 +72,7 @@ The example above demonstrates that the handler will only fire when the specifie
 A mechanism for middleware exists that creates a global or localized affect. This allows for payload transformation to occur prior to any messages and their payloads being delivered to handlers. A middleware needs to be registered via ```msngr.middleware(key, fn, force)``` where the ```key``` is the name of the middleware, the ```fn``` is the middleware itself and ```force``` is a boolean that specifies whether the middleware should execute on *all* messages or not (if ```false``` then ```msngr().use(key)``` needs to be called on a message to have it applied).
 
 ```javascript
-msngr.middleware("uppercase", function (payload) {
+msngr.middleware("uppercase", function (payload, message) {
     if (msngr.is(payload).string) {
         return payload.toUpperCase();
     }
@@ -199,6 +199,6 @@ msngr.series([
 ```
 
 #### Contact
-For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@BinaryIdiot](https://twitter.com/BinaryIdiot)
+For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
-Copyright © 2014-2016 Kris Siegel
+Copyright © 2014-2017 Kris Siegel
