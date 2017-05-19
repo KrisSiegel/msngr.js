@@ -1082,9 +1082,14 @@ msngr.extend((function (external, internal) {
                     payload = undefined;
                 }
 
-                settleMiddleware(uses, payload, msg, function (newPayload) {
-                    explicitEmit(msg, newPayload, callback);
-                });
+                if (uses.length > 0 || internal.getForcedMiddlewareCount() > 0) {
+                    settleMiddleware(uses, payload, msg, function (newPayload) {
+                        explicitEmit(msg, newPayload, callback);
+                    });
+                } else {
+                    explicitEmit(msg, payload, callback);
+                }
+                
 
                 return msgObj;
             },
@@ -1128,7 +1133,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    if (uses.length > 0) {
+                    if (uses.length > 0 || internal.getForcedMiddlewareCount() > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
                             explicitEmit([id], newPayload, undefined);
                         });
@@ -1150,7 +1155,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    if (uses.length > 0) {
+                    if (uses.length > 0 || internal.getForcedMiddlewareCount() > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
                             explicitEmit([id], newPayload, undefined);
                         });
@@ -1245,6 +1250,10 @@ msngr.extend((function (external, internal) {
     /*
         Internal APIs
     */
+    internal.getForcedMiddlewareCount = function () {
+        return forced.length;
+    };
+
     internal.resetMiddlewares = function () {
         middlewares = { };
         forced = [];

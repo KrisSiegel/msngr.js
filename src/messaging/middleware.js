@@ -13,6 +13,10 @@ msngr.extend((function (external, internal) {
     /*
         Internal APIs
     */
+    internal.getForcedMiddlewareCount = function () {
+        return forced.length;
+    };
+
     internal.resetMiddlewares = function () {
         middlewares = { };
         forced = [];
