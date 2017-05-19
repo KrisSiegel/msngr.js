@@ -42,19 +42,12 @@ describe("./messaging/middleware.js", function() {
 
     it("msngr.middleware() - Executes forced middleware over all messages", function (done) {
         msngr.middleware("forcedTest", function (payload, message, async) {
-            console.log("in forcedTest middleware");
-            console.log(payload);
-            console.log(message);
             return "middle";
         }, true);
 
         msngr("mytopic").on(function (payload, message) {
-            console.log("forcedtest on handler");
-            console.log(msngr.internal.getMiddlewares());
             expect(payload).to.equal("middle");
-            console.log("before 'forcedTest' unmiddleware");
             msngr.unmiddleware("forcedTest");
-            console.log("after 'forcedTest' unmiddleware");
             done();
         }).emit("test");
     });

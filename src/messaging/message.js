@@ -37,6 +37,7 @@ msngr.extend((function (external, internal) {
         payloadIndex.clear();
         payloads = {};
         payloadCount = 0;
+        internal.resetMiddlewares();
     };
 
     /*
@@ -145,7 +146,8 @@ msngr.extend((function (external, internal) {
         var msgObj = {
             use: function (middleware) {
                 if (!external.is(middleware).empty) {
-                    uses.push(middleware.toLowerCase());
+                    var normalizedKey = middleware.toLowerCase();
+                    uses.indexOf(normalizedKey) === -1 && uses.push(middleware.toLowerCase());
                 }
 
                 return msgObj;
@@ -157,13 +159,9 @@ msngr.extend((function (external, internal) {
                     payload = undefined;
                 }
 
-                if (uses.length > 0) {
-                    settleMiddleware(uses, payload, msg, function (newPayload) {
-                        explicitEmit(msg, newPayload, callback);
-                    });
-                } else {
-                    explicitEmit(msg, payload, callback);
-                }
+                settleMiddleware(uses, payload, msg, function (newPayload) {
+                    explicitEmit(msg, newPayload, callback);
+                });
 
                 return msgObj;
             },
