@@ -1,7 +1,7 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
-## [Release 5.2.0 - May 18, 2016](https://github.com/KrisSiegel/msngr.js/releases/tag/5.2.0)
+## [Release 5.2.0 - May 18, 2017](https://github.com/KrisSiegel/msngr.js/releases/tag/5.2.0)
 Minor, non-breaking API additions
 
 ***What's new?***
