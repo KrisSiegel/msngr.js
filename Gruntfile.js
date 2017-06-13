@@ -28,8 +28,7 @@ module.exports = (function(grunt) {
         "src/module.exports.js",
         "!**/*.aspec.js",
         "!**/*.cspec.js",
-        "!**/*.nspec.js",
-        "!**/*.bench.js"
+        "!**/*.nspec.js"
     ];
 
     grunt.initConfig({
@@ -43,7 +42,13 @@ module.exports = (function(grunt) {
         },
         uglify: {
             minify: {
-                options: { },
+                options: {
+                    sourceMap: false,
+                    compress: { },
+                    mangle: {
+                        reserved: ["msngr"]
+                    }
+                },
                 files: {
                     "./msngr.min.js": paths
                 }
@@ -116,10 +121,6 @@ module.exports = (function(grunt) {
 
     grunt.registerTask("header:nodeTesting", function() {
         grunt.log.subhead("Unit testing with node.js");
-    });
-
-    grunt.registerTask("header:nodeBenching", function() {
-        grunt.log.subhead("Benchmarking with node.js");
     });
 
     grunt.registerTask("header:clientTesting", function() {
@@ -215,31 +216,6 @@ module.exports = (function(grunt) {
         setRunner("test/specRunner.min.html", tests.concat([]));
     });
 
-    grunt.registerTask("run-benchmarks", "Finds all benchmarks and executes them", function() {
-        var async = require("async")
-        var done = this.async();
-
-        // Make a list of benchmark files to run
-        var benchmarks = fetchJsFiles([".bench.js"]);
-
-        // Set HTML benchmark runners to use the list of benchmarks
-        setRunner("test/benchRunner.html", benchmarks.concat([]));
-        setRunner("test/benchRunner.min.html", benchmarks.concat([]));
-        var meths = [];
-
-        // Add each benchmark test to the set of methods of execute in series
-        for (var i = 0; i < benchmarks.length; ++i) {
-            meths.push(function(p) {
-                return require(p);
-            }("./" + benchmarks[i]));
-        }
-
-        // Execute all benchmarks in series
-        async.series(meths, function (err, results) {
-            done();
-        });
-    });
-
     /*
         The reflective server simply accepts JSON, parses it and echos what it received
         back to the client. Pretty useful when testing sending and receiving data.
@@ -301,7 +277,5 @@ module.exports = (function(grunt) {
     grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
     grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "start-reflective-server", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
-
-    grunt.registerTask("benchmark", "Cleans, sets version, builds and runs benchmarks through node.js", ["build", "header:nodeBenching", "run-benchmarks"]);
 
 });

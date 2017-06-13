@@ -1,6 +1,8 @@
 language: node_js
 sudo: false
 node_js:
+  - "8.1"
+  - "8.0"
   - "7.10"
   - "7.0"
   - "6.10"
