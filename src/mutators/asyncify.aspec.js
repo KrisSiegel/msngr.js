@@ -20,7 +20,7 @@ describe("./mutators/asyncify.js", function () {
 
         msngr.asyncify(helloworld);
         helloworld.async(function(err, result) {
-            expect(err).to.not.existl
+            expect(err).to.not.exist;
             expect(result).to.exist;
             expect(result).to.equal("helloworld");
             done();
@@ -34,7 +34,7 @@ describe("./mutators/asyncify.js", function () {
 
         msngr.asyncify(helloworld);
         helloworld.async(function(err, result) {
-            expect(err).to.existl
+            expect(err).to.exist;
             expect(result).to.not.exist;
             expect(err).to.equal("helloworldexception");
             done();

@@ -2,7 +2,7 @@
   "name": "msngr",
   "main": "msngr.js",
   "description": "An asynchronous messaging library, written in JavaScript, for node and browser use",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "keywords": [
     "message",
     "messaging",
@@ -31,21 +31,19 @@
     "url": "http://www.KrisSiegel.com/"
   },
   "devDependencies": {
-    "async": "2.0.1",
-    "benchmark": "2.1.1",
-    "chai": "3.5.0",
-    "grunt": ">=0.4.5 <1.0.0",
+    "async": "2.4.1",
+    "chai": "4.0.2",
+    "grunt": "^1.0.1",
     "grunt-available-tasks": "0.6.3",
-    "grunt-contrib-clean": "1.0.0",
+    "grunt-contrib-clean": "1.1.0",
     "grunt-contrib-concat": "1.0.1",
-    "grunt-contrib-uglify": "2.0.0",
+    "grunt-contrib-uglify": "3.0.1",
     "grunt-mocha-phantomjs": "4.0.0",
-    "grunt-mocha-test": "0.12.7",
-    "mocha": "3.0.2"
+    "grunt-mocha-test": "0.13.2",
+    "mocha": "3.4.2"
   },
   "scripts": {
     "test": "node -e \"var g = require('grunt'); g.cli.tasks = ['test']; g.cli();\"",
-    "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\"",
-    "benchmark": "node -e \"var g = require('grunt'); g.cli.tasks = ['benchmark']; g.cli();\""
+    "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\""
   }
 }

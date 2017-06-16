@@ -6,14 +6,21 @@
 msngr.extend((function (external, internal) {
     "use strict";
 
+    // Memory indexers for messages and payloads
     var messageIndex = internal.memory();
     var payloadIndex = internal.memory();
 
+    // Holds handlers
     var handlers = {};
     var handlerCount = 0;
 
+    // Holds payloads for persist
     var payloads = {};
     var payloadCount = 0;
+
+    // Holds middlewares
+    var middlewares = { };
+    var forced = [];
 
     /*
         Internal APIs
@@ -33,11 +40,15 @@ msngr.extend((function (external, internal) {
     internal.reset = function() {
         handlers = {};
         handlerCount = 0;
+
         messageIndex.clear();
         payloadIndex.clear();
+
         payloads = {};
         payloadCount = 0;
-        internal.resetMiddlewares();
+
+        middlewares = { };
+        forced = [];
     };
 
     /*
@@ -61,12 +72,46 @@ msngr.extend((function (external, internal) {
         return payload;
     };
 
+    // gets a listing of middlewares
+    var getMiddlewares = function (uses, payload, message) {
+        var results = [];
+        var keys = (uses || []);
+        for (var i = 0; i < forced.length; ++i) {
+            if (keys.indexOf(forced[i]) === -1) {
+                keys.push(forced[i]);
+            }
+        }
+
+        for (var i = 0; i < keys.length; ++i) {
+            if (middlewares[keys[i]] !== undefined) {
+                results.push({
+                    method: middlewares[keys[i]],
+                    params: [payload, message]
+                });
+            }
+        }
+
+        return results;
+    };
+
+    internal.getMiddlewares = getMiddlewares; // Expose method to the internal API for testing
+
+    // Executes middlewares
+    var executeMiddlewares = function (uses, payload, message, callback) {
+        var middles = getMiddlewares(uses, payload, message);
+        var execute = internal.executer(middles).series(function (result) {
+            return callback(internal.merge.apply(this, [payload].concat(result)));
+        });
+    };
+
+    // Settles middlewares
     var settleMiddleware = function (uses, payload, message, callback) {
-        internal.executeMiddlewares(uses, payload, message, function (newPayload) {
+        executeMiddlewares(uses, payload, message, function (newPayload) {
             callback.apply(undefined, [newPayload]);
         });
     };
 
+    // An explicit emit
     var explicitEmit = function (msgOrIds, payload, callback) {
         var ids = (external.is(msgOrIds).array) ? msgOrIds : messageIndex.query(msgOrIds);
 
@@ -159,7 +204,7 @@ msngr.extend((function (external, internal) {
                     payload = undefined;
                 }
 
-                if (uses.length > 0 || internal.getForcedMiddlewareCount() > 0) {
+                if (uses.length > 0 || forced.length > 0) {
                     settleMiddleware(uses, payload, msg, function (newPayload) {
                         explicitEmit(msg, newPayload, callback);
                     });
@@ -210,7 +255,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    if (uses.length > 0 || internal.getForcedMiddlewareCount() > 0) {
+                    if (uses.length > 0 || forced.length > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
                             explicitEmit([id], newPayload, undefined);
                         });
@@ -232,7 +277,7 @@ msngr.extend((function (external, internal) {
 
                 var payload = fetchPersistedPayload(msg);
                 if (payload !== undefined) {
-                    if (uses.length > 0 || internal.getForcedMiddlewareCount() > 0) {
+                    if (uses.length > 0 || forced.length > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
                             explicitEmit([id], newPayload, undefined);
                         });
@@ -309,5 +354,52 @@ msngr.extend((function (external, internal) {
         });
 
         return msgObj;
+    };
+
+    /*
+        msngr.middleware(key, fn, force) provides a way to execute code during each message delegation
+
+        key -> identifier for the middleware (think unique name or id).
+        fn -> the function to execute for the middleware.
+        force (optional) -> a boolean to force whether the middleware is always executed or only when explicitly specified.
+    */
+    external.middleware = function (key, fn, force) {
+        var isKey = external.is(key);
+        var isFn = external.is(fn);
+        if (!isKey.there || !isKey.string || isKey.empty || !isFn.there || !isFn.function) {
+            throw internal.InvalidParametersException("msngr.middleware()");
+        }
+
+        if (external.is(middlewares[key]).there) {
+            throw internal.DuplicateException("msngr.middleware()");
+        }
+
+        var normalizedKey = key.toLowerCase();
+        middlewares[normalizedKey] = fn;
+        if (force === true) {
+            forced.push(normalizedKey);
+        }
+    };
+
+    /*
+        msngr.unmiddleware(key) removes a middleware
+
+        key -> identifier for the middleware to remove.
+    */
+    external.unmiddleware = function (key) {
+        var isKey = external.is(key);
+        if (!isKey.there || !isKey.string || isKey.empty) {
+            throw internal.InvalidParametersException("msngr.unmiddleware()");
+        }
+
+        var normalizedKey = key.toLowerCase();
+        var forcedInx = forced.indexOf(normalizedKey);
+        if (forcedInx !== -1) {
+            forced.splice(forcedInx, 1);
+        }
+
+        if (middlewares[normalizedKey] !== undefined) {
+            delete middlewares[normalizedKey];
+        }
     };
 }));
