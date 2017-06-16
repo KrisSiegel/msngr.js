@@ -1,7 +1,7 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
-## [Release 5.2.1 - June XX, 2017](https://github.com/KrisSiegel/msngr.js/releases/tag/5.2.1)
+## [Release 5.2.1 - June 15, 2017](https://github.com/KrisSiegel/msngr.js/releases/tag/5.2.1)
 Mostly some house cleaning
 
 ***Misc changes***
