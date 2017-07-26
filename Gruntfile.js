@@ -17,13 +17,10 @@ module.exports = (function(grunt) {
     */
     var paths = [
         "src/main.js",
-        "src/exceptional.js",
         "src/validators/*.js",
         "src/utils/*.js",
         "src/mutators/*.js",
         "src/messaging/*.js",
-        "src/mache/*.js",
-        "src/net/*.js",
         "src/middlewares/*.js",
         "src/module.exports.js",
         "!**/*.aspec.js",

@@ -112,55 +112,6 @@ msngr.is(obj).htmlElement; // checks to see if it's an HTML Element
 msngr.is(obj).nodeList; // checks to see if it's an HTML NodeList
 ```
 
-### msngr.net()
-There is basic http request functionality that allows the sending of the typical HTTP verbs (GET, POST, PUT, DELETE and OPTIONS) to a server. This is not meant to be comprehensive but provides an 90% solution which works, without a code change, in both node and the web browser. It also works as a handy URL parser! ```msngr.net(protocol, host, port)``` looks nice and neat but you can straight up send it a URL and it will parse and separate it into the ```protocol```, ```host``` and ```port```, all available as properties on the returned net object.
-
-```javascript
-var net = msngr.net("https://mywebsite.com");
-console.log(net.protocol); // prints 'https'
-
-net.get({
-    path: "/endpoint",
-    query: {
-        q: "my query"
-    }, function (err, result) {
-        console.log(result);
-    }
-});
-```
-
-In the simple ```msngr().net()``` example above the query object is translated into proper query strings and sent to the "/endpoint". Simple, right? You can also provide a ```header``` object that will get sent as proper HTTP headers and a ```payload``` object that can contain whatever you're sending to the server.
-
-### Mache Mache Mache!
-What the hell is a 'mache'? It's a merge cache. Get it? Merge cache...mache...okay okay. So how does it work? It's a lot like a typical local cache in that it works via key value pairs but it includes some neat additions including each setting of a value is merged with the previous value if it exists, the ability to revert multiple sets and even transactions.
-
-```javascript
-var mache = msngr.mache();
-
-mache.set("mykey", {
-    test: "mytest"
-});
-
-mache.set("mykey", {
-    test: "anothertest"
-});
-
-mache.get("mykey"); // returns { test: "anothertest" }
-
-mache.revert("mykey");
-
-mache.get("mykey"); // returns { test: "mytest" }
-```
-
-Mache transactions work similar to SQL transactions; when you want to start simply call ```.begin()``` on your mache instance, then get and set whatever you want. Once you're finished either call ```.rollback()``` to end the transaction and eliminate all changes done during that time or ```.commit()``` to commit all of the changes made. You can even create a mache instance with some configuration options to change the level of revisions to store outside of transactions along with emitting all changes through messages so as data changes your components can react to said changes.
-
-```javascript
-var mache = msngr.mache({
-    revisions: 10, // default is 3
-    emitChanges: true // emits on the msngr("msngr.mache", "change") message
-});
-```
-
 ### msngr.immediate()
 So if you want to create an asynchronous process many developers turn to ```setTimeout(fn, 0);``` but that's actually rather slow to execute in web browsers (typically values less than 10 or so are ignored and even 0 isn't guaranteed to execute immediately). Using ```setImmediate(fn)``` is a far better choice but it's almost exclusively available in node and IE. This is where ```msngr.immediate(fn)``` comes in. There is a way to simulate ```setImmediate(fn)``` when it doesn't exist in a web browser so ```msngr.immediate(fn)``` will use whatever the fastest solution that exists on the platform it is running on to execute something asynchronously.
 

@@ -152,15 +152,15 @@ msngr.extend((function (external, internal) {
         var isCategory = external.is(category);
         var isSubcategory = external.is(subcategory);
         if (!isTopic.there) {
-            throw internal.InvalidParametersException("msngr()");
+            throw new Error("msngr() - Invalid parameters");
         }
 
         if (!isTopic.object && !isTopic.string) {
-            throw internal.InvalidParametersException("msngr()");
+            throw new Error("msngr() - Invalid parameters");
         }
 
         if (isTopic.empty) {
-            throw internal.InvalidParametersException("msngr()");
+            throw new Error("msngr() - Invalid parameters");
         }
 
         var msg;
@@ -367,11 +367,11 @@ msngr.extend((function (external, internal) {
         var isKey = external.is(key);
         var isFn = external.is(fn);
         if (!isKey.there || !isKey.string || isKey.empty || !isFn.there || !isFn.function) {
-            throw internal.InvalidParametersException("msngr.middleware()");
+            throw new Error("msngr.middleware() - Invalid parameters");
         }
 
         if (external.is(middlewares[key]).there) {
-            throw internal.DuplicateException("msngr.middleware()");
+            throw new Error("msngr.middleware() - Invalid parameters");
         }
 
         var normalizedKey = key.toLowerCase();
@@ -389,7 +389,7 @@ msngr.extend((function (external, internal) {
     external.unmiddleware = function (key) {
         var isKey = external.is(key);
         if (!isKey.there || !isKey.string || isKey.empty) {
-            throw internal.InvalidParametersException("msngr.unmiddleware()");
+            throw new Error("msngr.unmiddleware() - Invalid parameters");
         }
 
         var normalizedKey = key.toLowerCase();
