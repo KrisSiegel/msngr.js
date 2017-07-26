@@ -603,7 +603,7 @@ msngr.extend(function (external, internal) {
     Executer provides asynchronous execution of indexed methods
 */
 
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     internal.executer = function (methods) {
@@ -709,7 +709,7 @@ msngr.extend((function (external, internal) {
         internal.executer(methods).series.apply(this, [handler]);
     };
 
-}));
+});
 
 /*
     ./src/messaging/memory.js
@@ -717,7 +717,7 @@ msngr.extend((function (external, internal) {
     An indexer for message objects.
 */
 
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     // Wait, why are you re-implementing the functionality of msngr.is().there?
@@ -858,14 +858,14 @@ msngr.extend((function (external, internal) {
 
         return mem;
     };
-}));
+});
 
 /*
     ./messaging/message.js
 
     The primary object of msngr; handles all message sending, receiving and binding.
 */
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     // Memory indexers for messages and payloads
@@ -1264,7 +1264,7 @@ msngr.extend((function (external, internal) {
             delete middlewares[normalizedKey];
         }
     };
-}));
+});
 
 /*
 	module.exports.js

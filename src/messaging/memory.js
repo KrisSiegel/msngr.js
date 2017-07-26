@@ -4,7 +4,7 @@
     An indexer for message objects.
 */
 
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     // Wait, why are you re-implementing the functionality of msngr.is().there?
@@ -145,4 +145,4 @@ msngr.extend((function (external, internal) {
 
         return mem;
     };
-}));
+});

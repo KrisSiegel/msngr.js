@@ -3,7 +3,7 @@
 
     The primary object of msngr; handles all message sending, receiving and binding.
 */
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     // Memory indexers for messages and payloads
@@ -402,4 +402,4 @@ msngr.extend((function (external, internal) {
             delete middlewares[normalizedKey];
         }
     };
-}));
+});
