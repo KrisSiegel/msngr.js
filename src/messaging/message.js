@@ -190,7 +190,7 @@ msngr.extend(function (external, internal) {
 
         var msgObj = {
             use: function (middleware) {
-                if (!external.is(middleware).empty) {
+                if (external.is(middleware).string) {
                     var normalizedKey = middleware.toLowerCase();
                     uses.indexOf(normalizedKey) === -1 && uses.push(middleware.toLowerCase());
                 }
@@ -292,12 +292,11 @@ msngr.extend(function (external, internal) {
                 var ids = messageIndex.query(msg);
                 if (ids.length > 0) {
                     for (var i = 0; i < ids.length; ++i) {
-                        var id = ids[i];
-                        if (handlers[id].handler === handler) {
-                            delete handlers[id];
+                        if (handlers[ids[i]].handler === handler) {
+                            delete handlers[ids[i]];
                             handlerCount--;
 
-                            messageIndex.delete(id);
+                            messageIndex.delete(ids[i]);
                         }
                     }
                 }
@@ -308,11 +307,10 @@ msngr.extend(function (external, internal) {
                 var ids = messageIndex.query(msg);
                 if (ids.length > 0) {
                     for (var i = 0; i < ids.length; ++i) {
-                        var id = ids[i];
-                        delete handlers[id];
+                        delete handlers[ids[i]];
                         handlerCount--;
 
-                        messageIndex.delete(id);
+                        messageIndex.delete(ids[i]);
                     }
                 }
 
