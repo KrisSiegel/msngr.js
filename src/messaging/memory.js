@@ -4,7 +4,7 @@
     An indexer for message objects.
 */
 
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     // Wait, why are you re-implementing the functionality of msngr.is().there?
@@ -112,7 +112,17 @@ msngr.extend((function (external, internal) {
                     result = result.concat((indexTopicCategorySubcategory || { }).ids || []);
                 }
 
-                return external.deDupeArray(result);
+                // Now let's de-dupe the array
+                var hash = { };
+                var deduped = [];
+                var resultLength = result.length;
+                for (var i = 0; i < resultLength; ++i) {
+                    if (hash[result[i]] === undefined) {
+                        hash[result[i]] = true;
+                        deduped.push(result[i]);
+                    }
+                }
+                return deduped;
             },
             clear: function() {
                 // Index for id to message objects
@@ -135,4 +145,4 @@ msngr.extend((function (external, internal) {
 
         return mem;
     };
-}));
+});

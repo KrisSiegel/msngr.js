@@ -3,7 +3,7 @@
 
     The primary object of msngr; handles all message sending, receiving and binding.
 */
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     // Memory indexers for messages and payloads
@@ -152,15 +152,15 @@ msngr.extend((function (external, internal) {
         var isCategory = external.is(category);
         var isSubcategory = external.is(subcategory);
         if (!isTopic.there) {
-            throw internal.InvalidParametersException("msngr()");
+            throw new Error("msngr() - Invalid parameters");
         }
 
         if (!isTopic.object && !isTopic.string) {
-            throw internal.InvalidParametersException("msngr()");
+            throw new Error("msngr() - Invalid parameters");
         }
 
         if (isTopic.empty) {
-            throw internal.InvalidParametersException("msngr()");
+            throw new Error("msngr() - Invalid parameters");
         }
 
         var msg;
@@ -190,7 +190,7 @@ msngr.extend((function (external, internal) {
 
         var msgObj = {
             use: function (middleware) {
-                if (!external.is(middleware).empty) {
+                if (external.is(middleware).string) {
                     var normalizedKey = middleware.toLowerCase();
                     uses.indexOf(normalizedKey) === -1 && uses.push(middleware.toLowerCase());
                 }
@@ -292,12 +292,11 @@ msngr.extend((function (external, internal) {
                 var ids = messageIndex.query(msg);
                 if (ids.length > 0) {
                     for (var i = 0; i < ids.length; ++i) {
-                        var id = ids[i];
-                        if (handlers[id].handler === handler) {
-                            delete handlers[id];
+                        if (handlers[ids[i]].handler === handler) {
+                            delete handlers[ids[i]];
                             handlerCount--;
 
-                            messageIndex.delete(id);
+                            messageIndex.delete(ids[i]);
                         }
                     }
                 }
@@ -308,11 +307,10 @@ msngr.extend((function (external, internal) {
                 var ids = messageIndex.query(msg);
                 if (ids.length > 0) {
                     for (var i = 0; i < ids.length; ++i) {
-                        var id = ids[i];
-                        delete handlers[id];
+                        delete handlers[ids[i]];
                         handlerCount--;
 
-                        messageIndex.delete(id);
+                        messageIndex.delete(ids[i]);
                     }
                 }
 
@@ -367,11 +365,11 @@ msngr.extend((function (external, internal) {
         var isKey = external.is(key);
         var isFn = external.is(fn);
         if (!isKey.there || !isKey.string || isKey.empty || !isFn.there || !isFn.function) {
-            throw internal.InvalidParametersException("msngr.middleware()");
+            throw new Error("msngr.middleware() - Invalid parameters");
         }
 
         if (external.is(middlewares[key]).there) {
-            throw internal.DuplicateException("msngr.middleware()");
+            throw new Error("msngr.middleware() - Invalid parameters");
         }
 
         var normalizedKey = key.toLowerCase();
@@ -389,7 +387,7 @@ msngr.extend((function (external, internal) {
     external.unmiddleware = function (key) {
         var isKey = external.is(key);
         if (!isKey.there || !isKey.string || isKey.empty) {
-            throw internal.InvalidParametersException("msngr.unmiddleware()");
+            throw new Error("msngr.unmiddleware() - Invalid parameters");
         }
 
         var normalizedKey = key.toLowerCase();
@@ -402,4 +400,4 @@ msngr.extend((function (external, internal) {
             delete middlewares[normalizedKey];
         }
     };
-}));
+});

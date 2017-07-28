@@ -18,20 +18,21 @@ msngr.extend(function (external, internal) {
         var obj1Type = external.is(obj1).getType();
         var obj2Type = external.is(obj2).getType();
 
-        var exceptional = undefined;
+        var exceptionMsg;
         if (acceptableForObj1.indexOf(obj1Type) === -1 || acceptableForObj2.indexOf(obj2Type) === -1) {
-            exceptional = internal.InvalidParametersException("msngr.merge()", "Only objects, arrays or a single function followed by objects can be merged!");
+            exceptionMsg = "msngr.merge() - Only objects, arrays or a single function followed by objects can be merged!";
         }
 
         if ([obj1Type, obj2Type].indexOf(internal.types.array) !== -1 && (obj1Type !== internal.types.array || obj2Type !== internal.types.array)) {
-            exceptional = internal.InvalidParametersException("msngr.merge()", "Arrays cannot be merged with objects or functions!");
+            exceptionMsg = "msngr.merge() - Arrays cannot be merged with objects or functions!";
         }
 
-        if (exceptional !== undefined) {
-            if (overwrite === true) {
-                return obj2;
-            }
-            throw exceptional;
+        if (overwrite === true) {
+            return obj2;
+        }
+
+        if (exceptionMsg) {
+            throw new Error(exceptionMsg);
         }
 
         var result = obj1;

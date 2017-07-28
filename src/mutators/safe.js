@@ -16,7 +16,7 @@ msngr.extend(function (external, internal) {
     */
     external.safe = function (obj, path, def) {
         if (!external.is(obj).object || !external.is(path).string) {
-            throw internal.InvalidParametersException("msngr.safe");
+            throw new Error("msngr.safe() - invalid parameters");
         }
 
         var props = path.split(".");

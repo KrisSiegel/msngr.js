@@ -512,7 +512,7 @@ describe("./src/messaging/message.js", function() {
 
                 done();
             });
-        });
+        }.bind(this));
     });
 
     it("msngr.middleware() / msngr.unmiddleware() - Works as expected to add and remove a middleware", function () {

@@ -4,7 +4,7 @@
     Executer provides asynchronous execution of indexed methods
 */
 
-msngr.extend((function (external, internal) {
+msngr.extend(function (external, internal) {
     "use strict";
 
     internal.executer = function (methods) {
@@ -110,4 +110,4 @@ msngr.extend((function (external, internal) {
         internal.executer(methods).series.apply(this, [handler]);
     };
 
-}));
+});
