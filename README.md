@@ -179,4 +179,4 @@ msngr.series([
 #### Contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
-Copyright © 2014-2017 Kris Siegel
+Copyright © 2014-2018 Kris Siegel
