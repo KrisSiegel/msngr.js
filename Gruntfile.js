@@ -214,12 +214,15 @@ module.exports = (function(grunt) {
     });
 
     /*
-    	'build' and 'test' are roll-up tasks; they have specific descriptions and execute
+    	'build' and 'test' are rolled-up tasks; they have specific descriptions and execute
     	multiple tasks each to accomplish their goals. These are the only intended tasks
-    	to be run by the developer.
+        to be run by the developer.
+        
+        build -> cleans then builds a new copy of `msngr.js` and `msngr.min.js`.
+        test -> executes tests against the `msngr.js` and `msngr.min.js` rolled-up builds.
     */
     grunt.registerTask("build", "Cleans, sets version and builds msngr.js", ["header:building", "clean", "verisionify", "concat", "uglify:minify", "setRunner"]);
 
-    grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["build", "header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
+    grunt.registerTask("test", "Cleans, sets version, builds and runs mocha unit tests through node.js and phantom.js", ["header:nodeTesting", "mochaTest", "header:clientTesting", "mocha_phantomjs"]);
 
 });
