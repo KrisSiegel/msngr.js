@@ -18,7 +18,7 @@ var msngr = msngr || (function () {
     };
 
     // Built version of msngr.js for programatic access; this is auto generated
-    external.version = "6.0.0";
+    external.version = "7.0.0";
 
     // Takes a function, executes it passing in the external and internal interfaces
     external.extend = function (fn) {
@@ -345,44 +345,6 @@ msngr.extend(function (external, internal) {
 });
 
 /*
-    ./src/mutators/asyncify.js
-
-    Takes a synchronous method and makes it work asynchronously
-*/
-
-msngr.extend(function (external, internal) {
-    "use strict";
-
-    /*
-        msngr.asyncify() accepts a single parameter and returns it with a new, async method.
-
-        fn -> the function, which should be synchronous, to add an async() method to.
-    */
-    external.asyncify = function(fn) {
-        if (external.is(fn).function) {
-            fn.async = function () {
-                var args = [].slice.call(arguments);
-                var callback = args.pop();
-                if (external.is(callback).function) {
-                    (function (a, c) {
-                        external.immediate(function () {
-                            try {
-                                c.apply(null, [null, fn.apply(null, a)]);
-                            } catch (e) {
-                                c.apply(null, [e, null]);
-                            }
-                        });
-                    }(args, callback));
-                }
-            };
-        }
-
-        return fn;
-    };
-
-});
-
-/*
     ./src/mutators/copy.js
 
     Creates a copy of the passed in object
@@ -563,41 +525,6 @@ msngr.extend(function (external, internal) {
 });
 
 /*
-    ./src/mutators/safe.js
-
-    Provides a safe way to access objects and functions
-*/
-
-msngr.extend(function (external, internal) {
-    "use strict";
-
-    /*
-        msngr.safe() accepts 2 required parameters and 1 optional.
-
-        obj -> the object to inspect.
-        path -> the json path to a specific property separated by dots; note that this will fail if an object key actually contains a dot.
-        def (optional) -> the default value to return should the requested property not exist.
-    */
-    external.safe = function (obj, path, def) {
-        if (!external.is(obj).object || !external.is(path).string) {
-            throw new Error("msngr.safe() - invalid parameters");
-        }
-
-        var props = path.split(".");
-        var position = obj, prop = undefined;
-        while (prop = props.shift()) {
-            position = position[prop];
-            if (position === undefined) {
-                break;
-            }
-        }
-
-        return (external.is(position).there) ? position : def;
-    };
-
-});
-
-/*
     ./src/messaging/executer.js
 
     Executer provides asynchronous execution of indexed methods
@@ -721,8 +648,8 @@ msngr.extend(function (external, internal) {
     "use strict";
 
     // Wait, why are you re-implementing the functionality of msngr.is().there?
-    // Listen there boyscout. The memory indexer needs to be fast. Like very fast.
-    // So this simplifies and imlpements only what we need. This is slightly faster.
+    // Alright, here's the deal. The memory indexer needs to be fast. Like very fast.
+    // So this simplifies and implements only what we need. This is slightly faster.
     var exists = function (input) {
         return (input !== undefined && input !== null);
     };
@@ -1267,7 +1194,7 @@ msngr.extend(function (external, internal) {
 /*
 	module.exports.js
 
-	If we're running in a node.js.
+	If we're running in node.js.
 */
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     module.exports = msngr;

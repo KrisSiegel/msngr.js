@@ -17,6 +17,7 @@
         "src",
         "node_modules",
         "CHANGELOG.md",
-        "resources"
+        "resources",
+        "package-lock.json"
     ]
 }
