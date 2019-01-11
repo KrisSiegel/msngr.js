@@ -10,7 +10,7 @@ This release is a new major version due to some API deprecation / removal. Beyon
 
 ***Misc changes***
 - Cleaned up dead code in build and testing scripts
-- `msngr.min.js` size decrease from 11.7kb to 11.2kb
+- `msngr.min.js` size decrease from 11.7kb to 11.1kb
 
 ## [Release 6.0.0 - July 28, 2017](https://github.com/KrisSiegel/msngr.js/releases/tag/6.0.0)
 This release is a re-focusing on what makes msngr.js great. It removes the mache cache, the global configuration object and the universal networking to focus only on messaging and processing of messages. Additional, internal refactoring was also done to further shrink the filesize to a gzipped size of roughly 3kb.
