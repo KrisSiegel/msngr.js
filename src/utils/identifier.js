@@ -4,7 +4,7 @@
     Utils for handling and creating identifiers
 */
 
-msngr.extend(function (external, internal) {
+msngr.extend(function (external) {
     "use strict";
 
     var atomicCount = 0;

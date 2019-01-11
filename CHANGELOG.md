@@ -1,7 +1,7 @@
 # Changelog
 This is a roll-up of all release notes in order of release
 
-## [Release 7.0.0 - January, 2018](https://github.com/KrisSiegel/msngr.js/releases/tag/7.0.0)
+## [Release 7.0.0 - January, 2019](https://github.com/KrisSiegel/msngr.js/releases/tag/7.0.0)
 This release is a new major version due to some API deprecation / removal. Beyond that the API is effectively unchanged and should continue to work unless you used undocumented features that were just removed :)
 
 ***Breaking changes***
@@ -10,6 +10,7 @@ This release is a new major version due to some API deprecation / removal. Beyon
 
 ***Misc changes***
 - Cleaned up dead code in build and testing scripts
+- `msngr.min.js` size decrease from 11.7kb to 11.2kb
 
 ## [Release 6.0.0 - July 28, 2017](https://github.com/KrisSiegel/msngr.js/releases/tag/6.0.0)
 This release is a re-focusing on what makes msngr.js great. It removes the mache cache, the global configuration object and the universal networking to focus only on messaging and processing of messages. Additional, internal refactoring was also done to further shrink the filesize to a gzipped size of roughly 3kb.

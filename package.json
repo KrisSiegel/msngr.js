@@ -42,6 +42,7 @@
   },
   "scripts": {
     "test": "node -e \"var g = require('grunt'); g.cli.tasks = ['test']; g.cli();\"",
-    "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\""
+    "build": "node -e \"var g = require('grunt'); g.cli.tasks = ['build']; g.cli();\"",
+    "clean": "node -e \"var g = require('grunt'); g.cli.tasks = ['clean']; g.cli();\""
   }
 }

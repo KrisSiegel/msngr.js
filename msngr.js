@@ -226,7 +226,7 @@ msngr.extend(function (external, internal) {
     Utils for handling and creating identifiers
 */
 
-msngr.extend(function (external, internal) {
+msngr.extend(function (external) {
     "use strict";
 
     var atomicCount = 0;
@@ -302,11 +302,10 @@ msngr.extend(function (external, internal) {
     An implementation of the best-performing now() available
 */
 
-msngr.extend(function (external, internal) {
+msngr.extend(function (external) {
     "use strict";
 
     var nowExec = undefined;
-    var nowExecDebugLabel = "";
     var lastNow = undefined;
 
     var nowPerformance = function() {
@@ -325,13 +324,10 @@ msngr.extend(function (external, internal) {
         if (nowExec === undefined) {
             if (typeof performance !== "undefined") {
                 nowExec = nowPerformance;
-                nowExecDebugLabel = "performance";
             } else if (typeof process !== "undefined") {
                 nowExec = nowNode;
-                nowExecDebugLabel = "node";
             } else {
                 nowExec = nowLegacy;
-                nowExecDebugLabel = "legacy";
             }
         }
         var now = nowExec();
@@ -361,10 +357,7 @@ msngr.extend(function (external, internal) {
 
     // Mutable types that need to be specially handled
     copyHandlers[internal.types.date] = function (d) {
-        var cdate = new Date();
-        cdate.setTime(d.getTime());
-
-        return cdate;
+        return new Date(d);
     };
 
     copyHandlers[internal.types.object] = function (obj) {

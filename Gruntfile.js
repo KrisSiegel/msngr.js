@@ -76,7 +76,7 @@ module.exports = (function(grunt) {
             tasks: {
                 options: {
                     filter: "include",
-                    tasks: ["build", "test"]
+                    tasks: ["build", "test", "clean"]
                 }
             }
         }
