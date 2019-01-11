@@ -75,6 +75,7 @@ describe("./mutators/copy.js", function () {
     });
 
     it("msngr.copy() - expect copy to correctly handle a date input", function () {
+        this.timeout(5000); // Found in odd cases in node on Ubuntu taking a little long for this. So longer timeout for now.
         var d = new Date();
         var dCopy = msngr.copy(d);
 

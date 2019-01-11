@@ -15,10 +15,7 @@ msngr.extend(function (external, internal) {
 
     // Mutable types that need to be specially handled
     copyHandlers[internal.types.date] = function (d) {
-        var cdate = new Date();
-        cdate.setTime(d.getTime());
-
-        return cdate;
+        return new Date(d);
     };
 
     copyHandlers[internal.types.object] = function (obj) {

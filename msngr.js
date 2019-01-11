@@ -18,7 +18,7 @@ var msngr = msngr || (function () {
     };
 
     // Built version of msngr.js for programatic access; this is auto generated
-    external.version = "6.0.0";
+    external.version = "7.0.0";
 
     // Takes a function, executes it passing in the external and internal interfaces
     external.extend = function (fn) {
@@ -226,7 +226,7 @@ msngr.extend(function (external, internal) {
     Utils for handling and creating identifiers
 */
 
-msngr.extend(function (external, internal) {
+msngr.extend(function (external) {
     "use strict";
 
     var atomicCount = 0;
@@ -302,11 +302,10 @@ msngr.extend(function (external, internal) {
     An implementation of the best-performing now() available
 */
 
-msngr.extend(function (external, internal) {
+msngr.extend(function (external) {
     "use strict";
 
     var nowExec = undefined;
-    var nowExecDebugLabel = "";
     var lastNow = undefined;
 
     var nowPerformance = function() {
@@ -325,13 +324,10 @@ msngr.extend(function (external, internal) {
         if (nowExec === undefined) {
             if (typeof performance !== "undefined") {
                 nowExec = nowPerformance;
-                nowExecDebugLabel = "performance";
             } else if (typeof process !== "undefined") {
                 nowExec = nowNode;
-                nowExecDebugLabel = "node";
             } else {
                 nowExec = nowLegacy;
-                nowExecDebugLabel = "legacy";
             }
         }
         var now = nowExec();
@@ -340,44 +336,6 @@ msngr.extend(function (external, internal) {
         }
         lastNow = now;
         return now;
-    };
-
-});
-
-/*
-    ./src/mutators/asyncify.js
-
-    Takes a synchronous method and makes it work asynchronously
-*/
-
-msngr.extend(function (external, internal) {
-    "use strict";
-
-    /*
-        msngr.asyncify() accepts a single parameter and returns it with a new, async method.
-
-        fn -> the function, which should be synchronous, to add an async() method to.
-    */
-    external.asyncify = function(fn) {
-        if (external.is(fn).function) {
-            fn.async = function () {
-                var args = [].slice.call(arguments);
-                var callback = args.pop();
-                if (external.is(callback).function) {
-                    (function (a, c) {
-                        external.immediate(function () {
-                            try {
-                                c.apply(null, [null, fn.apply(null, a)]);
-                            } catch (e) {
-                                c.apply(null, [e, null]);
-                            }
-                        });
-                    }(args, callback));
-                }
-            };
-        }
-
-        return fn;
     };
 
 });
@@ -399,10 +357,7 @@ msngr.extend(function (external, internal) {
 
     // Mutable types that need to be specially handled
     copyHandlers[internal.types.date] = function (d) {
-        var cdate = new Date();
-        cdate.setTime(d.getTime());
-
-        return cdate;
+        return new Date(d);
     };
 
     copyHandlers[internal.types.object] = function (obj) {
@@ -563,41 +518,6 @@ msngr.extend(function (external, internal) {
 });
 
 /*
-    ./src/mutators/safe.js
-
-    Provides a safe way to access objects and functions
-*/
-
-msngr.extend(function (external, internal) {
-    "use strict";
-
-    /*
-        msngr.safe() accepts 2 required parameters and 1 optional.
-
-        obj -> the object to inspect.
-        path -> the json path to a specific property separated by dots; note that this will fail if an object key actually contains a dot.
-        def (optional) -> the default value to return should the requested property not exist.
-    */
-    external.safe = function (obj, path, def) {
-        if (!external.is(obj).object || !external.is(path).string) {
-            throw new Error("msngr.safe() - invalid parameters");
-        }
-
-        var props = path.split(".");
-        var position = obj, prop = undefined;
-        while (prop = props.shift()) {
-            position = position[prop];
-            if (position === undefined) {
-                break;
-            }
-        }
-
-        return (external.is(position).there) ? position : def;
-    };
-
-});
-
-/*
     ./src/messaging/executer.js
 
     Executer provides asynchronous execution of indexed methods
@@ -721,8 +641,8 @@ msngr.extend(function (external, internal) {
     "use strict";
 
     // Wait, why are you re-implementing the functionality of msngr.is().there?
-    // Listen there boyscout. The memory indexer needs to be fast. Like very fast.
-    // So this simplifies and imlpements only what we need. This is slightly faster.
+    // Alright, here's the deal. The memory indexer needs to be fast. Like very fast.
+    // So this simplifies and implements only what we need. This is slightly faster.
     var exists = function (input) {
         return (input !== undefined && input !== null);
     };
@@ -920,7 +840,7 @@ msngr.extend(function (external, internal) {
         var ids = payloadIndex.query(msg);
 
         if (ids.length === 0) {
-            return undefined;
+            return;
         }
 
         var payload = payloads[ids[0]];
@@ -961,7 +881,7 @@ msngr.extend(function (external, internal) {
     // Executes middlewares
     var executeMiddlewares = function (uses, payload, message, callback) {
         var middles = getMiddlewares(uses, payload, message);
-        var execute = internal.executer(middles).series(function (result) {
+        internal.executer(middles).series(function (result) {
             return callback(internal.merge.apply(this, [payload].concat(result)));
         });
     };
@@ -1119,10 +1039,10 @@ msngr.extend(function (external, internal) {
                 if (payload !== undefined) {
                     if (uses.length > 0 || forced.length > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
-                            explicitEmit([id], newPayload, undefined);
+                            explicitEmit([id], newPayload);
                         });
                     } else {
-                        explicitEmit([id], payload, undefined);
+                        explicitEmit([id], payload);
                     }
                 }
 
@@ -1141,10 +1061,10 @@ msngr.extend(function (external, internal) {
                 if (payload !== undefined) {
                     if (uses.length > 0 || forced.length > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
-                            explicitEmit([id], newPayload, undefined);
+                            explicitEmit([id], newPayload);
                         });
                     } else {
-                        explicitEmit([id], payload, undefined);
+                        explicitEmit([id], payload);
                     }
                 }
 
@@ -1267,7 +1187,7 @@ msngr.extend(function (external, internal) {
 /*
 	module.exports.js
 
-	If we're running in a node.js.
+	If we're running in node.js.
 */
 if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
     module.exports = msngr;

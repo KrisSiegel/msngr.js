@@ -4,11 +4,10 @@
     An implementation of the best-performing now() available
 */
 
-msngr.extend(function (external, internal) {
+msngr.extend(function (external) {
     "use strict";
 
     var nowExec = undefined;
-    var nowExecDebugLabel = "";
     var lastNow = undefined;
 
     var nowPerformance = function() {
@@ -27,13 +26,10 @@ msngr.extend(function (external, internal) {
         if (nowExec === undefined) {
             if (typeof performance !== "undefined") {
                 nowExec = nowPerformance;
-                nowExecDebugLabel = "performance";
             } else if (typeof process !== "undefined") {
                 nowExec = nowNode;
-                nowExecDebugLabel = "node";
             } else {
                 nowExec = nowLegacy;
-                nowExecDebugLabel = "legacy";
             }
         }
         var now = nowExec();

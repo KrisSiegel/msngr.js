@@ -8,3 +8,4 @@ src
 node_modules
 CHANGELOG.md
 resources
+package-lock.json

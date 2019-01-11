@@ -58,7 +58,7 @@ msngr.extend(function (external, internal) {
         var ids = payloadIndex.query(msg);
 
         if (ids.length === 0) {
-            return undefined;
+            return;
         }
 
         var payload = payloads[ids[0]];
@@ -99,7 +99,7 @@ msngr.extend(function (external, internal) {
     // Executes middlewares
     var executeMiddlewares = function (uses, payload, message, callback) {
         var middles = getMiddlewares(uses, payload, message);
-        var execute = internal.executer(middles).series(function (result) {
+        internal.executer(middles).series(function (result) {
             return callback(internal.merge.apply(this, [payload].concat(result)));
         });
     };
@@ -257,10 +257,10 @@ msngr.extend(function (external, internal) {
                 if (payload !== undefined) {
                     if (uses.length > 0 || forced.length > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
-                            explicitEmit([id], newPayload, undefined);
+                            explicitEmit([id], newPayload);
                         });
                     } else {
-                        explicitEmit([id], payload, undefined);
+                        explicitEmit([id], payload);
                     }
                 }
 
@@ -279,10 +279,10 @@ msngr.extend(function (external, internal) {
                 if (payload !== undefined) {
                     if (uses.length > 0 || forced.length > 0) {
                         settleMiddleware(uses, payload, msg, function (newPayload) {
-                            explicitEmit([id], newPayload, undefined);
+                            explicitEmit([id], newPayload);
                         });
                     } else {
-                        explicitEmit([id], payload, undefined);
+                        explicitEmit([id], payload);
                     }
                 }
 
