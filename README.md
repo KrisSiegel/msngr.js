@@ -3,7 +3,7 @@
 Messaging is a powerful development pattern that makes decoupling components and providing internal APIs incredibly easy. The primary goal of msngr is to provide a high quality, asynchronous method of consuming and emitting messages that work in both node and the web browser.
 
 ### Snag a copy of msngr
-Install via npm or bower by running ```npm install msngr``` or ```bower install msngr```
+Install via npm by running ```npm install msngr```
 
 Grab a copy of the ```msngr.js``` or ```msngr.min.js``` files directly from this repo
 
@@ -179,4 +179,4 @@ msngr.series([
 #### Contact
 For questions, news, and whatever else that doesn't fit in GitHub issues you can follow me [@KrisSiegel](https://twitter.com/KrisSiegel)
 
-Copyright © 2014-2019 Kris Siegel
+Copyright © 2014-2021 Kris Siegel
