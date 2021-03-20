@@ -1,4 +1,4 @@
-<img src="https://github.com/KrisSiegel/msngr.js/raw/master/resources/logo.png" alt="msngr.js logo" title="msngr.js logo" />
+<img src="https://github.com/KrisSiegel/msngr.js/raw/unstable/resources/logo.png" alt="msngr.js logo" title="msngr.js logo" />
 
 Messaging is a powerful development pattern that makes decoupling components and providing internal APIs incredibly easy. The primary goal of msngr is to provide a high quality, asynchronous method of consuming and emitting messages that work in both node and the web browser.
 
